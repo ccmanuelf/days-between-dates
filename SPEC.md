@@ -5,7 +5,7 @@ by D8, the owner's decision, which approved the change (*Approval*)
 
 Provenance: 【M】 the owner said it · 【C】 an agent's inference, removable while a draft. The marks stay when the SPEC
 is published. Q1–Q10 are the owner's answers in the discussion of 2026-10-25, live; Q11–Q16 of 2026-10-26, batched;
-D1–D3 are decisions of 2026-10-25; D1 and D8 of 2026-10-26.
+D1–D3 are decisions of 2026-10-25; D1 and D8 of 2026-10-26; D12, D19 and D25 of 2026-10-27.
 
 ## Problem
 
@@ -151,7 +151,7 @@ Will not:
 | AC9 | A storage failure shows an error and no business-day count; a language choice that cannot be stored shows an error, and the page keeps the language on screen | E3 tests with an unwritable and with an unreadable database, for the holidays and for the language setting, through the page |
 | AC10 | No orphans: every control (two dates, calendar selector, add, remove, language switch) reaches a route that executes; every route has a caller; the holidays table and the language setting are written and read | The judge's orphan list |
 | AC11 | The screen names each built-in calendar's source and the date its rules were checked; with Mexico active, the note on local election days shows, and with the US calendar it does not (Q13) | Demo step; a test on the page for each; S11, both cases |
-| AC12 | The known-answer checks run on every push, through the API | CI log |
+| AC12 | The known-answer checks run on every pull request and every push to main, through the API | CI log |
 | AC13 | Every label, notice and message exists in English and Spanish; in Spanish, business days read *días hábiles* with the art. 715 note (Q14); switching the language changes the text, not the counts; the choice is stored through page → API → SQLite and survives a restart (Q15); with none stored, or one unreadable, the page opens in the browser's language when it is English or Spanish, in English otherwise (Q16) | A test per notice in each language; S10 through the page, with a restart; the opening language with the browser set to English, to Spanish and to a third language, and with the stored choice unreadable; demo step |
 | AC14 | On the live demo, the page shows the notice that its storage resets on restart; on a local install, it does not (S12) | A page test with the server run as the demo and as a local install, in each language; demo step |
 
@@ -319,4 +319,6 @@ review passed on its rerun: approved, 2026-10-26. Changes after approval: 2026-1
 free plan, with a notice that its storage resets on restart (S12, AC14; AC5's proof; *Stack and deployment*),
 approved in the owner's answer: 【M】 *"This answer also approves the SPEC change it requires."* 2026-10-26: the
 year limit's source added, a correction the review before publication required: every number carries its source;
-confirmed by the owner, 2026-10-27 (D12).
+confirmed by the owner, 2026-10-27 (D12). 2026-10-27, D25: AC12 reads "on every pull request and every push to
+main", matching CI's triggers, approved in the owner's answer: 【M】 *"Update AC12, the app's CLAUDE.md and the plan to
+"on every pull request and every push to main", matching D19."*
