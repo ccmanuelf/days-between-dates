@@ -7,6 +7,9 @@ let strings = {};
 let language = "en";
 let calendars = [];
 let resultShown = false;
+// Each count and each list request is numbered; an answer that is not the latest is out of date and not shown (F1).
+let countRequest = 0;
+let listRequest = 0;
 
 function t(key, values = {}) {
   const text = strings[language]?.[key];
@@ -128,12 +131,14 @@ function hideResult() {
 }
 
 async function count() {
+  const request = ++countRequest;
   const query = new URLSearchParams({
     calendar: $("calendar").value,
     start: $("start").value.trim(),
     end: $("end").value.trim(),
   });
   const answer = await api("GET", `/api/count?${query}`);
+  if (request !== countRequest) return;
   if (answer.status === 200) {
     clearError();
     renderResult(answer.body);
@@ -144,11 +149,14 @@ async function count() {
 }
 
 async function loadHolidays() {
+  const request = ++listRequest;
   const calendar = $("calendar").value;
   renderOwnTitle();
-  const answer = await api("GET", `/api/holidays?calendar=${calendar}`);
   const list = $("own-list");
-  list.replaceChildren();
+  list.replaceChildren(); // no list stays on screen under another calendar's title
+  $("own-empty").hidden = true;
+  const answer = await api("GET", `/api/holidays?calendar=${calendar}`);
+  if (request !== listRequest) return;
   if (answer.status !== 200) {
     $("own-empty").hidden = true;
     showError(errorText(answer));
