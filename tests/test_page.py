@@ -7,7 +7,6 @@ import sqlite3
 from pathlib import Path
 
 import pytest
-from playwright.sync_api import expect
 
 ROOT = Path(__file__).resolve().parent.parent
 STRINGS = json.loads((ROOT / "app/static/strings.json").read_text())
