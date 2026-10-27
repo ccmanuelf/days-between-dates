@@ -299,11 +299,11 @@ def test_e3_an_unreadable_database_shows_no_count_and_keeps_the_language_on_scre
     db.write_bytes(b"this is not a database" * 100)
     page = open_page(start_server(db).url)
     count(page, "2026-10-26", "2026-10-30")
-    assert page.locator("#error").inner_text() == EN["error_storage"]
+    expect(page.locator("#error")).to_have_text(EN["error_storage"])
     assert page.locator("#result").is_hidden()
     with page.expect_response(lambda r: "/api/language" in r.url and r.request.method == "PUT"):
         page.select_option("#language", "es")
-    assert page.locator("#error").inner_text() == ES["error_language_not_stored"]
+    expect(page.locator("#error")).to_have_text(ES["error_language_not_stored"])  # once the page has handled it
     assert page.locator("h1").inner_text() == ES["title"]  # the reading of "keeps the language on screen" in use
 
 
