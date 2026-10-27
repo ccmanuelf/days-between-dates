@@ -24,7 +24,8 @@ the known answer every time, not once.
 - Each criterion is verified through the real wiring: page → API → SQLite → back, on the running server.
 - No orphans: every UI control reaches a backend path that executes; every endpoint has a caller; every schema object
   is written and read. An orphan is a defect, not partial progress.
-- The known-answer checks run on every push, against reference values that carry a source.
+- The known-answer checks run on every pull request and every push to `main`, against reference values that carry a
+  source.
 - Done is shown with evidence (test output, the orphan list, the live demo), never asserted.
 
 ## Rules
