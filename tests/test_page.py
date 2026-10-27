@@ -7,6 +7,7 @@ import sqlite3
 from pathlib import Path
 
 import pytest
+from playwright.sync_api import expect
 
 ROOT = Path(__file__).resolve().parent.parent
 STRINGS = json.loads((ROOT / "app/static/strings.json").read_text())
@@ -25,24 +26,34 @@ def count(page, start: str, end: str):
         page.click("#count")
 
 
+def is_list(calendar: str):
+    """The page's request for a calendar's own holidays."""
+    return lambda r: r.request.method == "GET" and f"/api/holidays?calendar={calendar}" in r.url
+
+
 def choose_calendar(page, calendar: str):
-    """Switch calendar; with a result on screen the page recounts, and this waits for it."""
+    """Switch calendar and wait for that calendar's answer: its recount with a result on screen, else its list. An
+    answer for the calendar left behind does not count."""
     if page.locator("#result").is_visible():
-        with page.expect_response(is_count):
+        with page.expect_response(lambda r: is_count(r) and f"calendar={calendar}" in r.url):
             page.select_option("#calendar", calendar)
     else:
-        with page.expect_response(lambda r: "/api/holidays" in r.url):
+        with page.expect_response(is_list(calendar)):
             page.select_option("#calendar", calendar)
 
 
-def add_holiday(page, day: str, recount: bool = True):
+def add_holiday(page, day: str, stored: bool = True):
+    """Add a day of one's own. Stored: wait for the page's recount with a result on screen, else for its reload of
+    the list. Refused: wait for the refusal."""
     page.fill("#new-day", day)
-    if recount and page.locator("#result").is_visible():
-        with page.expect_response(is_count):
-            page.click("#add")
+    if not stored:
+        wait = lambda r: "/api/holidays" in r.url and r.request.method == "POST"
+    elif page.locator("#result").is_visible():
+        wait = is_count
     else:
-        with page.expect_response(lambda r: "/api/holidays" in r.url and r.request.method == "POST"):
-            page.click("#add")
+        wait = is_list(page.locator("#calendar").input_value())
+    with page.expect_response(wait):
+        page.click("#add")
 
 
 def cells(page) -> tuple:
@@ -108,9 +119,11 @@ def test_s6_a_holiday_stays_in_its_calendar(server, open_page):
     page = open_page(server.url)
     choose_calendar(page, "us")
     add_holiday(page, "2026-10-28")
+    expect(page.locator("#own-list li")).to_have_count(1)
+    assert own_list(page) == ["2026-10-28"]  # it is in the US list first
     choose_calendar(page, "mx")
+    expect(page.locator("#own-empty")).to_be_visible()
     assert own_list(page) == []
-    assert page.locator("#own-empty").is_visible()
     count(page, "2026-10-26", "2026-10-30")
     assert cells(page)[2:] == ("4", "5")
 
@@ -194,7 +207,7 @@ def test_e1_an_invalid_date_is_refused_naming_the_field_and_nothing_is_stored(se
     assert page.locator("#error").inner_text() == EN["error_invalid_date"].replace("{field}", EN["field_start"])
     count(page, "2026-10-26", "10000-01-01")
     assert page.locator("#error").inner_text() == EN["error_invalid_date"].replace("{field}", EN["field_end"])
-    add_holiday(page, "2026-02-30")
+    add_holiday(page, "2026-02-30", stored=False)
     assert page.locator("#error").inner_text() == EN["error_invalid_date"].replace("{field}", EN["field_day"])
     with sqlite3.connect(server.db) as conn:  # the database itself, read after the refusals
         assert conn.execute("SELECT COUNT(*) FROM own_holidays").fetchone() == (0,)
@@ -203,7 +216,7 @@ def test_e1_an_invalid_date_is_refused_naming_the_field_and_nothing_is_stored(se
 def test_e2_a_duplicate_is_refused_and_the_list_is_unchanged(server, open_page):
     page = open_page(server.url)
     add_holiday(page, "2026-10-28")
-    add_holiday(page, "2026-10-28")
+    add_holiday(page, "2026-10-28", stored=False)
     assert page.locator("#error").inner_text() == EN["error_duplicate"].replace("{field}", EN["field_day"])
     assert own_list(page) == ["2026-10-28"]
 
@@ -226,7 +239,7 @@ def test_e3_an_unwritable_database_refuses_the_holiday_and_still_counts(server, 
     lock = sqlite3.connect(server.db, isolation_level=None)
     lock.execute("BEGIN IMMEDIATE")  # another writer holds the database
     try:
-        add_holiday(page, "2026-10-28")
+        add_holiday(page, "2026-10-28", stored=False)
         assert page.locator("#error").inner_text() == EN["error_storage"]
         count(page, "2026-10-26", "2026-10-30")
         assert cells(page) == ("4", "5", "4", "5")
