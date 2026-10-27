@@ -31,15 +31,14 @@ CHECKED = "2026-10-26"
 SOURCES = (
     Source(
         "USC",
-        "5 U.S.C. § 6103, United States Code, 2024 Edition, GovInfo (U.S. Government Publishing Office)",
+        "United States Code, 2024 Edition",
         "https://www.govinfo.gov/content/pkg/USCODE-2024-title5/html/"
         "USCODE-2024-title5-partIII-subpartE-chap61-subchapI-sec6103.htm",
         "2026-10-26",
     ),
     Source(
         "EO",
-        "Executive Order 11582, Observance of Holidays by Government Agencies, 11 February 1971, Federal Register "
-        "vol. 36, no. 31, p. 2957",
+        "Observance of Holidays by Government Agencies",
         "https://www.govinfo.gov/content/pkg/FR-1971-02-13/pdf/FR-1971-02-13.pdf",
         "2026-10-26",
     ),

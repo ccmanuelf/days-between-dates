@@ -9,6 +9,8 @@ from pathlib import Path
 import pytest
 from playwright.sync_api import expect
 
+from app.holidays import CALENDARS
+
 ROOT = Path(__file__).resolve().parent.parent
 STRINGS = json.loads((ROOT / "app/static/strings.json").read_text())
 EN, ES = STRINGS["en"], STRINGS["es"]
@@ -383,6 +385,70 @@ def test_ac11_each_calendar_shows_its_sources_and_the_date_checked(server, open_
         assert all(href.startswith("https://") for href in block.locator("a").evaluate_all("a => a.map(x => x.href)"))
 
 
+# Each source as the page shows it (Q21): the official title verbatim, in its own language, as the link; around it the
+# app's own words, in the page's language; names, designations and citations as published.
+SOURCE_LINES = {
+    "en": {
+        "mx": [
+            "Ley Federal del Trabajo, current text, last amended DOF 14-05-2026, art. 74 (retrieved 2026-10-26)",
+            "Constitución Política de los Estados Unidos Mexicanos, last amended DOF 07-10-2026, art. 83 and the "
+            "decree of DOF 10-02-2014, fifteenth transitional article (retrieved 2026-10-26)",
+            "Ley General de Instituciones y Procedimientos Electorales, last amended DOF 02-06-2026, arts. 22.1, "
+            "494.2 (retrieved 2026-10-26)",
+        ],
+        "us": [
+            "5 U.S.C. § 6103, United States Code, 2024 Edition, GovInfo (U.S. Government Publishing Office) "
+            "(retrieved 2026-10-26)",
+            "Executive Order 11582, Observance of Holidays by Government Agencies, 11 February 1971, Federal Register "
+            "vol. 36, no. 31, p. 2957 (retrieved 2026-10-26)",
+        ],
+    },
+    "es": {
+        "mx": [
+            "Ley Federal del Trabajo, texto vigente, última reforma DOF 14-05-2026, art. 74 "
+            "(consultado el 2026-10-26)",
+            "Constitución Política de los Estados Unidos Mexicanos, última reforma DOF 07-10-2026, art. 83 y el "
+            "decreto del DOF 10-02-2014, artículo décimo quinto transitorio (consultado el 2026-10-26)",
+            "Ley General de Instituciones y Procedimientos Electorales, última reforma DOF 02-06-2026, arts. 22.1, "
+            "494.2 (consultado el 2026-10-26)",
+        ],
+        "us": [
+            "5 U.S.C. § 6103, United States Code, 2024 Edition, GovInfo (U.S. Government Publishing Office) "
+            "(consultado el 2026-10-26)",
+            "Executive Order 11582, Observance of Holidays by Government Agencies, 11 de febrero de 1971, Federal "
+            "Register vol. 36, núm. 31, p. 2957 (consultado el 2026-10-26)",
+        ],
+    },
+}
+OFFICIAL_TITLES = {
+    "mx": [
+        ("Ley Federal del Trabajo", "https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf"),
+        ("Constitución Política de los Estados Unidos Mexicanos",
+         "https://www.diputados.gob.mx/LeyesBiblio/pdf/CPEUM.pdf"),
+        ("Ley General de Instituciones y Procedimientos Electorales",
+         "https://www.diputados.gob.mx/LeyesBiblio/pdf/LGIPE.pdf"),
+    ],
+    "us": [
+        ("United States Code, 2024 Edition", "https://www.govinfo.gov/content/pkg/USCODE-2024-title5/html/"
+         "USCODE-2024-title5-partIII-subpartE-chap61-subchapI-sec6103.htm"),
+        ("Observance of Holidays by Government Agencies",
+         "https://www.govinfo.gov/content/pkg/FR-1971-02-13/pdf/FR-1971-02-13.pdf"),
+    ],
+}
+
+
+@pytest.mark.parametrize("locale,language", [("en-US", "en"), ("es-MX", "es")], ids=["en", "es"])
+def test_ac13_the_sources_in_each_language_with_the_official_titles_verbatim(server, open_page, locale, language):
+    page = open_page(server.url, locale)
+    for calendar in ("mx", "us"):
+        items = page.locator(f".calendar-sources[data-calendar={calendar}] li")
+        assert items.all_inner_texts() == SOURCE_LINES[language][calendar]
+        links = items.locator("a")
+        assert list(zip(links.all_inner_texts(), links.evaluate_all("a => a.map(x => x.href)"))) == (
+            OFFICIAL_TITLES[calendar]
+        )
+
+
 @pytest.mark.parametrize("locale,expected", [("en-US", "en"), ("es-MX", "es"), ("fr-FR", "en")])
 def test_q16_the_opening_language_follows_the_browser_when_none_is_stored(server, open_page, locale, expected):
     page = open_page(server.url, locale)
@@ -418,4 +484,7 @@ def test_every_string_exists_in_both_languages():
         "invalid_body", "storage",
     )}
     used |= {f"field_{f}" for f in ("start", "end", "day", "calendar", "language")}
+    sources = {f"source_{s.key.lower()}" for rules in CALENDARS.values() for s in rules.SOURCES}
+    used |= sources
     assert used <= set(EN), used - set(EN)
+    assert all(STRINGS[lang][key].count("{title}") == 1 for lang in ("en", "es") for key in sources)

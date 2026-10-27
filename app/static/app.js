@@ -97,10 +97,12 @@ function renderSources() {
     const items = document.createElement("ul");
     for (const source of calendar.sources) {
       const item = document.createElement("li");
+      // The official title stays as published, in its own language; the words around it are the page's (Q21).
+      const [before, after] = t(`source_${source.key.toLowerCase()}`, { title: "{title}" }).split("{title}");
       const link = document.createElement("a");
       link.href = source.url;
       link.textContent = source.title;
-      item.append(link, ` (${t("retrieved", { date: source.retrieved })})`);
+      item.append(before, link, `${after} (${t("retrieved", { date: source.retrieved })})`);
       items.append(item);
     }
     block.append(heading, checked, items);
