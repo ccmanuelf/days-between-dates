@@ -34,7 +34,8 @@ def test_s5_an_own_holiday_is_stored_and_survives_a_restart(server):
 
 
 def test_s6_a_holiday_stays_in_its_calendar(server):
-    server.call("POST", "/api/holidays", {"calendar": "us", "day": "2026-10-28"})
+    assert server.call("POST", "/api/holidays", {"calendar": "us", "day": "2026-10-28"})[0] == 201
+    assert server.call("GET", "/api/holidays?calendar=us")[1]["holidays"] == ["2026-10-28"]
     assert server.call("GET", "/api/holidays?calendar=mx") == (200, {"calendar": "mx", "holidays": []})
     assert business(server, "calendar=mx&start=2026-10-26&end=2026-10-30") == (4, 5)
 
