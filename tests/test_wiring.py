@@ -15,3 +15,11 @@ def test_page_shows_what_sqlite_holds(server, page):
         conn.execute("UPDATE meta SET value = 'marker-7f3a' WHERE key = 'schema_version'")
     page.reload()
     expect(page.locator("#status")).to_have_text("Storage: ok, schema marker-7f3a")
+
+
+def test_an_unreadable_database_is_reported_on_the_page(tmp_path, start_server, page):
+    # E3: the server still starts, and the page shows the storage error instead of a result.
+    db = tmp_path / "app.db"
+    db.write_bytes(b"this is not a database" * 100)
+    page.goto(start_server(db))
+    expect(page.locator("#status")).to_have_text("Storage error: HTTP 503")

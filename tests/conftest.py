@@ -5,6 +5,7 @@ import socket
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -21,30 +22,41 @@ def free_port() -> int:
 
 
 @pytest.fixture
-def server(tmp_path):
-    """Start uvicorn on a free port with its own SQLite file; yield its URL and file."""
-    db = tmp_path / "app.db"
-    port = free_port()
-    env = {**os.environ, "DBD_DB_PATH": str(db)}
-    proc = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", str(port)],
-        cwd=ROOT,
-        env=env,
-    )
-    url = f"http://127.0.0.1:{port}"
-    try:
+def start_server():
+    """Start uvicorn on a free port with the given SQLite file; return its URL. Every server stops at teardown."""
+    procs = []
+
+    def start(db: Path) -> str:
+        port = free_port()
+        env = {**os.environ, "DBD_DB_PATH": str(db)}
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", str(port)],
+            cwd=ROOT,
+            env=env,
+        )
+        procs.append(proc)
+        url = f"http://127.0.0.1:{port}"
         for _ in range(100):
             try:
                 urllib.request.urlopen(f"{url}/api/status", timeout=1)
-                break
+                return url
+            except urllib.error.HTTPError:
+                return url  # the server answered, with an error status
             except OSError:
                 time.sleep(0.1)
-        else:
-            raise RuntimeError("the server did not start")
-        yield {"url": url, "db": db}
-    finally:
+        raise RuntimeError("the server did not start")
+
+    yield start
+    for proc in procs:
         proc.terminate()
         proc.wait(timeout=10)
+
+
+@pytest.fixture
+def server(tmp_path, start_server):
+    """A running server with its own SQLite file; yield its URL and file."""
+    db = tmp_path / "app.db"
+    yield {"url": start_server(db), "db": db}
 
 
 @pytest.fixture
