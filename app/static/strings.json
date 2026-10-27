@@ -63,7 +63,7 @@
     "notice_swapped": "La fecha de fin era anterior a la de inicio: se intercambiaron las fechas.",
     "notice_past_years": "El rango incluye años pasados: los días festivos se calculan con las reglas de hoy, y en años pasados pueden diferir.",
     "note_local_elections": "Los días de elección local no están incluidos: agregue el día de elección de un estado a su propia lista.",
-    "note_business_days": "Aquí, «días hábiles» son los días de lunes a viernes, menos los festivos del calendario activo y los propios. El art. 715 de la Ley Federal del Trabajo da al término otro significado, para el procedimiento laboral.",
+    "note_business_days": "Aquí, «días hábiles» son los días de lunes a viernes, menos los días de descanso obligatorio o festivos del calendario activo y los propios. El art. 715 de la Ley Federal del Trabajo da al término otro significado, para el procedimiento laboral.",
     "notice_live_demo": "Esta es una demostración en vivo: lo que guarde aquí, sus días festivos propios y el idioma elegido, se borra cada vez que la demostración se reinicia o se vuelve a desplegar, también después de estar inactiva.",
     "own_title": "Sus días festivos propios: {name}",
     "own_empty": "Ninguno todavía.",
