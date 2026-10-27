@@ -1,0 +1,10 @@
+# The SQLite file is created at run time and never committed.
+data/
+*.db
+*.db-journal
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
