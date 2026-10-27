@@ -319,6 +319,38 @@ def test_e3_an_unwritable_database_refuses_the_holiday_and_still_counts(server, 
         lock.close()
 
 
+def break_storage(db: Path, failure: str):
+    """Make the database unwritable (another writer holds it) or unreadable (not a database); return the undo."""
+    if failure == "unwritable":
+        lock = sqlite3.connect(db, isolation_level=None)
+        lock.execute("BEGIN IMMEDIATE")
+        return lambda: (lock.execute("ROLLBACK"), lock.close())
+    db.write_bytes(b"this is not a database" * 100)
+    return lambda: None
+
+
+@pytest.mark.parametrize("failure", ["unwritable", "unreadable"])
+@pytest.mark.parametrize("edit", ["add", "remove"])
+def test_e3_a_storage_failure_on_an_edit_takes_the_count_off_the_screen(server, open_page, edit, failure):
+    page = open_page(server.url)
+    choose_calendar(page, "us")
+    count(page, "2026-10-26", "2026-10-30")
+    if edit == "remove":
+        add_holiday(page, "2026-10-28")
+    assert page.locator("#result").is_visible()
+    undo = break_storage(server.db, failure)
+    try:
+        if edit == "add":
+            add_holiday(page, "2026-10-29", stored=False)
+        else:
+            with page.expect_response(lambda r: r.request.method == "DELETE"):
+                page.click("#own-list li[data-day='2026-10-28'] button.remove")
+        expect(page.locator("#error")).to_have_text(EN["error_storage"])
+        expect(page.locator("#result")).to_be_hidden()
+    finally:
+        undo()
+
+
 @pytest.mark.parametrize("calendar,business", [("mx", ("254", "254")), ("us", ("250", "250"))])
 def test_k7_one_business_day_count_per_calendar_on_the_page(server, open_page, calendar, business):
     page = open_page(server.url)
