@@ -96,7 +96,7 @@ def page() -> FileResponse:
 
 @app.get("/api/status")
 def status() -> dict:
-    """Read from SQLite on every call, so the page shows what storage holds."""
+    """Read from SQLite on every call: the page checks it on load, and shows a storage failure before any count."""
     return {"storage": "ok", "schema_version": storage.schema_version()}
 
 

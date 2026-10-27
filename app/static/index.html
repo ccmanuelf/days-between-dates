@@ -4,10 +4,69 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Days between dates</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <h1>Days between dates</h1>
-  <p id="status">Checking storage…</p>
+  <header>
+    <h1 data-i18n="title"></h1>
+    <label for="language" data-i18n="language_label"></label>
+    <select id="language">
+      <option value="en">English</option>
+      <option value="es">Español</option>
+    </select>
+  </header>
+
+  <p id="demo-notice" class="notice" data-i18n="notice_live_demo" hidden></p>
+
+  <form id="count-form">
+    <label for="start" data-i18n="start_label"></label>
+    <input id="start" autocomplete="off" data-i18n-placeholder="date_hint">
+    <label for="end" data-i18n="end_label"></label>
+    <input id="end" autocomplete="off" data-i18n-placeholder="date_hint">
+    <label for="calendar" data-i18n="calendar_label"></label>
+    <select id="calendar">
+      <option value="mx" data-i18n="calendar_mx"></option>
+      <option value="us" data-i18n="calendar_us"></option>
+    </select>
+    <button id="count" type="submit" data-i18n="count_button"></button>
+  </form>
+
+  <p id="error" class="error" role="alert" hidden></p>
+
+  <section id="result" hidden>
+    <p id="active-calendar"></p>
+    <p id="range"></p>
+    <table>
+      <thead>
+        <tr><th></th><th data-i18n="col_start_not_counted"></th><th data-i18n="col_both_counted"></th></tr>
+      </thead>
+      <tbody>
+        <tr><th data-i18n="row_total"></th><td id="total-snc"></td><td id="total-bc"></td></tr>
+        <tr><th data-i18n="row_business"></th><td id="business-snc"></td><td id="business-bc"></td></tr>
+      </tbody>
+    </table>
+    <p id="notice-swapped" class="notice" data-i18n="notice_swapped" hidden></p>
+    <p id="notice-past-years" class="notice" data-i18n="notice_past_years" hidden></p>
+    <p id="note-local-elections" class="note" data-i18n="note_local_elections" hidden></p>
+    <p id="note-business-days" class="note" data-i18n="note_business_days" hidden></p>
+  </section>
+
+  <section id="own">
+    <h2 id="own-title"></h2>
+    <ul id="own-list"></ul>
+    <p id="own-empty" data-i18n="own_empty" hidden></p>
+    <form id="add-form">
+      <label for="new-day" data-i18n="add_label"></label>
+      <input id="new-day" autocomplete="off" data-i18n-placeholder="date_hint">
+      <button id="add" type="submit" data-i18n="add_button"></button>
+    </form>
+  </section>
+
+  <section id="sources">
+    <h2 data-i18n="sources_title"></h2>
+    <div id="sources-list"></div>
+  </section>
+
   <script type="module" src="/static/app.js"></script>
 </body>
 </html>

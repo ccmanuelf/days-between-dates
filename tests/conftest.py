@@ -95,9 +95,28 @@ def server(tmp_path, start_server) -> Server:
 
 
 @pytest.fixture
-def page():
-    """A Chromium page; CHROMIUM_PATH points to a browser already installed, if set."""
+def browser():
+    """Chromium; CHROMIUM_PATH points to a browser already installed, if set."""
     with sync_playwright() as p:
         browser = p.chromium.launch(executable_path=os.environ.get("CHROMIUM_PATH") or None)
-        yield browser.new_page()
+        yield browser
         browser.close()
+
+
+@pytest.fixture
+def open_page(browser):
+    """Open the app's page at a URL, in a browser set to a language (navigator.language), once it is ready."""
+
+    def open_(url: str, locale: str = "en-US"):
+        page = browser.new_context(locale=locale).new_page()
+        page.goto(url)
+        page.wait_for_selector("body[data-ready=true]")
+        return page
+
+    return open_
+
+
+@pytest.fixture
+def page(browser):
+    """A Chromium page in a browser set to English."""
+    return browser.new_context(locale="en-US").new_page()
