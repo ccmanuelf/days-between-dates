@@ -50,6 +50,12 @@ function showError(text) {
   $("error").hidden = false;
 }
 
+// A storage failure takes the count off the screen too: the message says no count is shown (SPEC, AC9).
+function showFailure(answer) {
+  if (answer.body?.error?.code === "storage") hideResult();
+  showError(errorText(answer));
+}
+
 function clearError() {
   $("error").hidden = true;
   $("error").textContent = "";
@@ -158,8 +164,7 @@ async function loadHolidays() {
   const answer = await api("GET", `/api/holidays?calendar=${calendar}`);
   if (request !== listRequest) return;
   if (answer.status !== 200) {
-    $("own-empty").hidden = true;
-    showError(errorText(answer));
+    showFailure(answer);
     return;
   }
   for (const day of answer.body.holidays) {
@@ -191,7 +196,7 @@ async function addHoliday() {
     $("new-day").value = "";
     await afterListChange();
   } else {
-    showError(errorText(answer));
+    showFailure(answer);
   }
 }
 
@@ -201,7 +206,7 @@ async function removeHoliday(calendar, day) {
     clearError();
     await afterListChange();
   } else {
-    showError(errorText(answer));
+    showFailure(answer);
   }
 }
 
