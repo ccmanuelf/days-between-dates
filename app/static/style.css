@@ -1,0 +1,10 @@
+body { font-family: system-ui, sans-serif; max-width: 48rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+header { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+header h1 { flex: 1 1 100%; margin: 0 0 0.5rem; }
+form { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 1rem 0; }
+table { border-collapse: collapse; margin: 0.5rem 0; }
+th, td { border: 1px solid #999; padding: 0.25rem 0.75rem; text-align: left; }
+td { text-align: right; font-variant-numeric: tabular-nums; }
+.error { color: #a00; font-weight: 600; }
+.notice { background: #fff4d6; padding: 0.5rem; }
+.note { color: #444; font-size: 0.95em; }
