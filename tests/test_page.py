@@ -351,6 +351,21 @@ def test_e3_a_storage_failure_on_an_edit_takes_the_count_off_the_screen(server, 
         undo()
 
 
+def test_e3_an_unwritable_database_refuses_the_language_and_the_page_keeps_it_on_screen(server, open_page):
+    page = open_page(server.url)
+    undo = break_storage(server.db, "unwritable")
+    try:
+        with page.expect_response(lambda r: "/api/language" in r.url and r.request.method == "PUT"):
+            page.select_option("#language", "es")
+        expect(page.locator("#error")).to_have_text(ES["error_language_not_stored"])
+        assert page.locator("html").get_attribute("lang") == "es"
+        assert page.locator("h1").inner_text() == ES["title"]
+    finally:
+        undo()
+    with sqlite3.connect(server.db) as conn:  # the database itself: nothing was stored
+        assert conn.execute("SELECT COUNT(*) FROM settings").fetchone() == (0,)
+
+
 @pytest.mark.parametrize("calendar,business", [("mx", ("254", "254")), ("us", ("250", "250"))])
 def test_k7_one_business_day_count_per_calendar_on_the_page(server, open_page, calendar, business):
     page = open_page(server.url)
