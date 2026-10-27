@@ -56,6 +56,46 @@ def add_holiday(page, day: str, stored: bool = True):
         page.click("#add")
 
 
+# Holds the answer to the next GET whose URL holds window.__hold until the test calls window.__release(), as a slow
+# network would. window.__settled counts the answers the page has finished handling: reading an answer schedules the
+# count on a timer, and the page's own handling of that answer runs before any timer does.
+HOLD_ANSWER = """
+(() => {
+  const realFetch = window.fetch.bind(window);
+  window.__hold = null;
+  window.__release = null;
+  window.__settled = 0;
+  const settle = () => setTimeout(() => { window.__settled += 1; }, 0);
+  window.fetch = async (input, init = {}) => {
+    const fragment = window.__hold;
+    const held = fragment !== null && (init.method || "GET") === "GET" && String(input).includes(fragment);
+    if (held) window.__hold = null;
+    const response = await realFetch(input, init);
+    if (held) await new Promise((resolve) => { window.__release = resolve; });
+    const text = await response.text();
+    return {
+      status: response.status,
+      text: async () => { settle(); return text; },
+      json: async () => { settle(); return JSON.parse(text); },
+    };
+  };
+})();
+"""
+
+
+def open_holding(browser, url: str):
+    """The page, with HOLD_ANSWER in place before its own script runs."""
+    page = browser.new_context(locale="en-US").new_page()
+    page.add_init_script(HOLD_ANSWER)
+    page.goto(url)
+    page.wait_for_selector("body[data-ready=true]")
+    return page
+
+
+def settled(page) -> int:
+    return page.evaluate("window.__settled")
+
+
 def cells(page) -> tuple:
     return tuple(page.locator(cell).inner_text() for cell in CELLS)
 
@@ -126,6 +166,37 @@ def test_s6_a_holiday_stays_in_its_calendar(server, open_page):
     assert own_list(page) == []
     count(page, "2026-10-26", "2026-10-30")
     assert cells(page)[2:] == ("4", "5")
+
+
+def test_f1_a_late_list_does_not_replace_the_list_of_the_calendar_chosen_after_it(server, browser):
+    assert server.call("POST", "/api/holidays", {"calendar": "us", "day": "2026-10-28"})[0] == 201
+    page = open_holding(browser, server.url)
+    page.evaluate("window.__hold = 'holidays?calendar=us'")
+    page.select_option("#calendar", "us")
+    page.wait_for_function("window.__release !== null")  # the US list has arrived and is held
+    before = settled(page)
+    page.select_option("#calendar", "mx")
+    page.wait_for_function(f"window.__settled >= {before + 1}")  # Mexico's list, handled
+    page.evaluate("window.__release()")
+    page.wait_for_function(f"window.__settled >= {before + 2}")  # the late US list, handled
+    assert page.locator("#own-title").inner_text() == EN["own_title"].replace("{name}", "Mexico")
+    assert own_list(page) == []
+    assert page.locator("#own-empty").is_visible()
+
+
+def test_f1_a_late_count_does_not_replace_the_count_of_the_calendar_chosen_after_it(server, browser):
+    page = open_holding(browser, server.url)
+    count(page, "2026-11-09", "2026-11-13")  # Wednesday 11 November: Veterans Day in the US calendar only
+    page.evaluate("window.__hold = 'count?calendar=us'")
+    page.select_option("#calendar", "us")
+    page.wait_for_function("window.__release !== null")  # the US recount has arrived and is held
+    before = settled(page)
+    page.select_option("#calendar", "mx")
+    page.wait_for_function(f"window.__settled >= {before + 2}")  # Mexico's list and recount, handled
+    page.evaluate("window.__release()")
+    page.wait_for_function(f"window.__settled >= {before + 3}")  # the late US recount, handled
+    assert page.locator("#active-calendar").inner_text() == EN["active_calendar"].replace("{name}", "Mexico")
+    assert cells(page) == ("4", "5", "4", "5")
 
 
 def test_s7_a_removed_holiday_is_gone_and_the_counts_return(server, open_page):
