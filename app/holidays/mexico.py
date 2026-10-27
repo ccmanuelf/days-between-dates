@@ -21,20 +21,19 @@ CHECKED = "2026-10-26"
 SOURCES = (
     Source(
         "LFT",
-        "Ley Federal del Trabajo, texto vigente, última reforma DOF 14-05-2026, art. 74",
+        "Ley Federal del Trabajo",
         "https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf",
         "2026-10-26",
     ),
     Source(
         "CPEUM",
-        "Constitución Política de los Estados Unidos Mexicanos, última reforma DOF 07-10-2026, art. 83 and the "
-        "decree of DOF 10-02-2014, fifteenth transitional article",
+        "Constitución Política de los Estados Unidos Mexicanos",
         "https://www.diputados.gob.mx/LeyesBiblio/pdf/CPEUM.pdf",
         "2026-10-26",
     ),
     Source(
         "LGIPE",
-        "Ley General de Instituciones y Procedimientos Electorales, última reforma DOF 02-06-2026, arts. 22.1, 494.2",
+        "Ley General de Instituciones y Procedimientos Electorales",
         "https://www.diputados.gob.mx/LeyesBiblio/pdf/LGIPE.pdf",
         "2026-10-26",
     ),
