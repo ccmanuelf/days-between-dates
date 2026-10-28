@@ -57,20 +57,21 @@ def storage_failed(_: Request, __: storage.StorageError) -> JSONResponse:
     )
 
 
-def parse_date(field: str, value: str | None) -> date:
-    """A date written YYYY-MM-DD, years 1 to 9999: the range Python's date type holds."""
-    if not value:
+def parse_date(field: str, value: object) -> date:
+    """A date written YYYY-MM-DD, years 1 to 9999: the range Python's date type holds. A JSON value that is not text,
+    such as a number, is refused like any other invalid date."""
+    if value is None or value == "":
         raise Refused(422, "required", field, f"{field} is required.")
     try:
-        if not ISO_DATE.fullmatch(value):
+        if not isinstance(value, str) or not ISO_DATE.fullmatch(value):
             raise ValueError(value)
         return date.fromisoformat(value)
     except ValueError:
         raise Refused(422, "invalid_date", field, f"{field} is not a valid date (YYYY-MM-DD, years 1 to 9999).")
 
 
-def parse_calendar(value: str | None) -> str:
-    if value not in CALENDARS:
+def parse_calendar(value: object) -> str:
+    if not isinstance(value, str) or value not in CALENDARS:
         raise Refused(422, "unknown_calendar", "calendar", f"calendar must be one of: {', '.join(CALENDARS)}.")
     return value
 
