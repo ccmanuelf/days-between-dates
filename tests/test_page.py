@@ -340,6 +340,34 @@ def test_e3_an_unwritable_database_refuses_the_language_and_the_page_keeps_it_on
         assert conn.execute("SELECT COUNT(*) FROM settings").fetchone() == (0,)
 
 
+def test_n7_two_quick_language_choices_are_stored_in_the_order_made(server, open_page):
+    page = open_page(server.url)
+    page.evaluate("window.__holdRequest = 'PUT /api/language'")
+    page.select_option("#language", "es")
+    page.wait_for_function("window.__releaseRequest !== null")  # the Spanish choice is held before it is sent
+    page.select_option("#language", "en")
+    page.wait_for_function("window.__settled === window.__started - 1")  # all handled but the held choice
+    page.evaluate("window.__releaseRequest()")
+    page.wait_for_function("window.__settled === window.__started")
+    expect(page.locator("html")).to_have_attribute("lang", "en")
+    assert server.call("GET", "/api/language") == (200, {"language": "en"})  # the last choice made is the one kept
+
+
+def test_n7_the_message_comes_from_the_latest_language_choice(server, open_page):
+    page = open_page(server.url)
+    undo = break_storage(server.db, "unwritable")
+    page.evaluate("window.__hold = 'PUT /api/language'")
+    page.select_option("#language", "es")
+    page.wait_for_function("window.__release !== null")  # the Spanish choice was refused; its answer is held
+    undo()
+    page.select_option("#language", "en")
+    page.wait_for_function("window.__settled === window.__started - 1")  # all handled but the held answer
+    page.evaluate("window.__release()")
+    page.wait_for_function("window.__settled === window.__started")
+    expect(page.locator("#error")).to_be_hidden()  # the English choice was stored, and the page says nothing else
+    assert server.call("GET", "/api/language") == (200, {"language": "en"})
+
+
 @pytest.mark.parametrize("calendar,business", [("mx", ("254", "254")), ("us", ("250", "250"))])
 def test_k7_one_business_day_count_per_calendar_on_the_page(server, open_page, calendar, business):
     page = open_page(server.url)
