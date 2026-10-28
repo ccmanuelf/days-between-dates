@@ -368,6 +368,38 @@ def test_n7_the_message_comes_from_the_latest_language_choice(server, open_page)
     assert server.call("GET", "/api/language") == (200, {"language": "en"})
 
 
+def test_n7_a_choice_overtaken_before_its_turn_is_not_sent(server, open_page):
+    page = open_page(server.url)
+    sent = []
+    page.on("request", lambda r: sent.append(json.loads(r.post_data)["language"]) if r.method == "PUT" else None)
+    page.evaluate("window.__holdRequest = 'PUT /api/language'")
+    page.select_option("#language", "es")
+    page.wait_for_function("window.__releaseRequest !== null")  # the first Spanish choice is held before it is sent
+    page.select_option("#language", "en")
+    page.select_option("#language", "es")
+    page.evaluate("window.__releaseRequest()")
+    page.wait_for_function("window.__settled === window.__started")
+    assert sent == ["es", "es"]  # English, overtaken before its turn, was never sent
+    assert server.call("GET", "/api/language") == (200, {"language": "es"})
+
+
+def test_n7_an_answer_overtaken_by_a_later_choice_sets_no_message(server, open_page):
+    page = open_page(server.url)
+    undo = break_storage(server.db, "unwritable")
+    page.evaluate("window.__hold = 'PUT /api/language'")
+    page.select_option("#language", "es")
+    page.wait_for_function("window.__release !== null")  # the Spanish choice was refused; its answer is held
+    undo()
+    page.select_option("#language", "en")
+    page.evaluate("window.__holdRequest = 'PUT /api/language'")
+    page.evaluate("window.__release()")
+    page.wait_for_function("window.__releaseRequest !== null")  # Spanish's answer handled; English's request held
+    expect(page.locator("#error")).to_be_hidden()  # the refusal is not shown: a later choice was made
+    page.evaluate("window.__releaseRequest()")
+    page.wait_for_function("window.__settled === window.__started")
+    expect(page.locator("#error")).to_be_hidden()
+
+
 @pytest.mark.parametrize("calendar,business", [("mx", ("254", "254")), ("us", ("250", "250"))])
 def test_k7_one_business_day_count_per_calendar_on_the_page(server, open_page, calendar, business):
     page = open_page(server.url)
