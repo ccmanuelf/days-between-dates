@@ -96,6 +96,19 @@ def test_e1_an_invalid_holiday_is_refused_and_nothing_is_stored(server, day):
         assert conn.execute("SELECT COUNT(*) FROM own_holidays").fetchone() == (0,)
 
 
+@pytest.mark.parametrize("body,field,code", [
+    ({"calendar": "us", "day": 20261028}, "day", "invalid_date"),
+    ({"calendar": "us", "day": ["2026-10-28"]}, "day", "invalid_date"),
+    ({"calendar": ["us"], "day": "2026-10-28"}, "calendar", "unknown_calendar"),
+    ({"calendar": {"us": True}, "day": "2026-10-28"}, "calendar", "unknown_calendar"),
+], ids=["day-number", "day-list", "calendar-list", "calendar-object"])
+def test_e1_a_value_that_is_not_text_is_refused_naming_the_field(server, body, field, code):
+    status, answer = server.call("POST", "/api/holidays", body)
+    assert status == 422 and (answer["error"]["field"], answer["error"]["code"]) == (field, code)
+    with sqlite3.connect(server.db) as conn:  # read the database itself after the refusal
+        assert conn.execute("SELECT COUNT(*) FROM own_holidays").fetchone() == (0,)
+
+
 def test_e2_a_duplicate_is_refused_and_the_list_is_unchanged(server):
     server.call("POST", "/api/holidays", {"calendar": "us", "day": "2026-10-28"})
     status, body = server.call("POST", "/api/holidays", {"calendar": "us", "day": "2026-10-28"})
