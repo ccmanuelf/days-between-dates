@@ -10,6 +10,10 @@ let resultShown = false;
 // Each count and each list request is numbered; an answer that is not the latest is out of date and not shown (F1).
 let countRequest = 0;
 let listRequest = 0;
+// Language choices are stored one after another, in the order made, so the last choice made is the one kept; a
+// choice overtaken before its turn is not sent, and only the latest choice's answer is shown.
+let languageRequest = 0;
+let languageStored = Promise.resolve();
 
 function t(key, values = {}) {
   const text = strings[language]?.[key];
@@ -212,12 +216,17 @@ async function removeHoliday(calendar, day) {
   }
 }
 
-async function switchLanguage(chosen) {
+function switchLanguage(chosen) {
+  const request = ++languageRequest;
   language = chosen;
   applyLanguage();
-  const answer = await api("PUT", "/api/language", { language: chosen });
-  if (answer.status === 200) clearError();
-  else showError(t("error_language_not_stored"));
+  languageStored = languageStored.then(async () => {
+    if (request !== languageRequest) return;
+    const answer = await api("PUT", "/api/language", { language: chosen });
+    if (request !== languageRequest) return;
+    if (answer.status === 200) clearError();
+    else showError(t("error_language_not_stored"));
+  });
 }
 
 async function start() {

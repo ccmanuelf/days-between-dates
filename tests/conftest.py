@@ -107,8 +107,9 @@ def browser():
 # (window.__started) and again once the page has handled its answer (window.__settled): reading the answer schedules
 # the second count on a timer, and the page handles an answer, and starts any request that follows from it, before
 # any timer runs, since the page itself sets no timers (tests/test_page.py checks that). So when the two counts are
-# equal, the page has handled every answer it asked for. window.__hold names a part of a GET's URL: the next such
-# answer is held until the test calls window.__release(), as a slow network would.
+# equal, the page has handled every answer it asked for. Holds match a part of "METHOD /address": window.__hold holds
+# the next such answer until the test calls window.__release(), as a slow network would; window.__holdRequest holds
+# the next such request before it is sent, until window.__releaseRequest().
 PAGE_PROBE = """
 (() => {
   const realFetch = window.fetch.bind(window);
@@ -116,11 +117,17 @@ PAGE_PROBE = """
   window.__settled = 0;
   window.__hold = null;
   window.__release = null;
+  window.__holdRequest = null;
+  window.__releaseRequest = null;
   const settle = () => setTimeout(() => { window.__settled += 1; }, 0);
   window.fetch = async (input, init = {}) => {
     window.__started += 1;
-    const fragment = window.__hold;
-    const held = fragment !== null && (init.method || "GET") === "GET" && String(input).includes(fragment);
+    const call = `${init.method || "GET"} ${String(input)}`;
+    if (window.__holdRequest !== null && call.includes(window.__holdRequest)) {
+      window.__holdRequest = null;
+      await new Promise((resolve) => { window.__releaseRequest = resolve; });
+    }
+    const held = window.__hold !== null && call.includes(window.__hold);
     if (held) window.__hold = null;
     let response;
     try {
