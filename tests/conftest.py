@@ -103,20 +103,54 @@ def browser():
         browser.close()
 
 
+# Installed in every page before the page's own script runs. Each request the page makes is counted when it starts
+# (window.__started) and again once the page has handled its answer (window.__settled): reading the answer schedules
+# the second count on a timer, and the page handles an answer, and starts any request that follows from it, before
+# any timer runs, since the page itself sets no timers (tests/test_page.py checks that). So when the two counts are
+# equal, the page has handled every answer it asked for. window.__hold names a part of a GET's URL: the next such
+# answer is held until the test calls window.__release(), as a slow network would.
+PAGE_PROBE = """
+(() => {
+  const realFetch = window.fetch.bind(window);
+  window.__started = 0;
+  window.__settled = 0;
+  window.__hold = null;
+  window.__release = null;
+  const settle = () => setTimeout(() => { window.__settled += 1; }, 0);
+  window.fetch = async (input, init = {}) => {
+    window.__started += 1;
+    const fragment = window.__hold;
+    const held = fragment !== null && (init.method || "GET") === "GET" && String(input).includes(fragment);
+    if (held) window.__hold = null;
+    let response;
+    try {
+      response = await realFetch(input, init);
+    } catch (error) {
+      settle();
+      throw error;
+    }
+    if (held) await new Promise((resolve) => { window.__release = resolve; });
+    const text = await response.text();
+    return {
+      status: response.status,
+      text: async () => { settle(); return text; },
+      json: async () => { settle(); return JSON.parse(text); },
+    };
+  };
+})();
+"""
+
+
 @pytest.fixture
 def open_page(browser):
-    """Open the app's page at a URL, in a browser set to a language (navigator.language), once it is ready."""
+    """Open the app's page at a URL, in a browser set to a language (navigator.language), with PAGE_PROBE in place,
+    once it is ready."""
 
     def open_(url: str, locale: str = "en-US"):
         page = browser.new_context(locale=locale).new_page()
+        page.add_init_script(PAGE_PROBE)
         page.goto(url)
         page.wait_for_selector("body[data-ready=true]")
         return page
 
     return open_
-
-
-@pytest.fixture
-def page(browser):
-    """A Chromium page in a browser set to English."""
-    return browser.new_context(locale="en-US").new_page()

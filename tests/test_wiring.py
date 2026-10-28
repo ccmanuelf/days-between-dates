@@ -3,6 +3,8 @@
 import json
 from pathlib import Path
 
+from playwright.sync_api import expect
+
 STRINGS = json.loads((Path(__file__).resolve().parent.parent / "app/static/strings.json").read_text())
 
 
@@ -11,10 +13,10 @@ def test_an_unreadable_database_is_reported_on_the_page_at_once(tmp_path, start_
     db = tmp_path / "app.db"
     db.write_bytes(b"this is not a database" * 100)
     page = open_page(start_server(db).url)
-    assert page.locator("#error").inner_text() == STRINGS["en"]["error_storage"]
-    assert page.locator("#result").is_hidden()
+    expect(page.locator("#error")).to_have_text(STRINGS["en"]["error_storage"])
+    expect(page.locator("#result")).to_be_hidden()
 
 
 def test_a_readable_database_shows_no_error(server, open_page):
     page = open_page(server.url)
-    assert page.locator("#error").is_hidden()
+    expect(page.locator("#error")).to_be_hidden()
