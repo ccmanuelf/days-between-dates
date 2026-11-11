@@ -1,5 +1,33 @@
 {
   "attribution": {
     "sessionUrl": false
+  },
+  "permissions": {
+    "ask": [
+      "Bash(npm install:*)",
+      "Bash(npm i:*)",
+      "Bash(npm add:*)",
+      "Bash(pnpm add:*)",
+      "Bash(yarn add:*)",
+      "Bash(pip install:*)",
+      "Bash(pip3 install:*)",
+      "Bash(python3 -m pip install:*)",
+      "Bash(uv add:*)",
+      "Bash(uv pip install:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(rtk pip install:*)",
+      "Bash(rtk uv pip install:*)",
+      "Bash(rtk wget:*)",
+      "Bash(rtk playwright install:*)",
+      "Bash(npm pack:*)",
+      "Bash(uv python install:*)",
+      "Bash(uvx:*)",
+      "Bash(playwright install:*)",
+      "Bash(./node_modules/.bin/playwright install:*)",
+      "Bash(rtk npx --no-install playwright install:*)",
+      "Bash(python -m playwright install:*)",
+      "Bash(python3 -m playwright install:*)"
+    ]
   }
 }

@@ -36,6 +36,7 @@ the known answer every time, not once.
 - Scope changes go back to the SPEC and its approval.
 - A holiday rule carries its primary source and the date it was checked; a value without a source does not ship.
 - A string shown on the page exists in English and in Spanish; a missing one fails a test, never falls back silently.
+- The `rtk` ask rules in `.claude/settings.json` match commands the rtk hook rewrites; without rtk they never match.
 
 ## Stack
 
