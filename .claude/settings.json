@@ -22,7 +22,6 @@
       "Bash(rtk playwright install:*)",
       "Bash(npm pack:*)",
       "Bash(uv python install:*)",
-      "Bash(uvx:*)",
       "Bash(playwright install:*)",
       "Bash(./node_modules/.bin/playwright install:*)",
       "Bash(rtk npx --no-install playwright install:*)",
