@@ -1,0 +1,21 @@
+/*
+  Motion tokens, from the owner's visual standard (motion added 2026-11-13). UI motion stays under 300ms.
+  The two curves are copied from emilkowalski/skills (MIT), skills/animate/SKILL.md at commit 0f2e23b:
+  https://github.com/emilkowalski/skills/blob/0f2e23b32bb1265e84cff8d3e75785fec953fb1b/skills/animate/SKILL.md
+  The durations are chosen within its ranges. DESIGN.md says how they are used.
+*/
+:root {
+  --duration-fast: 150ms;         /* press feedback, hover, color */
+  --duration-base: 200ms;         /* tooltips, small popovers, dropdowns */
+  --duration-slow: 250ms;         /* the slowest UI motion */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);       /* entering and exiting */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);   /* moving or morphing on screen */
+  --motion-scale: 1;              /* movement: write translate and scale distances times this */
+}
+
+/* Reduced motion: movement drops out; fades and color changes keep their durations. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-scale: 0;
+  }
+}
