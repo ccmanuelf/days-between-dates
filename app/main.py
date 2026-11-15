@@ -15,7 +15,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from app import counting, storage
+from app import counting, guide, storage
+from app.guide import as_pair as pair
 from app.holidays import CALENDARS
 
 STATIC = Path(__file__).parent / "static"
@@ -86,10 +87,6 @@ async def json_body(request: Request) -> dict:
     return body
 
 
-def pair(p) -> dict:
-    return {"start_not_counted": p.start_not_counted, "both_counted": p.both_counted}
-
-
 @app.get("/")
 def page() -> FileResponse:
     return FileResponse(STATIC / "index.html")
@@ -139,6 +136,13 @@ def count(calendar: str | None = None, start: str | None = None, end: str | None
         "total": pair(result.days.total),
         "business": pair(result.business),
     }
+
+
+@app.get("/api/guide")
+def guide_examples() -> dict:
+    """The worked examples of Help and "How this is calculated", each a known answer counted now (SPEC, S16, AC18).
+    The page asks for them each time one of those panels opens."""
+    return {"examples": guide.examples()}
 
 
 @app.get("/api/holidays")

@@ -1,11 +1,17 @@
 """The Docker check: the app running from compose.yaml answers through the real wiring, and keeps its data in the
-volume. CI runs it in the `docker` job (.github/workflows/ci.yml); it runs by hand the same way.
+volume. CI runs it in the `docker` job (.github/workflows/ci.yml), with compose's default project on a runner that
+is discarded after the job.
 
-    docker compose up --build -d
+By hand, the steps name their own compose project, `dbd-check`, so they store their test holiday in the volume
+`dbd-check_app-data` and delete that volume at the end, not `days-between-dates_app-data`, where `docker compose up`
+keeps your own holidays. With port 8000 taken, set DBD_PORT (for example DBD_PORT=8765) on each `up` and use that
+port in the address.
+
+    docker compose -p dbd-check up --build -d
     python scripts/docker_check.py serves http://127.0.0.1:8000     # page, assets, a known answer, adds a holiday
-    docker compose down && docker compose up -d
+    docker compose -p dbd-check down && docker compose -p dbd-check up -d
     python scripts/docker_check.py kept http://127.0.0.1:8000       # the holiday came back from the volume
-    docker compose down -v --rmi local
+    docker compose -p dbd-check down -v --rmi local
 
 Its imports (__future__, json, sys, time, urllib) are from Python's standard library, so it needs no package install
 on the machine that runs Docker. It imports under Python 3.9 and 3.12, and CI runs it under 3.13. Exits 1 on the

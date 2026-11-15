@@ -2,9 +2,23 @@ body { font-family: system-ui, sans-serif; max-width: 48rem; margin: 2rem auto; 
 header { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
 header h1 { flex: 1 1 100%; margin: 0 0 0.5rem; }
 form { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 1rem 0; }
+.field { display: inline-flex; gap: 0.5rem; align-items: center; }
+button, input, select { box-sizing: border-box; min-height: 24px; }
+summary { cursor: pointer; min-height: 24px; }
 table { border-collapse: collapse; margin: 0.5rem 0; }
-th, td { border: 1px solid #999; padding: 0.25rem 0.75rem; text-align: left; }
+th, td { border: 1px solid var(--table-border); padding: 0.25rem 0.75rem; text-align: left; }
 td { text-align: right; font-variant-numeric: tabular-nums; }
-.error { color: #a00; font-weight: 600; }
-.notice { background: #fff4d6; padding: 0.5rem; }
-.note { color: #444; font-size: 0.95em; }
+.how { margin: 0.25rem 0; }
+#help dt { font-weight: 600; }
+#help dd { margin: 0 0 0.5rem; }
+.error { color: var(--error); font-weight: 600; }
+.notice { background: var(--notice-bg); padding: 0.5rem; }
+.note { color: var(--note-text); font-size: 0.95em; }
+/* The browser's dark placeholder falls under 4.5:1 on its dark field (AC15); light keeps the browser's own. */
+@media (prefers-color-scheme: dark) {
+  ::placeholder { color: var(--note-text); opacity: 1; }
+}
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}

@@ -77,6 +77,33 @@ holidays and the language choice, is reset whenever the demo restarts or is rede
 been idle (*Stack and deployment*). Run on a local install, no such notice. 【M】 D8 for the notice; 【C】 its wording
 and the local case.
 
+### S13 — Dark mode
+Given the system or browser set to a dark color scheme, when the page opens, then it shows in the dark values of
+its color tokens (`DESIGN.md`), each text keeps a contrast ratio of at least 4.5:1 with its background, and the
+counts and notices are unchanged; with a light scheme, the page looks as before. 【M】 2026-11-14, *"dark mode through
+the existing tokens, following DESIGN.md"*; 【C】 it follows the system setting, with no new control. The 4.5:1: WCAG
+2.2, success criterion 1.4.3 Contrast (Minimum), Level AA, *"a contrast ratio of at least 4.5:1"*
+(https://www.w3.org/TR/WCAG22/#contrast-minimum, W3C Recommendation 12 December 2024, retrieved 2026-11-14).
+
+### S14 — Results announced, controls within reach
+Given a screen reader, when a count completes, then the active calendar, the range, the four counts and any notice
+are announced, in the page's language; each Remove button's name includes its date; every button, field and list is
+at least 24 px tall; and at 375 px wide each label stays on the line of its field. 【M】 2026-11-14, four of the five
+findings of the design audit of 2026-11-14 (the fifth is S13). The 24 px: WCAG 2.2, success criterion 2.5.8 Target
+Size (Minimum), Level AA, *"at least 24 by 24 CSS pixels"* (https://www.w3.org/TR/WCAG22/#target-size-minimum, W3C
+Recommendation 12 December 2024, retrieved 2026-11-14).
+
+### S15 — Help
+Given the page in either language, when the user opens Help, then it shows one short section per feature, in that
+language: a range and its two conventions, business days and the calendars, your own holidays, reversed dates, past
+years, the note on local election days, the language switch, the live demo's notice, and the sources. 【M】 2026-11-14.
+
+### S16 — How a result is calculated
+Given a result on screen, when the user opens "How this is calculated" beside total days or business days, then it
+shows the formula and a worked example: a range from the known-answer checks, counted by the app's own code when the
+user opens it, with the answer the checks expect. 【M】 2026-11-14, *"Every worked example is also a test, so the guide
+can't drift from the code."*
+
 ### E1 — Invalid date
 Given an empty or impossible date (2026-02-30), when the user counts or adds a holiday, then it is refused with a
 message naming the field, nothing is counted and nothing is stored. 【C】
@@ -113,6 +140,10 @@ Will:
   one that cannot be read, open in the browser's language when it is English or Spanish, in English otherwise. 【M】
   Q16.
 - On the live demo, show a notice that its storage resets on restart. 【M】 D8.
+- Follow the system's dark color scheme (S13); announce each result to screen readers and keep every control within
+  reach (S14). 【M】 2026-11-14.
+- Explain each feature in a Help panel, and each result with its formula and a worked example that is a known answer
+  (S15, S16), in English and Spanish, never longer than the rest of the page's text. 【M】 2026-11-14.
 
 Will not:
 - Other countries, state or municipal holidays, bank closing days. 【C】
@@ -149,11 +180,15 @@ Will not:
 | AC7 | The past-years notice shows when the range includes an earlier year, and only then | S9 tests, both cases |
 | AC8 | Invalid input is refused with a message naming the field; nothing is stored | E1 tests, including a database read after the refusal |
 | AC9 | A storage failure shows an error and no business-day count; a language choice that cannot be stored shows an error, and the page keeps the language on screen | E3 tests with an unwritable and with an unreadable database, for the holidays and for the language setting, through the page |
-| AC10 | No orphans: every control (two dates, calendar selector, add, remove, language switch) reaches a route that executes; every route has a caller; the holidays table and the language setting are written and read | The judge's orphan list |
+| AC10 | No orphans: every control (two dates, calendar selector, add, remove, language switch, Help, the two "How this is calculated") reaches a route that executes; every route has a caller; the holidays table and the language setting are written and read | The judge's orphan list |
 | AC11 | The screen names each built-in calendar's source and the date its rules were checked; with Mexico active, the note on local election days shows, and with the US calendar it does not (Q13) | Demo step; a test on the page for each; S11, both cases |
 | AC12 | The known-answer checks run on every pull request and every push to main, through the API | CI log |
 | AC13 | Every label, notice and message exists in English and Spanish; in Spanish, business days read *días hábiles* with the art. 715 note (Q14); switching the language changes the text, not the counts; the choice is stored through page → API → SQLite and survives a restart (Q15); with none stored, or one unreadable, the page opens in the browser's language when it is English or Spanish, in English otherwise (Q16) | A test per notice in each language; S10 through the page, with a restart; the opening language with the browser set to English, to Spanish and to a third language, and with the stored choice unreadable; demo step |
 | AC14 | On the live demo, the page shows the notice that its storage resets on restart; on a local install, it does not (S12) | A page test with the server run as the demo and as a local install, in each language; demo step |
+| AC15 | With a dark color scheme the page uses the dark values of its color tokens, and each text keeps at least 4.5:1 contrast with its background (WCAG 2.2, 1.4.3); with a light scheme the colors are those `DESIGN.md` recorded before (S13) | A page test under each scheme that computes every contrast ratio |
+| AC16 | After a count, a polite live region holds the result and its notices in the page's language; each Remove button's accessible name contains its date; every button, field and list is at least 24 px tall; at 375 px each label and its field share a line (S14) | Page tests for each, in both languages where text is involved |
+| AC17 | Help shows one section per feature in English and Spanish; in each language, the text of Help and of "How this is calculated" together is shorter than the rest of the page's text (characters in `strings.json`) (S15) | A page test per language; a length test |
+| AC18 | Every worked example is a known answer: its numbers come from the app's count through the API, and a test fails if one differs from the K table or names a range the table lacks (S16) | A test over every example the API returns; the page test of S16 |
 
 ## Known-answer checks
 
@@ -321,4 +356,9 @@ approved in the owner's answer: 【M】 *"This answer also approves the SPEC cha
 year limit's source added, a correction the review before publication required: every number carries its source;
 confirmed by the owner, 2026-10-27 (D12). 2026-10-27, D25: AC12 reads "on every pull request and every push to
 main", matching CI's triggers, approved in the owner's answer: 【M】 *"Update AC12, the app's CLAUDE.md and the plan to
-"on every pull request and every push to main", matching D19."*
+"on every pull request and every push to main", matching D19."* 2026-11-14: S13–S16, AC15–AC18, the two
+*Expectations* lines that name them and AC10's new controls, approved in the owner's pick 【M】 *"Approve as drafted
+(Recommended)"*, with *"Follow the system (Recommended)"* for what turns dark mode on (S13) and *"Counted by the API
+(Recommended)"* for where the worked examples' numbers come from (S16, AC18); the options' labels were written by
+Claude. 2026-11-14: the source of S13's and AC15's 4.5:1, WCAG 2.2 success criterion 1.4.3, added after the review
+before publication found it missing, approved in the owner's pick 【M】 *"Add the citation (Recommended)"*.

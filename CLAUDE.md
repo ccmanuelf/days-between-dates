@@ -10,7 +10,7 @@ calendar's holidays: Mexico's mandatory rest days under the federal labour law, 
 public holidays with their observed days. The user keeps holidays of their own, one list per calendar, in SQLite.
 Every convention shows on screen, and every count is checked against a known answer that carries its source. It is
 didactic: for a practitioner who lives in spreadsheets and is learning to build a tested tool instead of a formula.
-`SPEC.md` is the approved specification: its scenarios, acceptance criteria AC1–AC14 and known answers K1–K11 are the
+`SPEC.md` is the approved specification: its scenarios, acceptance criteria AC1–AC18 and known answers K1–K11 are the
 contract. It is not changed without the owner's approval.
 
 ## Definition of done
