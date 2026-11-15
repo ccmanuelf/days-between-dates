@@ -27,7 +27,9 @@ A task is done only when all of these are true:
   action reaches that path, the path runs, and it returns real data.
 - No orphans: every UI control reaches a backend path that executes; every endpoint has a caller, or it is removed;
   every schema object is written and read. An orphan is a defect, not partial progress.
-- No half-built schemas, stubs or placeholder data left behind.
+- No half-built schemas, stubs or placeholder data left behind. Design tokens are the one exception, on the owner's
+  decision of 2026-11-14 (`JUDGMENT.md`): `app/static/tokens.css` may define a token before any rule reads it, and
+  `DESIGN.md` names the tokens no rule reads yet.
 - Tests fail on the broken version and pass on the fixed one; a test that accepts two different answers defends
   neither.
 - The known-answer checks run on every pull request and every push to `main`, against reference values that carry a
@@ -198,8 +200,9 @@ docker compose up --build             # the same app in Docker, http://127.0.0.1
 `CHROMIUM_PATH`, if set, points the browser tests to a Chromium already installed.
 
 CI: `.github/workflows/ci.yml` runs `python -m pytest -v`, the known-answer checks among them, on every pull request
-and every push to `main`; the branch rule on `main` requires its `test` check. Changing the workflow changes CI: ask
-the owner first.
+and every push to `main`; the branch rule on `main` requires its `test` check. Its `docker` job builds and starts the
+app with compose and checks it with `scripts/docker_check.py`, the volume included; it is not a required check.
+Changing the workflow changes CI: ask the owner first.
 
 ## Known traps
 

@@ -14,23 +14,34 @@ Updated 2026-11-14. A snapshot, replaced at each close (close-session); the hist
     close-session and security-audit skills (`.claude/skills/`);
   - `DESIGN.md`: the page's look as built, charts drawn with ECharts, motion through the tokens;
   - `app/static/tokens.css`: the motion tokens, linked from the page; a search of `style.css`, `app.js` and
-    `index.html` for `transition`, `animation` and `keyframes` finds no match, so no motion uses them yet;
+    `index.html` for `transition`, `animation` and `keyframes` finds no match, so no motion uses them yet (allowed by
+    the design-token exception in `CLAUDE.md`, *Definition of done*);
   - `Dockerfile`, `compose.yaml` and `.dockerignore`: the app in one container, its database in the named volume
-    `app-data`, the port set by `DBD_PORT` (default 8000) and bound to 127.0.0.1;
-  - `README.md`: what the app does, who it is for, how to run it in Docker and without, the tests, the licence.
+    `app-data`, the port set by `DBD_PORT` (default 8000) and bound to 127.0.0.1; Docker is packaging, so `SPEC.md`
+    is unchanged;
+  - `scripts/docker_check.py` and a `docker` job in CI, not a required check: the job builds and starts the app with
+    compose, checks the page, its assets, K1 through the API and a stored holiday, recreates the container, checks
+    the holiday came back from the volume, and removes the container, volume and image;
+  - `README.md`: what the app does, who it is for, how to run it in Docker and without, how to clean up, the tests,
+    the licence;
+  - `JUDGMENT.md`: its first two entries, from this pull request's review.
 
 ## Checked on this branch (2026-11-14)
 
-- Docker: the image built from `python:3.13-slim`; the container runs as a user without root rights. Against the
-  running container: K1–K11 through `/api/count` (K8a not replayed, it is a list of days, not a range), K4's swap,
-  the past-years flag both ways, E1 and E2 refusals, own holidays added, listed after a restart, kept out of the other
-  calendar and removed after a restart, the language choice kept after a restart, the demo flag off locally and on
-  with `DBD_LIVE_DEMO=1`, and each calendar's sources: these checks passed, run by a local script that is not in
-  this repository, and the same script failed (exit 1) when one expected value was altered. In a headless browser:
-  the page counted K1 in Mexico, switched to the United States, added a holiday (business days 3 · 4), switched to
-  Spanish (*Días hábiles* and the art. 715 note shown, counts unchanged), showed the live-demo notice in demo mode,
-  had no console errors, and had no horizontal scroll at 375 px.
-  `docker compose down` kept an added holiday; `docker compose down -v` deleted it.
+- The `docker` job's steps, run by hand on this machine: both checks passed. They also failed (exit 1) on two
+  altered copies: one whose `.dockerignore` left `app/static/tokens.css` out of the image (404), and one whose
+  `compose.yaml` had no volume (the stored holiday was gone after the container was recreated).
+- Against the container on an empty volume, a local script that is not in this repository checked K1–K11 through
+  `/api/count` (K8a, a list of days, not replayed), K4's swap, the past-years flag both ways, E1 and E2 refusals,
+  own holidays stored, listed after `docker compose restart`, kept out of the other calendar and removed, the
+  language choice after a restart, the demo flag off, and each calendar's sources; the script failed (exit 1) when
+  one expected value was altered. `docker compose restart` keeps the container's own files, so these restarts do not
+  test the volume; the `docker` job's recreate step does.
+- A container started with `DBD_LIVE_DEMO=1` answered `{"live_demo":true}` and its page showed the live-demo notice;
+  the compose stack answered `{"live_demo":false}`.
+- In headless Chromium against the compose stack: the page counted K1 in Mexico (4 · 5 and 4 · 5), linked
+  `tokens.css` (`--motion-scale` read 1), switched to Spanish (*Días hábiles*, counts unchanged), had no horizontal
+  scroll at 375 px and logged no console errors.
 - The test suite was not run locally on this branch (no local environment); CI runs it on the pull request.
 
 ## Pending
@@ -45,8 +56,19 @@ Updated 2026-11-14. A snapshot, replaced at each close (close-session); the hist
   at 375 px the Calendar label can sit on one line and its list on the next; colors are fixed values, with no dark
   mode.
 - `python -m pip install` is not covered by the ask rules (the template has the `python3` form only).
+- The `docker` job is not a required check; making it one is a branch-protection change, the owner's call.
+- `DESIGN.md` restates values from `style.css` in its frontmatter, as the DESIGN.md format asks, and from
+  `tokens.css` in its *Do's and Don'ts*; no check keeps the copies in step.
+
+## Decisions (2026-11-14, the owner's)
+
+- Design tokens may ship before a rule reads them (`CLAUDE.md`, *Definition of done*; `JUDGMENT.md`).
+- Docker is packaging; `SPEC.md` is unchanged.
+- A `docker` job in CI, not a required check (`JUDGMENT.md`).
 
 ## Last session (2026-11-14)
 
-Done: the template sync, `DESIGN.md` and the motion tokens, Docker, the README, the checks above. Half-done: none on
-this branch. Learned: port 8000 can be taken on the working machine, so the compose file reads `DBD_PORT`.
+Done: the template sync, `DESIGN.md` and the motion tokens, Docker and its CI job, the README, the checks above.
+Half-done: none on this branch. Learned: port 8000 can be taken on the working machine, so the compose file reads
+`DBD_PORT`; a check script that stores data leaves it in the volume, so a second script that expects an empty
+database runs on a fresh volume.

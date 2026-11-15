@@ -42,6 +42,11 @@ not from your network.
 Your own holidays and the language choice live in the Docker volume `app-data`, so they survive `docker compose
 restart` and `docker compose down`. `docker compose down -v` deletes them.
 
+To clean up, run `docker compose down -v --rmi local`. It removes the container, the volume with your data, and the
+app image this folder built. A rebuild after a code change can leave the previous app image behind, untagged, and
+Docker's build cache keeps the base image's layers for the next build. Docker's prune commands (`docker image prune`,
+`docker builder prune`) clear those for every project on your machine at once, so check `docker system df` first.
+
 ## Run it without Docker
 
 Python 3.13 (the version CI uses):
@@ -63,7 +68,8 @@ python -m pytest -v
 
 The suite runs the known-answer checks through the API, drives the page in a real browser (Playwright), and checks
 that every control on the page reaches a route, every route has a caller, and every table is written and read
-(`scripts/orphans.py`). The specification, with its scenarios, acceptance criteria and sources, is `SPEC.md`.
+(`scripts/orphans.py`). CI also builds the Docker image and checks the running container, its volume included
+(`scripts/docker_check.py`). The specification, with its scenarios, acceptance criteria and sources, is `SPEC.md`.
 
 ## Licence
 

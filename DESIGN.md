@@ -41,9 +41,9 @@ What this app takes from it: charts are drawn with ECharts, and motion uses the 
 
 ## Colors
 
-The browser's defaults for text and background. Four colors, each from `style.css`: `error` for the refused-input
-message, `notice-bg` behind notices (dates swapped, past years, the live demo's storage), `note-text` for notes, and
-`table-border` for the result table's lines.
+The browser's defaults for text and background. Four colors, each from `style.css`: `error` for every error message
+(refused input, storage, network, a language choice not stored), `notice-bg` behind notices (dates swapped, past
+years, the live demo's storage), `note-text` for notes, and `table-border` for the result table's lines.
 
 ## Typography
 
@@ -68,9 +68,11 @@ their controls in a row with a 0.5rem gap. Each field has a visible label.
 - Do: draw any chart with ECharts.
 - Do: write motion with the tokens in `app/static/tokens.css`: `--duration-fast` 150ms, `--duration-base` 200ms,
   `--duration-slow` 250ms, `--ease-out`, `--ease-in-out`, and every translate or scale distance multiplied by
-  `--motion-scale`, which is 0 under reduced motion. UI motion stays under 300ms. As of 2026-11-14, `style.css`,
-  `app.js`, `index.html` and `tokens.css` declare no transition or animation (searched for `transition`,
-  `animation` and `keyframes`).
+  `--motion-scale`, which is 0 under reduced motion. UI motion stays under 300ms.
+- Tokens no rule reads yet (the exception in `CLAUDE.md`, *Definition of done*): all six motion tokens. As of
+  2026-11-14, `style.css`, `app.js` and `index.html` read none of them (searched for `var(--` and the six token
+  names), and with `tokens.css` they declare no transition or animation (searched for `transition`, `animation` and
+  `keyframes`).
 - Do: give every string shown on the page an English and a Spanish text in `app/static/strings.json`.
 - Don't: remove a column, a notice or a source to make the page look simpler.
 - Don't: restyle the page to another palette without the owner's word.
