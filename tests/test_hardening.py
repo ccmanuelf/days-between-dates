@@ -64,7 +64,9 @@ def test_a_page_on_another_site_cannot_add_a_holiday(server, browser):
     page = browser.new_context().new_page()
     page.goto(f"http://localhost:{port}/")
     page.wait_for_selector("body[data-ready=true]")
-    sent = page.evaluate(  # resolves once the server has answered; a no-cors answer cannot be read, only its type
+    # Resolves once the server has answered. The Fetch standard hides a no-cors answer's status and body; the page
+    # sees its type, "opaque".
+    sent = page.evaluate(
         """([url, body]) => fetch(url, {method: "POST", mode: "no-cors", body}).then(r => r.type)""",
         [f"http://127.0.0.1:{port}/api/holidays", json.dumps(ADD)],
     )
@@ -97,14 +99,26 @@ def test_a_body_over_4096_bytes_is_refused_with_413_and_stores_nothing(server, c
     assert stored_holidays(server) == []
 
 
-def test_a_body_under_the_limit_is_read(server):
-    near = json.dumps({**ADD, "pad": "x" * 3900}).encode()
-    assert len(near) < 4096
-    status, body = send(server, "POST", "/api/holidays", near, {"Content-Type": "application/json"})
-    assert status == 201, body
+def body_of(size: int) -> bytes:
+    """A JSON object that adds ADD, padded to exactly `size` bytes."""
+    empty = json.dumps({**ADD, "pad": ""}).encode()
+    padded = json.dumps({**ADD, "pad": "x" * (size - len(empty))}).encode()
+    assert len(padded) == size
+    return padded
+
+
+@pytest.mark.parametrize("chunked", [False, True], ids=["with-length", "chunked"])
+@pytest.mark.parametrize("size,expected", [(4096, 201), (4097, 413)])
+def test_the_limit_is_4096_bytes(server, size, expected, chunked):
+    headers = {"Content-Type": "application/json"}
+    status, body = send(server, "POST", "/api/holidays", body_of(size), headers, chunked)
+    assert status == expected, body
+    assert stored_holidays(server) == (["2026-10-28"] if expected == 201 else [])
 
 
 @pytest.mark.parametrize("name", [".env", ".env.local", "app/.env.production"])
-def test_environment_files_are_ignored_by_git(name):
-    result = subprocess.run(["git", "check-ignore", "-q", name], cwd=ROOT)
+def test_environment_files_are_ignored_by_this_repository(name):
+    """Ignored by this repository's .gitignore, not by a machine's global excludes file or .git/info/exclude."""
+    result = subprocess.run(["git", "check-ignore", "-v", name], cwd=ROOT, capture_output=True, text=True)
     assert result.returncode == 0, f"{name} is not ignored"
+    assert result.stdout.startswith(".gitignore:"), result.stdout

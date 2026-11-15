@@ -210,4 +210,8 @@ Changing the workflow changes CI: ask the owner first.
 
 One entry per guardian: what goes wrong, why, the correct pattern, and the guardian's name.
 
-None yet.
+- **A write that reads its own body.** What goes wrong: a route reads its body with `request.json()`, `.body()`,
+  `.form()` or `.stream()` outside `json_body`, a Pydantic model, or FastAPI's `Body`, `Form`, `File` or
+  `UploadFile`. Why: that skips `json_body`'s checks, so a page on another site can again make a browser write with
+  a `text/plain` request, and a large body is read whole. Correct pattern: `body = await json_body(request)`
+  (`app/main.py`). Guardian: `tests/guardians/test_every_write_reads_its_body_through_json_body.py`.

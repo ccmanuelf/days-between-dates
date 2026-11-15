@@ -2,7 +2,8 @@
 
 Errors come back as {"error": {"code": ..., "field": ..., "message": ...}}: the page shows them in the user's language
 from the code, and the field names where the input was refused (SPEC, E1). A storage failure is 503 with a fixed
-message, never a count (SPEC, E3), and never the database's own error text.
+message, never a count (SPEC, E3), and never the database's own error text. A request addressed to an unknown host
+name gets TrustedHostMiddleware's plain-text 400; the page, served from an allowed host, does not receive it.
 """
 
 import json

@@ -68,3 +68,10 @@ What reviews changed, one entry per change (`CLAUDE.md`, *Judgment log*).
   - Wrong: S16 asks for an example counted by the app's code when the panel opens.
   - Caught by: the reviewer agent, full review rerun of pull request #14.
   - Decision: the owner's words, 2026-11-15: "plus the review's 3 minor findings".
+- **2026-11-15 — a guardian for the cross-site write fix** (pull request #15)
+  - Produced: the fix in `json_body`, with tests of the two routes that call it.
+  - Wrong: a later route that reads its body another way would skip the checks unnoticed; `CLAUDE.md`, *Guardians*,
+    asks for a guardian when a fixed bug is a pattern that can be written again, looks reasonable, and can be found
+    by reading the code.
+  - Caught by: the reviewer agent, full review of pull request #15.
+  - Decision: the owner's pick, 2026-11-15: "Apply all, rerun once (Recommended)".

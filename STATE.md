@@ -14,14 +14,18 @@ Updated 2026-11-15. A snapshot, replaced at each close (close-session); the hist
   - `.gitignore` ignores `.env` and `.env.*`;
   - after a failed `GET /api/guide`, the guide shows its texts without an earlier example; a test pins the worked
     examples' words "without your own holidays" in both languages;
+  - a guardian, `tests/guardians/test_every_write_reads_its_body_through_json_body.py`, with its fixture and its
+    *Known traps* entry in `CLAUDE.md`;
   - tests: `tests/test_hardening.py`, and two new tests (three cases) in `tests/test_help.py`.
 
 ## Checked on this branch (2026-11-15)
 
-- The full suite on this machine: 197 passed, 23 of them new.
-- A sweep of 13 mutations, each altering one fix (eight undo or weaken it; five make it refuse what it must
-  accept): each run failed (exit 1), and each of the 23 new test cases failed at least once. With the content-type
-  check removed, a page on another origin added a holiday through the browser; with it, it did not.
+- The full suite on this machine: 203 passed, 29 of them new test cases.
+- A sweep of 25 mutations, each altering one fix, the guardian or its exception rule: each run failed (exit 1), and
+  each of the 29 new test cases failed at least once. With the content-type check removed, a page on another origin
+  added a holiday through the browser; with it, it did not.
+- The guardian flags `app/main.py:82` in `main`'s code (`await request.json()` inside `json_body`), finds no hit in
+  this branch's `app/`, and flags each of the 11 marked lines in its fixture.
 
 ## Pending
 
