@@ -69,6 +69,7 @@ def free_port() -> int:
 
 def drive_page(url: str) -> tuple[list, list[str]]:
     """Use every control once; return the requests seen and the orphan controls."""
+    from playwright.sync_api import TimeoutError as PlaywrightTimeout
     from playwright.sync_api import sync_playwright
 
     requests, orphans = [], []
@@ -112,8 +113,25 @@ def drive_page(url: str) -> tuple[list, list[str]]:
         if not puts or json.loads(puts[-1].post_data or "{}").get("language") != "es":
             orphans.append("control does not reach its route: #language")
 
-        driven = {"language", "start", "end", "calendar", "count", "new-day", "add"}
-        for control in page.locator("input, select, button").evaluate_all(
+        # Help and the two "How this is calculated" panels ask for the worked examples when they open (SPEC, S16).
+        page.fill("#start", "2026-10-26")
+        with page.expect_response(lambda r: "/api/count" in r.url):
+            page.click("#count")
+        for toggle in ("#help-toggle", "#how-total-toggle", "#how-business-toggle"):
+            before = len(sent("GET", "/api/guide"))
+            try:
+                with page.expect_response(lambda r: "/api/guide" in r.url, timeout=5000):
+                    page.click(toggle)
+            except PlaywrightTimeout:
+                pass  # no answer: the count below names the control
+            if len(sent("GET", "/api/guide")) == before:
+                orphans.append(f"control does not reach its route: {toggle}")
+
+        driven = {
+            "language", "start", "end", "calendar", "count", "new-day", "add",
+            "help-toggle", "how-total-toggle", "how-business-toggle",
+        }
+        for control in page.locator("input, select, button, summary").evaluate_all(
             "els => els.map(e => e.id || e.className)"
         ):
             if control not in driven and control != "remove":

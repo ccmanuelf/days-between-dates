@@ -11,6 +11,13 @@ two usual conventions (the start date not counted · both dates counted).
   reaches into past years says the holidays use today's rules, and each calendar lists its sources and the date its
   rules were checked.
 - **English and Spanish**, switchable; the choice is stored too.
+- **Help and the formulas**: a Help panel explains the counting, the calendars, your own holidays, reversed dates,
+  past years, local election days, the language, the live demo and the sources, and "How this is calculated" under
+  the result shows the formula with a worked example. Each worked example is a known answer, counted by the app's
+  own code when the panel opens and checked against the known answers by the tests.
+- **Dark mode and accessibility**: the page follows the system's dark setting; each count is written to a status
+  region that screen readers announce; controls are at least 24 px tall, and each label stays with its field on a
+  narrow screen.
 
 Each count is checked against known answers that carry their source (`SPEC.md`, *Known-answer checks*, K1–K11), on
 every pull request and every push to `main`.

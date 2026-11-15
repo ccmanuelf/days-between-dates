@@ -24,3 +24,19 @@ What reviews changed, one entry per change (`CLAUDE.md`, *Judgment log*).
     keeps the container's own files, so those checks would pass with no volume.
   - Caught by: the reviewer agent, full review of pull request #13.
   - Decision: the owner's pick, 2026-11-14: "Add an entry (Recommended)".
+- **2026-11-14 — the security-audit skill's read-only claim narrowed** (pull request #13; this entry was added in the
+  pull request after it)
+  - Produced: `.claude/skills/security-audit/SKILL.md`, copied from the app template, said that while the audit runs
+    "it cannot edit or write files, run shell commands or reach the network (the tools for those are removed by
+    `disallowed-tools`)".
+  - Wrong: that list names six built-in tools; tools from MCP servers and the Agent tool are not on it, so the
+    sentence claimed an enforcement the list does not give.
+  - Caught by: the reviewer agent, second full review of pull request #13.
+  - Decision: the owner's pick, 2026-11-14: "Fix minors, then review".
+- **2026-11-14 — the dark placeholders brought to 4.5:1** (branch `accessibility-dark-mode-guide`)
+  - Produced: dark mode left the date fields' placeholders in the browser's dark default, rgb(117, 117, 117) on the
+    field's rgb(59, 59, 59), a contrast of 2.43:1; the contrast test measured the elements' text, not placeholders.
+  - Wrong: AC15 asks each text for at least 4.5:1, and a placeholder is text.
+  - Caught by: the reviewer agent, in the publication check before the branch's first push, which found the
+    sentence "Every text keeps at least 4.5:1" broader than the test behind it.
+  - Decision: the owner's pick, 2026-11-14: "Fix it, extend the test (Recommended)".

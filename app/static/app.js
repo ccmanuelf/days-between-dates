@@ -14,6 +14,15 @@ let listRequest = 0;
 // choice overtaken before its turn is not sent, and only the latest choice's answer is shown.
 let languageRequest = 0;
 let languageStored = Promise.resolve();
+// The guide's worked examples, as the API last counted them (SPEC, S16). They are asked for each time Help or a "How
+// this is calculated" panel opens; a language switch rewrites the text from these without asking again.
+let examples = null;
+let guideRequest = 0;
+// Help: one section per feature (SPEC, S15); three of them carry a worked example, by its role.
+const HELP = [
+  ["range", "total"], ["business", "business"], ["own"], ["reversed", "reversed"], ["past"], ["elections"],
+  ["language"], ["demo"], ["sources"],
+];
 
 function t(key, values = {}) {
   const text = strings[language]?.[key];
@@ -79,7 +88,71 @@ function applyLanguage() {
   document.title = t("title");
   renderOwnTitle();
   renderSources();
+  renderGuide();
+  for (const item of document.querySelectorAll("#own-list li")) {
+    item.querySelector("button.remove").setAttribute("aria-label", t("remove_label", { day: item.dataset.day }));
+  }
   if (resultShown) renderResultLabels();
+}
+
+function exampleText(role) {
+  const e = examples?.find((example) => example.role === role);
+  if (!e) return "";
+  const known = e.known_answer;
+  if (role === "total") {
+    return t("example_total", {
+      known, start: e.start, end: e.end, snc: e.total.start_not_counted, bc: e.total.both_counted,
+    });
+  }
+  if (role === "business") {
+    return t("example_business", {
+      known, start: e.start, end: e.end, calendar: calendarName(e.calendar),
+      mf_snc: e.monday_to_friday.start_not_counted, mf_bc: e.monday_to_friday.both_counted,
+      excluded: e.excluded.join(", "), snc: e.business.start_not_counted, bc: e.business.both_counted,
+    });
+  }
+  return t("example_reversed", {
+    known, entered_start: e.entered.start, entered_end: e.entered.end, start: e.start, end: e.end,
+  });
+}
+
+function renderGuide() {
+  const list = document.createElement("dl");
+  for (const [id, role] of HELP) {
+    const term = document.createElement("dt");
+    term.textContent = t(`help_${id}_title`);
+    const text = document.createElement("dd");
+    text.textContent = role && examples ? `${t(`help_${id}`)} ${exampleText(role)}` : t(`help_${id}`);
+    list.append(term, text);
+  }
+  $("help-body").replaceChildren(list);
+  for (const [panel, role] of [["how-total", "total"], ["how-business", "business"]]) {
+    const formula = t(role === "total" ? "how_total" : "how_business");
+    $(panel).querySelector(".how-text").textContent = examples ? `${formula} ${exampleText(role)}` : formula;
+  }
+}
+
+// Help and "How this is calculated" ask the API for the worked examples each time one of them opens (SPEC, S16).
+async function openGuide() {
+  const request = ++guideRequest;
+  const answer = await api("GET", "/api/guide");
+  if (request !== guideRequest) return;
+  if (answer.status === 200) examples = answer.body.examples;
+  else showError(errorText(answer));
+  renderGuide();
+}
+
+// One status message per count, in the page's language, for screen readers (SPEC, S14).
+function announce() {
+  const r = lastResult;
+  const parts = [t("announce_result", {
+    calendar: calendarName(r.calendar), start: r.start, end: r.end,
+    total_snc: r.total.start_not_counted, total_bc: r.total.both_counted,
+    business_snc: r.business.start_not_counted, business_bc: r.business.both_counted,
+  })];
+  if (r.swapped) parts.push(t("notice_swapped"));
+  if (r.past_years) parts.push(t("notice_past_years"));
+  $("announce").textContent = parts.join(" ");
 }
 
 function renderOwnTitle() {
@@ -120,6 +193,7 @@ function renderResultLabels() {
   $("active-calendar").textContent = t("active_calendar", { name: calendarName(lastResult.calendar) });
   $("range").textContent = t("range", { start: lastResult.start, end: lastResult.end });
   $("note-business-days").hidden = language !== "es";
+  announce();
 }
 
 function renderResult(result) {
@@ -140,6 +214,7 @@ function hideResult() {
   resultShown = false;
   lastResult = null;
   $("result").hidden = true;
+  $("announce").textContent = "";
 }
 
 async function count() {
@@ -183,6 +258,7 @@ async function loadHolidays() {
     remove.className = "remove";
     remove.dataset.i18n = "remove_button";
     remove.textContent = t("remove_button");
+    remove.setAttribute("aria-label", t("remove_label", { day }));
     remove.addEventListener("click", () => removeHoliday(calendar, day));
     item.append(label, " ", remove);
     list.append(item);
@@ -254,6 +330,11 @@ async function start() {
   });
   $("calendar").addEventListener("change", afterListChange);
   $("language").addEventListener("change", () => switchLanguage($("language").value));
+  for (const panel of ["help", "how-total", "how-business"]) {
+    $(panel).addEventListener("toggle", () => {
+      if ($(panel).open) openGuide();
+    });
+  }
   await loadHolidays();
   document.body.dataset.ready = "true";
 }

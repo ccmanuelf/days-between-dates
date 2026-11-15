@@ -13,6 +13,28 @@
   --motion-scale: 1;              /* movement: write translate and scale distances times this */
 }
 
+/*
+  Color tokens (DESIGN.md, Colors). Light values are the page's colors as built; the page and its text keep the
+  browser's own colors, which `color-scheme` turns dark with the system (SPEC, S13). Dark values come from the
+  owner's visual standard's dark tokens: destructive, warning-soft, muted-foreground and input.
+*/
+:root {
+  color-scheme: light dark;
+  --error: #a00;
+  --notice-bg: #fff4d6;
+  --note-text: #444;
+  --table-border: #999;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --error: #f2807a;
+    --notice-bg: #2e2311;
+    --note-text: #aeb5c2;
+    --table-border: #646d7e;
+  }
+}
+
 /* Reduced motion: movement drops out; fades and color changes keep their durations. */
 @media (prefers-reduced-motion: reduce) {
   :root {

@@ -4,79 +4,63 @@ Updated 2026-11-14. A snapshot, replaced at each close (close-session); the hist
 
 ## Where the work stands
 
-- Branch `template-sync-docker-readme`, for one pull request. On `main` before it: the app built to `SPEC.md`, its
-  test suite run by CI on every pull request and every push to `main` (the live demo, AC14, was not checked in this
-  round), and the ask rules in `.claude/settings.json`.
-- This branch adds:
-  - from the app template: `CLAUDE.md`'s *Where the agent stops*, the clash and gate rules, *Publication check* (with
-    its check of "only", "none", "nothing", "all" and "never" used as claims in prose), *Guardians*, *Judgment log*,
-    *Proven work* and *Known traps*; the reviewer agent (`.claude/agents/reviewer.md`); the open-session,
-    close-session and security-audit skills (`.claude/skills/`);
-  - `DESIGN.md`: the page's look as built, charts drawn with ECharts, motion through the tokens;
-  - `app/static/tokens.css`: the motion tokens, linked from the page; a search of `style.css`, `app.js` and
-    `index.html` for `transition`, `animation` and `keyframes` finds no match, so no motion uses them yet (allowed by
-    the design-token exception in `CLAUDE.md`, *Definition of done*);
-  - `Dockerfile`, `compose.yaml` and `.dockerignore`: the app in one container, its database in the named volume
-    `app-data`, the port set by `DBD_PORT` (default 8000) and bound to 127.0.0.1; Docker is packaging, so `SPEC.md`
-    is unchanged;
-  - `scripts/docker_check.py` and a `docker` job in CI, not a required check: the job builds and starts the app with
-    compose, checks the page, its assets, K1 through the API and a stored holiday, recreates the container, checks
-    the holiday came back from the volume, and removes the container, volume and image;
-  - `README.md`: what the app does, who it is for, how to run it in Docker and without, how to clean up, the tests,
-    the licence;
-  - `JUDGMENT.md`: its first three entries, from this pull request's reviews.
+- Branch `accessibility-dark-mode-guide`, for one pull request. On `main` before it (pull request #13): the app
+  template's process files, `DESIGN.md`, the motion tokens, Docker and its CI job, the README.
+- This branch adds, on the owner's plan and SPEC approval of 2026-11-14 (`SPEC.md`, *Approval*):
+  - the third review of #13's two minor points: `scripts/docker_check.py`'s by-hand steps run under their own compose
+    project, `dbd-check`; `JUDGMENT.md` records the security-audit skill's narrowed claim;
+  - S13, dark mode: four color tokens in `app/static/tokens.css`, read by `style.css`, with dark values under the
+    system's dark scheme, and `color-scheme: light dark` for the page and its controls;
+  - S14, accessibility: a status region announces each count and its notices; each Remove button's name includes its
+    date; buttons, fields, lists and panel toggles are at least 24 px tall; each label is grouped with its field;
+  - S15 and S16, the guide: a Help panel with one section for each feature SPEC S15 lists, and "How this is
+    calculated" for total and business days, whose worked examples come from `GET /api/guide` (`app/guide.py`),
+    counted by `app/counting.py` with no holidays of the user's own each time a panel opens;
+  - after the first publication check: the dark placeholders take `--note-text` (2.43:1 before, under AC15's 4.5:1),
+    and the contrast tests also measure placeholders, the light-mode error and the live-demo notice;
+  - tests: `tests/test_guide.py` (the examples against the known answers), `tests/test_access.py` (S13, S14),
+    `tests/test_help.py` (S15, S16, AC17, AC18); the orphan check drives the three new panel toggles.
 
 ## Checked on this branch (2026-11-14)
 
-- The `docker` job's steps, run by hand on this machine: both checks passed. They also failed (exit 1) on two
-  altered copies: one whose `.dockerignore` left `app/static/tokens.css` out of the image (404), and one whose
-  `compose.yaml` had no volume (the stored holiday was gone after the container was recreated). Three altered copies
-  of `scripts/docker_check.py`, each changing one line, failed (exit 1) on the check they target: the page check, K1
-  (expected business days 4 · 4) and the stored holiday (an invalid date, refused with 422).
-- CI ran the `docker` job on this pull request: its eight checks passed, and its clean-up removed the container, the
-  volume, the network and the image.
-- Against the container on an empty volume, a local script that is not in this repository checked K1–K11 through
-  `/api/count` (K8a, a list of days, not replayed), K4's swap, the past-years flag both ways, E1 and E2 refusals,
-  own holidays stored, listed after `docker compose restart`, kept out of the other calendar and removed, the
-  language choice after a restart, the demo flag off, and each calendar's sources; the script failed (exit 1) when
-  one expected value was altered. `docker compose restart` keeps the container's own files, so these restarts do not
-  test the volume; the `docker` job's recreate step does.
-- A container started with `DBD_LIVE_DEMO=1` answered `{"live_demo":true}` and its page showed the live-demo notice;
-  the compose stack answered `{"live_demo":false}`.
-- In headless Chromium against the compose stack: the page counted K1 in Mexico (4 · 5 and 4 · 5), linked
-  `tokens.css` (`--motion-scale` read 1), switched to Spanish (*Días hábiles*, counts unchanged), had no horizontal
-  scroll at 375 px and logged no console errors.
-- The test suite was not run locally on this branch (no local environment); CI runs it on the pull request.
+- The full test suite on this machine (Python 3.13 in `.venv`, Chromium 1208 through `CHROMIUM_PATH`): 174 passed,
+  35 of them new (`tests/test_guide.py` 4, `tests/test_access.py` 22, `tests/test_help.py` 9). One earlier full run
+  on the same code had one failure in an existing test (*Pending*).
+- A final sweep of 25 mutations on this branch's code, each altering one guarantee and then restored and compared: each
+  run failed (exit 1), and all 35 new tests failed at least once across the sweep. Among the mutations: a guide range
+  changed, own holidays let into the examples, a dark note color too dark, the dark placeholder rule removed, a light
+  table border changed, no minimum height, the calendar label out of its group, no announcement, a digit typed into
+  the guide, the guide longer than the page; and the orphan check reports 4 orphans when the panels open without
+  asking the API, 0 on this branch.
 
 ## Pending
 
-- Before the first release or production deploy: the owner runs `/security-audit`; the README gains *Proven work*
-  (`CLAUDE.md`, *Proven work*), drafted with the owner's parts marked and never committed with a marker left.
-- The live demo on Render (S12, AC14) was not checked in this round. This branch changes the page the demo serves
-  (`index.html` now links `/static/tokens.css`): after the next deploy, check that the demo answers 200 for
-  `/static/tokens.css` and that its page renders.
-- Found by the design audit of 2026-11-14, not fixed (outside this round's scope): results and notices that appear
-  after a count are not announced to screen readers (no live region); every "Remove" button has the same name,
-  without its date; buttons and fields measured 19–21 px tall (headless Chromium, 375×812 viewport, each element's
-  bounding box), under the 24 px of WCAG 2.2's target-size minimum (2.5.8), whose spacing exception was not checked;
-  at 375 px the Calendar label can sit on one line and its list on the next; colors are fixed values, with no dark
-  mode.
+- Before merging this branch: the owner runs `/security-audit` (he looked at the branch running in Docker on
+  2026-11-14).
+- Before the first release or production deploy: the README gains *Proven work* (`CLAUDE.md`, *Proven work*),
+  drafted with the owner's parts marked and never committed with a marker left.
+- The live demo on Render (S12, AC14) was not checked in this round. After the next deploy, check that it answers
+  200 for `/static/tokens.css` and `/api/guide`, and that its page renders.
+- An intermittent failure: in one full local run on 2026-11-14,
+  `test_e3_a_storage_failure_on_an_edit_takes_the_count_off_the_screen[add-unwritable]` saw "The server did not
+  answer" where the storage error was expected, and the server logged no `POST /api/holidays`. Run apart from the
+  suite, the test's four cases passed in each of 10 runs. The test, `tests/conftest.py`, `app/storage.py`, the
+  `add_holiday` route and the page's `api`, `addHoliday`, `showFailure`, `showError` and `errorText` are unchanged on
+  this branch; `hideResult` now also clears the status region. Its cause is not established.
 - `python -m pip install` is not covered by the ask rules (the template has the `python3` form only).
 - The `docker` job is not a required check; making it one is a branch-protection change, the owner's call.
-- `DESIGN.md` restates values from `style.css` in its frontmatter, as the DESIGN.md format asks, and in its
-  *Colors*, *Typography*, *Layout* and *Components* sections, and from `tokens.css` in its *Do's and Don'ts*; no check
-  keeps the copies in step.
+- `DESIGN.md` restates values from `style.css` and `tokens.css`. No test reads `DESIGN.md` (searched `tests/` and
+  `scripts/`), so its copies can drift from those files.
 
 ## Decisions (2026-11-14, the owner's)
 
+- SPEC S13–S16 and AC15–AC18 approved; dark mode follows the system; worked examples are counted by the API.
 - Design tokens may ship before a rule reads them (`CLAUDE.md`, *Definition of done*; `JUDGMENT.md`).
-- Docker is packaging; `SPEC.md` is unchanged.
-- A `docker` job in CI, not a required check (`JUDGMENT.md`).
-- The corrected Docker record gets a `JUDGMENT.md` entry.
+- Docker is packaging; a `docker` job in CI, not a required check.
 
 ## Last session (2026-11-14)
 
-Done: the template sync, `DESIGN.md` and the motion tokens, Docker and its CI job, the README, the checks above.
-Half-done: none on this branch. Learned: port 8000 can be taken on the working machine, so the compose file reads
-`DBD_PORT`; a check script that stores data leaves it in the volume, so a second script that expects an empty
-database runs on a fresh volume.
+Done: pull request #13 merged; this branch's work and its checks above; the owner looked at the branch running in
+Docker. Half-done: `/security-audit`, before merging. Learned: a mutation run that restores a file with
+`git checkout` cannot restore an untracked file, so mutations restore from a copy and compare it with the copy; and a
+claim of "every text" rests on what the test enumerates, so its skipped class (placeholders) is where to look.
