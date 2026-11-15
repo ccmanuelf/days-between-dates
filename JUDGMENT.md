@@ -33,10 +33,25 @@ What reviews changed, one entry per change (`CLAUDE.md`, *Judgment log*).
     sentence claimed an enforcement the list does not give.
   - Caught by: the reviewer agent, second full review of pull request #13.
   - Decision: the owner's pick, 2026-11-14: "Fix minors, then review".
-- **2026-11-14 — the dark placeholders brought to 4.5:1** (branch `accessibility-dark-mode-guide`)
+- **2026-11-14 — the dark placeholders brought to 4.5:1** (pull request #14)
   - Produced: dark mode left the date fields' placeholders in the browser's dark default, rgb(117, 117, 117) on the
     field's rgb(59, 59, 59), a contrast of 2.43:1; the contrast test measured the elements' text, not placeholders.
   - Wrong: AC15 asks each text for at least 4.5:1, and a placeholder is text.
   - Caught by: the reviewer agent, in the publication check before the branch's first push, which found the
     sentence "Every text keeps at least 4.5:1" broader than the test behind it.
   - Decision: the owner's pick, 2026-11-14: "Fix it, extend the test (Recommended)".
+- **2026-11-15 — the announcement test made independent of the year** (pull request #14)
+  - Produced: a test of the screen-reader announcement that counted 2026 ranges (K1, K4) and expected its text
+    without the past-years notice.
+  - Wrong: the app adds that notice to a range that includes a year before the current one, so from 2027-01-01 the
+    test would fail on correct code, and with it CI's `test` check, which `main` requires; no test in `tests/`
+    checked the announcement for that notice (searched for `notice_past_years`).
+  - Caught by: the reviewer agent, full review of pull request #14.
+  - Decision: the owner's pick, 2026-11-15: "Fix all, add entries (Recommended)".
+- **2026-11-15 — the worked examples say they leave out the user's own holidays** (pull request #14)
+  - Produced: worked examples labelled "Example (K1):" and so on, counted without the user's own holidays, with
+    nothing on the page saying so.
+  - Wrong: with a holiday of one's own on a weekday inside the business example's range, the user's business-day
+    count can differ from the example's, a convention not shown on screen in an app built to show them.
+  - Caught by: the reviewer agent, full review of pull request #14.
+  - Decision: the owner's pick, 2026-11-15: "Add the words (Recommended)".

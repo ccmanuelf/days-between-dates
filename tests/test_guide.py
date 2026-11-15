@@ -48,7 +48,8 @@ def test_the_business_example_subtracts_the_days_it_names(server):
     assert example["excluded"] == ["2026-07-03"]  # Independence Day 2026, Saturday, observed Friday 3 July (K9a)
     excluded = [date.fromisoformat(d) for d in example["excluded"]]
     assert all(d.weekday() < 5 and example["start"] <= d.isoformat() <= example["end"] for d in excluded)
-    assert pair(example["monday_to_friday"])[1] - len(excluded) == pair(example["business"])[1]
+    for convention in (0, 1):  # start not counted, both counted; the start, a Monday, is not excluded
+        assert pair(example["monday_to_friday"])[convention] - len(excluded) == pair(example["business"])[convention]
 
 
 def test_own_holidays_do_not_change_the_examples(server):

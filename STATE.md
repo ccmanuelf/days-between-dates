@@ -1,6 +1,6 @@
 # State
 
-Updated 2026-11-14. A snapshot, replaced at each close (close-session); the history is in git.
+Updated 2026-11-15. A snapshot, replaced at each close (close-session); the history is in git.
 
 ## Where the work stands
 
@@ -18,20 +18,25 @@ Updated 2026-11-14. A snapshot, replaced at each close (close-session); the hist
     counted by `app/counting.py` with no holidays of the user's own each time a panel opens;
   - after the first publication check: the dark placeholders take `--note-text` (2.43:1 before, under AC15's 4.5:1),
     and the contrast tests also measure placeholders, the light-mode error and the live-demo notice;
+  - after the pull request's full review: the announcement test counts in year 9999, so the past-years notice cannot
+    enter it as the years pass, and a range reaching into 2025 checks that notice; the worked examples say they leave
+    out the user's own holidays; `CLAUDE.md` names AC1–AC18 as the contract; `JUDGMENT.md` records two of the full
+    review's changes, the year-proof announcement test and the examples' wording;
   - tests: `tests/test_guide.py` (the examples against the known answers), `tests/test_access.py` (S13, S14),
     `tests/test_help.py` (S15, S16, AC17, AC18); the orphan check drives the three new panel toggles.
 
-## Checked on this branch (2026-11-14)
+## Checked on this branch (2026-11-14 and 2026-11-15)
 
-- The full test suite on this machine (Python 3.13 in `.venv`, Chromium 1208 through `CHROMIUM_PATH`): 174 passed,
-  35 of them new (`tests/test_guide.py` 4, `tests/test_access.py` 22, `tests/test_help.py` 9). One earlier full run
-  on the same code had one failure in an existing test (*Pending*).
-- A final sweep of 25 mutations on this branch's code, each altering one guarantee and then restored and compared: each
-  run failed (exit 1), and all 35 new tests failed at least once across the sweep. Among the mutations: a guide range
-  changed, own holidays let into the examples, a dark note color too dark, the dark placeholder rule removed, a light
-  table border changed, no minimum height, the calendar label out of its group, no announcement, a digit typed into
-  the guide, the guide longer than the page; and the orphan check reports 4 orphans when the panels open without
-  asking the API, 0 on this branch.
+- The full test suite on this machine (Python 3.13 in `.venv`, Chromium 1208 through `CHROMIUM_PATH`), 2026-11-15,
+  on this branch's final code: 174 passed, 35 of them new (`tests/test_guide.py` 4, `tests/test_access.py` 22,
+  `tests/test_help.py` 9). One earlier full run, on an earlier version of this branch (2026-11-14), had one failure
+  in an existing test (*Pending*).
+- A final sweep of 27 mutations on this branch's final code, 2026-11-15, each altering one guarantee and then
+  restored and compared: each run failed (exit 1), and all 35 new tests failed at least once across the sweep. Among
+  the mutations: a guide range changed, own holidays let into the examples, a dark note color too dark, the dark
+  placeholder rule removed, a light table border changed, no minimum height, the calendar label out of its group, no
+  announcement, a digit typed into the guide, the guide longer than the page; and the orphan check reports 4 orphans
+  when the panels open without asking the API, 0 on this branch.
 
 ## Pending
 
@@ -52,13 +57,15 @@ Updated 2026-11-14. A snapshot, replaced at each close (close-session); the hist
 - `DESIGN.md` restates values from `style.css` and `tokens.css`. No test reads `DESIGN.md` (searched `tests/` and
   `scripts/`), so its copies can drift from those files.
 
-## Decisions (2026-11-14, the owner's)
+## Decisions (2026-11-14 and 2026-11-15, the owner's)
 
 - SPEC S13–S16 and AC15–AC18 approved; dark mode follows the system; worked examples are counted by the API.
 - Design tokens may ship before a rule reads them (`CLAUDE.md`, *Definition of done*; `JUDGMENT.md`).
 - Docker is packaging; a `docker` job in CI, not a required check.
+- 2026-11-15: the worked examples say they leave out the user's own holidays; `CLAUDE.md` names AC1–AC18;
+  `JUDGMENT.md` records two of the full review's changes, the year-proof announcement test and the examples' wording.
 
-## Last session (2026-11-14)
+## Last session (2026-11-14 and 2026-11-15)
 
 Done: pull request #13 merged; this branch's work and its checks above; the owner looked at the branch running in
 Docker. Half-done: `/security-audit`, before merging. Learned: a mutation run that restores a file with
