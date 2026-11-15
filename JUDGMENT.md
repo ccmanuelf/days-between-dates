@@ -55,3 +55,16 @@ What reviews changed, one entry per change (`CLAUDE.md`, *Judgment log*).
     count can differ from the example's, a convention not shown on screen in an app built to show them.
   - Caught by: the reviewer agent, full review of pull request #14.
   - Decision: the owner's pick, 2026-11-15: "Add the words (Recommended)".
+- **2026-11-15 — the security audit's four fixes** (pull request #15)
+  - Produced: write routes that read a request body as JSON whatever its declared content type and size, a server
+    that answered any host name, and a `.gitignore` with no entry for environment files.
+  - Wrong: a page on another site could make a visitor's browser add a holiday to the app on their machine, with a
+    `text/plain` request the browser sends without asking the server first (`tests/test_hardening.py` shows it).
+  - Caught by: `/security-audit`, run by the owner before publishing.
+  - Decision: the owner's words, 2026-11-15: "Decision on the audit: merge, then fix."
+- **2026-11-15 — a failed request for the worked examples shows no earlier example** (pull request #15)
+  - Produced: after a failed `GET /api/guide`, Help and "How this is calculated" kept the examples from an earlier
+    opening.
+  - Wrong: S16 asks for an example counted by the app's code when the panel opens.
+  - Caught by: the reviewer agent, full review rerun of pull request #14.
+  - Decision: the owner's words, 2026-11-15: "plus the review's 3 minor findings".

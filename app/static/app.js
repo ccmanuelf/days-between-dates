@@ -137,8 +137,12 @@ async function openGuide() {
   const request = ++guideRequest;
   const answer = await api("GET", "/api/guide");
   if (request !== guideRequest) return;
-  if (answer.status === 200) examples = answer.body.examples;
-  else showError(errorText(answer));
+  if (answer.status === 200) {
+    examples = answer.body.examples;
+  } else {
+    examples = null; // no example from an earlier opening stands in for one this opening could not count
+    showError(errorText(answer));
+  }
   renderGuide();
 }
 

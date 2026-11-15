@@ -64,7 +64,9 @@ pip install -r requirements-dev.txt
 python -m uvicorn app.main:app        # http://127.0.0.1:8000
 ```
 
-The database file is created at `DBD_DB_PATH` (default `data/app.db`).
+The database file is created at `DBD_DB_PATH` (default `data/app.db`). The app answers requests addressed to
+`127.0.0.1` or `localhost`; to serve it under another host name, list that name in `DBD_ALLOWED_HOSTS` (comma
+separated).
 
 ## Tests
 

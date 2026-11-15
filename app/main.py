@@ -5,6 +5,7 @@ from the code, and the field names where the input was refused (SPEC, E1). A sto
 message, never a count (SPEC, E3), and never the database's own error text.
 """
 
+import json
 import os
 import re
 from contextlib import asynccontextmanager
@@ -14,6 +15,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from app import counting, guide, storage
 from app.guide import as_pair as pair
@@ -22,6 +24,12 @@ from app.holidays import CALENDARS
 STATIC = Path(__file__).parent / "static"
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 STORAGE_MESSAGE = "The database cannot be read or written."
+MAX_BODY = 4096  # bytes; a body the page sends with a valid date or language is under 100
+# The host names a request may be addressed to: this machine, and any a deploy adds in DBD_ALLOWED_HOSTS (comma
+# separated). A page on another site that points its own host name at this machine is refused (DNS rebinding).
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"] + [
+    host.strip() for host in os.environ.get("DBD_ALLOWED_HOSTS", "").split(",") if host.strip()
+]
 
 
 @asynccontextmanager
@@ -35,6 +43,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="Days between dates", lifespan=lifespan)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
 
@@ -78,8 +87,24 @@ def parse_calendar(value: object) -> str:
 
 
 async def json_body(request: Request) -> dict:
+    """A JSON object sent as application/json, at most MAX_BODY bytes. Another content type is refused with 415: a
+    page on another site can make the browser send a text/plain body without asking it first, but not an
+    application/json one, so a write from another site does not reach the database. A larger body is refused with
+    413 before more of it is read."""
+    media_type = request.headers.get("content-type", "").split(";")[0].strip().lower()
+    if media_type != "application/json":
+        raise Refused(415, "invalid_body", None, "The request body must be sent as application/json.")
+    declared = request.headers.get("content-length", "")
+    too_large = Refused(413, "invalid_body", None, f"The request body is larger than {MAX_BODY} bytes.")
+    if declared.isdigit() and int(declared) > MAX_BODY:
+        raise too_large
+    raw = bytearray()
+    async for chunk in request.stream():
+        raw += chunk
+        if len(raw) > MAX_BODY:
+            raise too_large
     try:
-        body = await request.json()
+        body = json.loads(raw)
     except ValueError:
         body = None
     if not isinstance(body, dict):

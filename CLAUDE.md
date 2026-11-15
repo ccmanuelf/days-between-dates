@@ -182,9 +182,11 @@ Its publication check (*Publication check*, above, run by the reviewer agent) al
 Python and FastAPI, SQLite, one HTML page with a JavaScript module calling the JSON API; tests with pytest and
 Playwright for Python. Plain CSS, no build step; the look and its tokens are in `DESIGN.md`. Delivery rung 1: user
 space, no admin. The SQLite file is created at run time, at `DBD_DB_PATH` (default `data/app.db`), and never
-committed. Docker: `Dockerfile` and `compose.yaml` run the app with its database in a named volume. Live demo:
-Render's free plan, whose storage resets on restart, which the demo page says (S12, AC14). Licence: MIT. Interface:
-English and Spanish.
+committed. A request addressed to a host name other than `127.0.0.1`, `localhost` or one listed in
+`DBD_ALLOWED_HOSTS` is refused; a write with a body (adding a holiday, storing the language) must be sent as
+`application/json`, at most 4096 bytes. Docker:
+`Dockerfile` and `compose.yaml` run the app with its database in a named volume. Live demo: Render's free plan, whose
+storage resets on restart, which the demo page says (S12, AC14). Licence: MIT. Interface: English and Spanish.
 
 ## Commands
 
