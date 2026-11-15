@@ -7,8 +7,10 @@ disallowed-tools: Edit, Write, NotebookEdit, Bash, WebFetch, WebSearch
 
 # Security audit
 
-Read-only: while it runs, it cannot edit or write files, run shell commands or reach the network (the tools for
-those are removed by `disallowed-tools`). It reads the whole app, not only a diff, and starts no server.
+Read-only: while it runs, `disallowed-tools` removes the six built-in tools it names (Edit, Write, NotebookEdit, Bash,
+WebFetch, WebSearch). Tools from MCP servers, and the Agent tool, are not on that list: do not call one that writes
+files, runs processes or reaches the network. The list does not enforce this line; it is an instruction. It reads
+the whole app, not only a diff, and starts no server.
 
 Run it once before each publish: the repository's first push, each release and each production deploy. Not before
 every push, although every push to this public repository is publication (*Publication check* in `CLAUDE.md`).

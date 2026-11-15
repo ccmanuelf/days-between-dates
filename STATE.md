@@ -24,13 +24,17 @@ Updated 2026-11-14. A snapshot, replaced at each close (close-session); the hist
     the holiday came back from the volume, and removes the container, volume and image;
   - `README.md`: what the app does, who it is for, how to run it in Docker and without, how to clean up, the tests,
     the licence;
-  - `JUDGMENT.md`: its first two entries, from this pull request's review.
+  - `JUDGMENT.md`: its first three entries, from this pull request's reviews.
 
 ## Checked on this branch (2026-11-14)
 
 - The `docker` job's steps, run by hand on this machine: both checks passed. They also failed (exit 1) on two
   altered copies: one whose `.dockerignore` left `app/static/tokens.css` out of the image (404), and one whose
-  `compose.yaml` had no volume (the stored holiday was gone after the container was recreated).
+  `compose.yaml` had no volume (the stored holiday was gone after the container was recreated). Three altered copies
+  of `scripts/docker_check.py`, each changing one line, failed (exit 1) on the check they target: the page check, K1
+  (expected business days 4 · 4) and the stored holiday (an invalid date, refused with 422).
+- CI ran the `docker` job on this pull request: its eight checks passed, and its clean-up removed the container, the
+  volume, the network and the image.
 - Against the container on an empty volume, a local script that is not in this repository checked K1–K11 through
   `/api/count` (K8a, a list of days, not replayed), K4's swap, the past-years flag both ways, E1 and E2 refusals,
   own holidays stored, listed after `docker compose restart`, kept out of the other calendar and removed, the
@@ -48,7 +52,9 @@ Updated 2026-11-14. A snapshot, replaced at each close (close-session); the hist
 
 - Before the first release or production deploy: the owner runs `/security-audit`; the README gains *Proven work*
   (`CLAUDE.md`, *Proven work*), drafted with the owner's parts marked and never committed with a marker left.
-- The live demo on Render (S12, AC14) was not checked in this round.
+- The live demo on Render (S12, AC14) was not checked in this round. This branch changes the page the demo serves
+  (`index.html` now links `/static/tokens.css`): after the next deploy, check that the demo answers 200 for
+  `/static/tokens.css` and that its page renders.
 - Found by the design audit of 2026-11-14, not fixed (outside this round's scope): results and notices that appear
   after a count are not announced to screen readers (no live region); every "Remove" button has the same name,
   without its date; buttons and fields measured 19–21 px tall (headless Chromium, 375×812 viewport, each element's
@@ -57,14 +63,16 @@ Updated 2026-11-14. A snapshot, replaced at each close (close-session); the hist
   mode.
 - `python -m pip install` is not covered by the ask rules (the template has the `python3` form only).
 - The `docker` job is not a required check; making it one is a branch-protection change, the owner's call.
-- `DESIGN.md` restates values from `style.css` in its frontmatter, as the DESIGN.md format asks, and from
-  `tokens.css` in its *Do's and Don'ts*; no check keeps the copies in step.
+- `DESIGN.md` restates values from `style.css` in its frontmatter, as the DESIGN.md format asks, and in its
+  *Colors*, *Typography*, *Layout* and *Components* sections, and from `tokens.css` in its *Do's and Don'ts*; no check
+  keeps the copies in step.
 
 ## Decisions (2026-11-14, the owner's)
 
 - Design tokens may ship before a rule reads them (`CLAUDE.md`, *Definition of done*; `JUDGMENT.md`).
 - Docker is packaging; `SPEC.md` is unchanged.
 - A `docker` job in CI, not a required check (`JUDGMENT.md`).
+- The corrected Docker record gets a `JUDGMENT.md` entry.
 
 ## Last session (2026-11-14)
 

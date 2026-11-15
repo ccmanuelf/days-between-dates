@@ -13,12 +13,16 @@ typography:
   note:
     fontFamily: "system-ui, sans-serif"
     fontSize: "0.95em"
+  error:
+    fontFamily: "system-ui, sans-serif"
+    fontWeight: 600
 spacing:
   gap: "0.5rem"
   page-gutter: "1rem"
 components:
   error-message:
     textColor: "{colors.error}"
+    typography: "{typography.error}"
   notice:
     backgroundColor: "{colors.notice-bg}"
     padding: "0.5rem"
@@ -47,8 +51,8 @@ years, the live demo's storage), `note-text` for notes, and `table-border` for t
 
 ## Typography
 
-`system-ui, sans-serif` at the browser's size, line height 1.5; notes at 0.95em. Counts use tabular figures
-(`font-variant-numeric: tabular-nums`), so digits line up in the result table.
+`system-ui, sans-serif` at the browser's size, line height 1.5; notes at 0.95em; error messages at weight 600.
+Counts use tabular figures (`font-variant-numeric: tabular-nums`), so digits line up in the result table.
 
 ## Layout
 

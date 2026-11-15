@@ -16,3 +16,11 @@ What reviews changed, one entry per change (`CLAUDE.md`, *Judgment log*).
     (a runtime file outside `app/`, which `.dockerignore` leaves out of the build) would still pass CI.
   - Caught by: the reviewer agent, full review of pull request #13.
   - Decision: the owner's pick, 2026-11-14: "Add job, not required (Recommended)".
+- **2026-11-14 — the Docker record narrowed to its evidence** (pull request #13; the change is in its second commit,
+  this entry in its third)
+  - Produced: `STATE.md` and the pull request body credited a local script with checking the live-demo flag on, and
+    counted the script's `docker compose restart` checks as tests of the volume.
+  - Wrong: the script checked the flag off only; the flag on was checked by a separate run. `docker compose restart`
+    keeps the container's own files, so those checks would pass with no volume.
+  - Caught by: the reviewer agent, full review of pull request #13.
+  - Decision: the owner's pick, 2026-11-14: "Add an entry (Recommended)".
