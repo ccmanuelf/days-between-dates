@@ -14,12 +14,13 @@ Updated 2026-11-15. A snapshot, replaced at each close (close-session); the hist
 
 ## Checked on this branch (2026-11-15)
 
-- Branch protection on `main`, read back after the change: required checks `test` and `docker` (GitHub Actions),
-  not strict; every other protection setting equal to before.
-- CI: `ci.yml` has no artifact upload and no cache step; the repository holds 0 Actions caches and 0 artifacts.
+- Branch protection on `main`, read in full before and after the change: required checks `test` and `docker`
+  (GitHub Actions), not strict; each other protection setting equal in the two reads.
+- CI: `ci.yml` has no artifact upload and no cache step; the GitHub API lists 0 Actions caches and 0 artifacts.
 - Local Docker, this project only: its stopped container, its image and eleven build-cache records removed (the
   `Dockerfile`'s steps, and the `python:3.13-slim` base, on which, in the build cache's parent links, no other build
-  sat); the `days-between-dates_app-data` volume kept.
+  sat); the `days-between-dates_app-data` volume kept. The one untagged image on the machine runs `sh` and dates from
+  2026-10-27: not an earlier build of this app.
 
 ## Pending
 

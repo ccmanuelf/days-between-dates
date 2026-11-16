@@ -229,11 +229,13 @@ checks it with `scripts/docker_check.py`, the volume included. The branch rule o
 Changing the workflow changes CI: ask the owner first.
 
 Leave nothing that slowly eats space (the owner, 2026-11-15). A CI artifact or cache gets a short retention, or is
-not kept. After a local Docker run, the agent removes this project's containers, its image and its build cache: the
-records of this `Dockerfile`'s steps, and those of the base image when no other build sits on them
-(`docker buildx du --verbose` shows each record's description and parents; `docker buildx prune -f --filter id=<id>`
-takes one id at a time). It prunes nothing that belongs to another project, and keeps the
-`days-between-dates_app-data` volume, which holds the user's own holidays and language.
+not kept. After a local Docker run, the agent removes this project's containers; its images, untagged earlier builds
+included (`docker images --filter dangling=true` lists those, and `docker image inspect` shows whether one runs this
+`Dockerfile`'s `CMD`); and its build cache: the records of this `Dockerfile`'s steps, and those of the base image
+when no other build sits on them (`docker buildx du --verbose` shows each record's description and parents;
+`docker buildx prune -f --filter id=<id>` takes one id at a time). It prunes nothing that belongs to another
+project, and keeps the `days-between-dates_app-data` volume, which holds the user's own holidays and language. It
+keeps the raw output of each listing, before and after, with the work.
 
 ## Known traps
 
