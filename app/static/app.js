@@ -21,7 +21,7 @@ let guideRequest = 0;
 // Help: one section per feature (SPEC, S15); three of them carry a worked example, by its role.
 const HELP = [
   ["range", "total"], ["business", "business"], ["own"], ["reversed", "reversed"], ["past"], ["elections"],
-  ["language"], ["demo"], ["sources"],
+  ["language"], ["sources"],
 ];
 
 function t(key, values = {}) {
@@ -311,8 +311,7 @@ function switchLanguage(chosen) {
 
 async function start() {
   strings = await (await fetch("/static/strings.json")).json();
-  const [config, catalog, stored, health] = await Promise.all([
-    api("GET", "/api/config"),
+  const [catalog, stored, health] = await Promise.all([
     api("GET", "/api/calendars"),
     api("GET", "/api/language"),
     api("GET", "/api/status"),
@@ -320,7 +319,6 @@ async function start() {
   calendars = catalog.status === 200 ? catalog.body.calendars : [];
   const storedLanguage = stored.status === 200 ? stored.body.language : null;
   language = LANGUAGES.includes(storedLanguage) ? storedLanguage : browserLanguage();
-  $("demo-notice").hidden = !(config.status === 200 && config.body.live_demo);
   applyLanguage();
   if (health.status !== 200) showError(errorText(health)); // the database cannot be read: say so before any count
 

@@ -1,7 +1,7 @@
 # SPEC — Days between dates
 
-**Status:** approved (2026-10-26: the owner's conditional approval of the same day taking effect); changed 2026-10-26
-by D8, the owner's decision, which approved the change (*Approval*)
+**Status:** approved (2026-10-26: the owner's conditional approval of the same day taking effect); changed after
+approval by the owner's decisions listed in *Approval*
 
 Provenance: 【M】 the owner said it · 【C】 an agent's inference, removable while a draft. The marks stay when the SPEC
 is published. Q1–Q10 are the owner's answers in the discussion of 2026-10-25, live; Q11–Q16 of 2026-10-26, batched;
@@ -71,11 +71,8 @@ Q16.
 Given the Mexico calendar active, when the user counts, then a note says local election days are not built in and
 can be added to the user's own list; with the US calendar active, no such note. 【M】 Q13.
 
-### S12 — The live demo's storage notice
-Given the app running as the live demo, when the page opens, then a notice says that what is stored there, the own
-holidays and the language choice, is reset whenever the demo restarts or is redeployed, including after it has
-been idle (*Stack and deployment*). Run on a local install, no such notice. 【M】 D8 for the notice; 【C】 its wording
-and the local case.
+### S12 — Withdrawn
+Withdrawn 2026-11-15: the project has no public demo (*Approval*).
 
 ### S13 — Dark mode
 Given the system or browser set to a dark color scheme, when the page opens, then it shows in the dark values of
@@ -96,7 +93,7 @@ Recommendation 12 December 2024, retrieved 2026-11-14).
 ### S15 — Help
 Given the page in either language, when the user opens Help, then it shows one short section per feature, in that
 language: a range and its two conventions, business days and the calendars, your own holidays, reversed dates, past
-years, the note on local election days, the language switch, the live demo's notice, and the sources. 【M】 2026-11-14.
+years, the note on local election days, the language switch, and the sources. 【M】 2026-11-14.
 
 ### S16 — How a result is calculated
 Given a result on screen, when the user opens "How this is calculated" beside total days or business days, then it
@@ -139,7 +136,6 @@ Will:
 - Keep the language choice in SQLite, through the API, so it survives a restart. 【M】 Q15. With no choice stored, or
   one that cannot be read, open in the browser's language when it is English or Spanish, in English otherwise. 【M】
   Q16.
-- On the live demo, show a notice that its storage resets on restart. 【M】 D8.
 - Follow the system's dark color scheme (S13); announce each result to screen readers and keep every control within
   reach (S14). 【M】 2026-11-14.
 - Explain each feature in a Help panel, and each result with its formula and a worked example that is a known answer
@@ -171,20 +167,20 @@ Will not:
 
 | ID | Criterion (observable) | Verified by |
 |---|---|---|
-| AC1 | Total days under both conventions, for any valid pair of dates, through page → API → back | K1–K7, through the API; demo step |
+| AC1 | Total days under both conventions, for any valid pair of dates, through page → API → back | K1–K7, through the API |
 | AC2 | Business days under both conventions, for each calendar | K7–K9 and K11, sourced 2026-10-26 (*Holiday rules*, below) |
 | AC3 | Reversed dates are swapped, the notice shows, and the counts equal those of the swapped range | K4; a test that asserts the notice's presence in the response and on the page |
-| AC4 | The active calendar is named beside the result; switching it recomputes | S4 test through the page; demo step |
-| AC5 | Own holidays: add, list and remove per calendar through page → API → SQLite → back; they survive a restart and affect only their calendar | S5–S7 tests against a real SQLite file, with a restart between write and read, run in CI; S5–S7 on a local install, with a restart. Not on the live demo, whose storage resets on restart (【M】 D8) |
+| AC4 | The active calendar is named beside the result; switching it recomputes | S4 test through the page |
+| AC5 | Own holidays: add, list and remove per calendar through page → API → SQLite → back; they survive a restart and affect only their calendar | S5–S7 tests against a real SQLite file, with a restart between write and read, run in CI; S5–S7 on a local install, with a restart |
 | AC6 | A day is excluded once; a duplicate is refused | S8, E2 tests; K10 |
 | AC7 | The past-years notice shows when the range includes an earlier year, and only then | S9 tests, both cases |
 | AC8 | Invalid input is refused with a message naming the field; nothing is stored | E1 tests, including a database read after the refusal |
 | AC9 | A storage failure shows an error and no business-day count; a language choice that cannot be stored shows an error, and the page keeps the language on screen | E3 tests with an unwritable and with an unreadable database, for the holidays and for the language setting, through the page |
 | AC10 | No orphans: every control (two dates, calendar selector, add, remove, language switch, Help, the two "How this is calculated") reaches a route that executes; every route has a caller; the holidays table and the language setting are written and read | The judge's orphan list |
-| AC11 | The screen names each built-in calendar's source and the date its rules were checked; with Mexico active, the note on local election days shows, and with the US calendar it does not (Q13) | Demo step; a test on the page for each; S11, both cases |
+| AC11 | The screen names each built-in calendar's source and the date its rules were checked; with Mexico active, the note on local election days shows, and with the US calendar it does not (Q13) | A test on the page for each; S11, both cases |
 | AC12 | The known-answer checks run on every pull request and every push to main, through the API | CI log |
-| AC13 | Every label, notice and message exists in English and Spanish; in Spanish, business days read *días hábiles* with the art. 715 note (Q14); switching the language changes the text, not the counts; the choice is stored through page → API → SQLite and survives a restart (Q15); with none stored, or one unreadable, the page opens in the browser's language when it is English or Spanish, in English otherwise (Q16) | A test per notice in each language; S10 through the page, with a restart; the opening language with the browser set to English, to Spanish and to a third language, and with the stored choice unreadable; demo step |
-| AC14 | On the live demo, the page shows the notice that its storage resets on restart; on a local install, it does not (S12) | A page test with the server run as the demo and as a local install, in each language; demo step |
+| AC13 | Every label, notice and message exists in English and Spanish; in Spanish, business days read *días hábiles* with the art. 715 note (Q14); switching the language changes the text, not the counts; the choice is stored through page → API → SQLite and survives a restart (Q15); with none stored, or one unreadable, the page opens in the browser's language when it is English or Spanish, in English otherwise (Q16) | A test per notice in each language; S10 through the page, with a restart; the opening language with the browser set to English, to Spanish and to a third language, and with the stored choice unreadable |
+| AC14 | Withdrawn 2026-11-15: the project has no public demo (S12) | — |
 | AC15 | With a dark color scheme the page uses the dark values of its color tokens, and each text keeps at least 4.5:1 contrast with its background (WCAG 2.2, 1.4.3); with a light scheme the colors are those `DESIGN.md` recorded before (S13) | A page test under each scheme that computes every contrast ratio |
 | AC16 | After a count, a polite live region holds the result and its notices in the page's language; each Remove button's accessible name contains its date; every button, field and list is at least 24 px tall; at 375 px each label and its field share a line (S14) | Page tests for each, in both languages where text is involved |
 | AC17 | Help shows one section per feature in English and Spanish; in each language, the text of Help and of "How this is calculated" together is shorter than the rest of the page's text (characters in `strings.json`) (S15) | A page test per language; a length test |
@@ -300,7 +296,7 @@ Sources:
 Rule history (Q7) · other countries and regional holidays · bank closing days · times and time zones · importing or
 exporting holiday lists · user accounts: one local user · Inauguration Day, 5 U.S.C. § 6103(c), a holiday of the
 Washington, D.C. area only (【M】 Q11) · Mexico's local election days as built-in days, left to the user's own list
-(【M】 Q13). 【C】 except where marked. The production deploy is a separate approval of the owner's.
+(【M】 Q13) · a public demo or an external host (【M】 2026-11-15). 【C】 except where marked.
 
 ## Stack and deployment
 
@@ -308,10 +304,9 @@ Delivery rung: 1 — user space, no admin. 【M】 Q9.
 Python and SQLite on localhost (the portfolio's stack); the web framework is chosen in the plan: FastAPI (【M】 Q12,
 2026-10-26).
 Real-wiring path: page → API → SQLite → back.
-Live demo: a preview deploy on Render's free plan (【M】 D8, 2026-10-26). Its local files are *"lost every time the
-service redeploys, restarts, or spins down"*, and it spins down after *"15 minutes without receiving any inbound
-traffic"* (https://render.com/docs/free, retrieved 2026-10-26): the demo page says so (S12, AC14), and AC5 is proven
-in CI and on a local install. The production deploy is a separate decision of the owner's.
+Deployment: Docker only. `Dockerfile` and `compose.yaml` run the app with its database in a named volume, and the
+passing Docker check (CI's `docker` job, `scripts/docker_check.py`) is the deployment validation. No public demo and
+no external host. 【M】 2026-11-15.
 Licence: MIT. 【M】 D2, portfolio-wide, 2026-10-25.
 Interface language: English and Spanish, switchable. 【M】 D3, portfolio-wide, 2026-10-25.
 
@@ -350,9 +345,9 @@ Interface language: English and Spanish, switchable. 【M】 D3, portfolio-wide,
 and K9 carry sources. 2026-10-26: K8 and K9 sourced; the review failed twice; not in effect. 2026-10-26, D1 option A,
 a new condition: Q11–Q15 answered and folded in, and the review passing its next run. Q11–Q15 folded in and the
 review passed on its rerun, 2026-10-26; held by Q16 until answered. Q16 answered and folded in 2026-10-26, and the
-review passed on its rerun: approved, 2026-10-26. Changes after approval: 2026-10-26, D8: the live demo on Render's
-free plan, with a notice that its storage resets on restart (S12, AC14; AC5's proof; *Stack and deployment*),
-approved in the owner's answer: 【M】 *"This answer also approves the SPEC change it requires."* 2026-10-26: the
+review passed on its rerun: approved, 2026-10-26. Changes after approval: 2026-10-26, D8: a live demo with a notice
+that its storage resets on restart (S12, AC14; AC5's proof; *Stack and deployment*), approved in the owner's answer:
+【M】 *"This answer also approves the SPEC change it requires."*; withdrawn 2026-11-15 (below). 2026-10-26: the
 year limit's source added, a correction the review before publication required: every number carries its source;
 confirmed by the owner, 2026-10-27 (D12). 2026-10-27, D25: AC12 reads "on every pull request and every push to
 main", matching CI's triggers, approved in the owner's answer: 【M】 *"Update AC12, the app's CLAUDE.md and the plan to
@@ -362,3 +357,8 @@ main", matching CI's triggers, approved in the owner's answer: 【M】 *"Update 
 (Recommended)"* for where the worked examples' numbers come from (S16, AC18); the options' labels were written by
 Claude. 2026-11-14: the source of S13's and AC15's 4.5:1, WCAG 2.2 success criterion 1.4.3, added after the review
 before publication found it missing, approved in the owner's pick 【M】 *"Add the citation (Recommended)"*.
+2026-11-15: Docker only: S12 and AC14 withdrawn; the live demo's notice removed from S15 and *Expectations*, and its
+mentions from AC1, AC4, AC5, AC11 and AC13; *Stack and deployment* and *Out of scope* rewritten; D8's entry above
+names no host, in the owner's decision:
+【M】 *"Docker only. No public demo and no external host for this project, now or as a pending item. The passing
+Docker check is the deployment validation."*

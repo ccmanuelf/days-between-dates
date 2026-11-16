@@ -124,13 +124,6 @@ def status() -> dict:
     return {"storage": "ok", "schema_version": storage.schema_version()}
 
 
-@app.get("/api/config")
-def config() -> dict:
-    """Whether this server runs as the live demo, whose storage resets on restart (SPEC, S12). Off unless the deploy
-    sets DBD_LIVE_DEMO=1, so a local install never shows the notice."""
-    return {"live_demo": os.environ.get("DBD_LIVE_DEMO") == "1"}
-
-
 @app.get("/api/calendars")
 def calendars() -> dict:
     """Each built-in calendar, its sources and the date its rules were checked (SPEC, AC11)."""

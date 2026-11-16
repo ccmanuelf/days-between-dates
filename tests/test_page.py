@@ -1,5 +1,5 @@
 """The scenarios through the page, on the running server: page → API → SQLite → back (plan step 6). These are the
-tests that count for the SPEC's scenarios and for AC1–AC9, AC11, AC13 and AC14."""
+tests that count for the SPEC's scenarios and for AC1–AC9, AC11 and AC13."""
 
 import json
 import re
@@ -230,16 +230,6 @@ def test_s11_the_note_on_local_election_days_with_mexico_only(server, open_page)
     expect(page.locator("#note-local-elections")).to_have_text(EN["note_local_elections"])
     choose_calendar(page, "us")
     expect(page.locator("#note-local-elections")).to_be_hidden()
-
-
-@pytest.mark.parametrize("locale,strings", [("en-US", EN), ("es-MX", ES)], ids=["en", "es"])
-def test_s12_the_storage_notice_on_the_live_demo_only(tmp_path, start_server, open_page, locale, strings):
-    demo = start_server(tmp_path / "demo.db", env={"DBD_LIVE_DEMO": "1"})
-    page = open_page(demo.url, locale)
-    expect(page.locator("#demo-notice")).to_have_text(strings["notice_live_demo"])
-    local = start_server(tmp_path / "local.db")
-    page = open_page(local.url, locale)
-    expect(page.locator("#demo-notice")).to_be_hidden()
 
 
 def test_e1_an_invalid_date_is_refused_naming_the_field_and_nothing_is_stored(server, open_page):

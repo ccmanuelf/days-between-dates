@@ -12,7 +12,7 @@ two usual conventions (the start date not counted · both dates counted).
   rules were checked.
 - **English and Spanish**, switchable; the choice is stored too.
 - **Help and the formulas**: a Help panel explains the counting, the calendars, your own holidays, reversed dates,
-  past years, local election days, the language, the live demo and the sources, and "How this is calculated" under
+  past years, local election days, the language and the sources, and "How this is calculated" under
   the result shows the formula with a worked example. Each worked example is a known answer, counted by the app's
   own code when the panel opens and checked against the known answers by the tests.
 - **Dark mode and accessibility**: the page follows the system's dark setting; each count is written to a status
