@@ -252,3 +252,10 @@ One entry per guardian: what goes wrong, why, the correct pattern, and the guard
   `tests/guardians/test_every_write_reads_its_body_through_json_body.py`. It does not see a route parameter typed
   `dict`, which needs none of those imports: FastAPI reads that body itself, and took a JSON body over 4096 bytes
   when tried on 2026-11-15. Take the body with `json_body`, not as a typed parameter.
+- **A color the contrast check cannot read.** What goes wrong: a stylesheet writes a color with `color-mix()`,
+  `oklch()`, `oklab()`, `lab()`, `lch()`, `hwb()` or `color()`. Why: AC15's contrast tests read colors with
+  `getComputedStyle` and parse `rgb()` only; Chromium reports these functions in another form, so the test throws, or,
+  on a state it does not measure (a `:hover` it never triggers), the color goes unchecked. On 2026-11-15 a
+  `color-mix()` hover color on the Count button made the error's contrast test throw. Correct pattern: a hex value,
+  `rgb()`, a token from `app/static/tokens.css` or a system color (`Canvas`, `CanvasText`). Guardian:
+  `tests/guardians/test_every_stylesheet_color_is_one_the_contrast_check_reads.py`.

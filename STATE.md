@@ -10,13 +10,22 @@ Updated 2026-11-15. A snapshot, replaced at each close (close-session); the hist
   (cards, a type and spacing scale, buttons and fields with hover, focus, press and invalid states, light and dark),
   and Help made a user guide at the top of the page: an introduction, its contents, and one section per feature, four
   of them with worked examples from the known answers (K1, K3, K9a, K10, K4), the first also with the dates accepted,
-  in English and Spanish, each section at most 150 words (SPEC, S15 and AC17, changed with the owner's approval). A
-  refused date marks its field and shows its message beside the form that sent it.
+  in English and Spanish, each section at most 150 words. SPEC S15 and AC17 follow the owner's request and answer,
+  quoted in *Approval*; the ceiling, S15's introduction, contents and dates, and S13's and AC15's light clause
+  narrowed to the four color tokens are the agent's reading, marked 【C】. A refused date marks the field it was typed
+  into, and each message shows where it belongs. A guardian keeps colors the contrast check cannot read out of the
+  stylesheets. `JUDGMENT.md` gains the entry pull request #18's review called for.
 
 ## Checked on this branch (2026-11-15)
 
-- The full suite on this machine: 208 passed (202 on `main`).
-- The new and changed tests failed on `main`'s code before the change (15 failed).
+- The full suite on this machine: 213 passed. On `main`, CI's run 43801865608 (pull request #18's last head, whose
+  tree `main` has): 202 passed.
+- Before the change, 15 of the new and changed tests failed on `main`'s code; the in-view test, which `main` already
+  met, passed there and failed under mutation R9. The K10 test, under its final name, fails on `main`'s code. After
+  the review, its five new or changed page tests (a failed removal, a language not stored, the guide's `h2`
+  headings) failed before their fix.
+- The color guardian: red on `style.css` with the `color-mix()` hover put back, all seven fixture lines flagged,
+  green on this code.
 - Nine mutations, each breaking one guarantee of this branch (K10's own day, the last date accepted, the
   invalid mark, where the error shows, a section over 150 words, the weekday's form, a hidden example, a hover
   color the contrast check cannot read, Help moved below the page): each made its test fail.

@@ -229,3 +229,26 @@ def test_an_error_marks_its_field_and_shows_beside_its_form(server, open_page):
     assert invalid_fields(page) == []
     expect(page.locator("#error")).to_be_hidden()
     expect(page.locator("#start")).not_to_have_attribute("aria-describedby", "error")
+
+
+def test_a_failed_removal_marks_no_field_and_shows_beside_the_list(server, open_page):
+    """A day removed elsewhere (another tab) cannot be removed again: the message shows beside the list and its add
+    form, and the empty field for a new day is not marked invalid, since the user typed nothing there."""
+    page = open_page(server.url)
+    add_holiday(page, "2026-10-28")
+    status, _ = server.call("DELETE", "/api/holidays/mx/2026-10-28")
+    assert status == 204
+    settle(page, lambda: page.click("#own-list li[data-day='2026-10-28'] button.remove"))
+    expect(page.locator("#error")).to_have_text(EN["error_not_found"].replace("{field}", EN["field_day"]))
+    assert error_follows(page, "add-form")
+    assert invalid_fields(page) == []
+
+
+def test_a_language_not_stored_shows_at_the_top_of_the_page(server, open_page):
+    """The language field is in the page's header: its message shows at the top of the page, not in the count form."""
+    page = open_page(server.url)
+    page.route("**/api/language", lambda route: route.abort() if route.request.method == "PUT" else route.continue_())
+    page.select_option("#language", "es")
+    expect(page.locator("#error")).to_have_text(ES["error_language_not_stored"])
+    assert page.evaluate("document.querySelector('main').firstElementChild.id") == "error"
+    assert invalid_fields(page) == []

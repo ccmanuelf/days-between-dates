@@ -26,8 +26,8 @@ class Count:
 def count(
     calendar: str, start: date, end: date, today: date | None = None, own_holidays: list[date] | None = None
 ) -> Count:
-    """`own_holidays`, when given, replaces the stored list: the guide's worked examples pass none, as the known
-    answers assume (SPEC, S16)."""
+    """`own_holidays`, when given, replaces the stored list: the guide's worked examples pass the days their known
+    answer names, none except K10's one day (SPEC, S16)."""
     days = count_days(start, end)
     rules = CALENDARS[calendar]
     own_days = storage.list_holidays(calendar) if own_holidays is None else own_holidays

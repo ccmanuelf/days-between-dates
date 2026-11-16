@@ -157,7 +157,7 @@ details[open] > summary::after { transform: rotate(-135deg); }
 .guide-contents ol { margin: 0; padding-left: 1.25rem; columns: 2 14rem; column-gap: var(--space-6); }
 .guide-contents li { margin-bottom: var(--space-1); break-inside: avoid; }
 .guide-section { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--line); scroll-margin-top: var(--space-4); }
-.guide-section h3 { margin: 0 0 var(--space-2); font-size: var(--text-lg); }
+.guide-section h2 { margin: 0 0 var(--space-2); font-size: var(--text-lg); }
 .guide-text { max-width: 65ch; margin-bottom: var(--space-2); }
 .guide-example, .how-example {
   margin: var(--space-2) 0 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);

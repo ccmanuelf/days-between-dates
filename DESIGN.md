@@ -91,7 +91,8 @@ analytical capability: columns, units, notices and sources stay.
 
 The look is quiet and monochrome: the browser's own canvas and text, neutral gray cards, black (in dark mode, white)
 primary buttons, and color where it means something: the error in red, a notice on its warm tint, links in the
-browser's blue. Restyled 2026-11-15 on the owner's word, within this file's palette.
+browser's blue. Restyled 2026-11-15 on the owner's word, within this file's palette, which gained three neutral
+grays (*Colors*).
 
 The owner's visual standard applies its rules to new apps; this app predates it and is not restyled to its palette.
 What this app takes from it: charts are drawn with ECharts, motion uses the standard's tokens, and dark mode uses
@@ -160,13 +161,14 @@ Every button, field, list and panel toggle is at least 24px tall (WCAG 2.2, 2.5.
 - **Notices and notes**: a notice (tinted background, an information icon) reports something about this result; a
   note (muted text) explains a convention.
 - **Error**: an alert icon and the message in `--error`, framed in the same color, on the page's color. It shows
-  beside the form that sent the refused value; the field it names gets `aria-invalid` and a red edge, and points to
-  the message with `aria-describedby`; the next accepted request clears both.
+  where it belongs: beside the form that sent a refused value, beside the list when a removal fails, at the top of the
+  page when a language choice is not stored. A field the user typed a refused value into gets `aria-invalid` and a red
+  edge, and points to the message with `aria-describedby`; the next accepted request clears both.
 - **Help and user guide**: a card at the top of the page, closed until opened; its toggle carries a question-mark
   badge and a chevron that turns when it opens. Inside: a short introduction, the contents (a numbered list of links,
-  in two columns when there is room), then one section per feature SPEC S15 lists, each with its heading and its text,
-  and its worked examples where it has any, each example in its own block on `Canvas`. The section on a range also
-  names the first and last dates accepted.
+  in two columns when there is room), then one section per feature SPEC S15 lists, each with its heading (an `h2`,
+  under the page's `h1`) and its text, and its worked examples where it has any, each example in its own block on
+  `Canvas`. The section on a range also names the first and last dates accepted.
 - **How this is calculated**: one disclosure under the result table for total days and one for business days: the
   formula, then a worked example in its own block.
 - **Worked examples**: their numbers come from the API (`/api/guide`), counted when a panel opens; a weekday beside a
@@ -180,8 +182,8 @@ Every button, field, list and panel toggle is at least 24px tall (WCAG 2.2, 2.5.
 The two transitions and the one animation in `style.css` read the motion tokens in `tokens.css`. Color and border
 changes and a button's press take `--duration-fast` with `--ease-out`; a chevron turns in `--duration-base` with
 `--ease-in-out`, times `--motion-scale`; an opened panel's content fades in over `--duration-slow` with `--ease-out`,
-rising 0.25rem times `--motion-scale`. Under reduced motion, `--motion-scale` is 0: nothing moves or turns, and the
-fade keeps its duration.
+rising 0.25rem times `--motion-scale`. Under reduced motion, `--motion-scale` is 0: no transition or animation moves
+anything, a chevron flips at once, and the fade keeps its duration.
 
 ## Do's and Don'ts
 
@@ -189,7 +191,8 @@ fade keeps its duration.
 - Do: write motion with the tokens in `app/static/tokens.css`: `--duration-fast` 150ms, `--duration-base` 200ms,
   `--duration-slow` 250ms, `--ease-out`, `--ease-in-out`, and every translate, scale or turn multiplied by
   `--motion-scale`, which is 0 under reduced motion. UI motion stays under 300ms.
-- Do: take colors, spaces, radii and durations from a token or a system color. Tokens no rule reads yet (the
+- Do: take colors and durations from a token or a system color, and the space between elements from the spacing
+  scale; an icon's size, a list's indent or a select's arrow is written in `style.css`. Tokens no rule reads yet (the
   exception in `CLAUDE.md`, *Definition of done*): none. As of 2026-11-15, each of the 28 custom properties
   `tokens.css` declares is read by `style.css` (searched for `var(<name>)` of each).
 - Do: give every string shown on the page an English and a Spanish text in `app/static/strings.json`.
@@ -197,4 +200,5 @@ fade keeps its duration.
   and write no digit into its strings: the figures come from the API's count (AC17, AC18).
 - Don't: remove a column, a notice or a source to make the page look simpler.
 - Don't: restyle the page to another palette without the owner's word.
-- Don't: use `color-mix()` or another color space for a background or a text color: AC15's tests read RGB only.
+- Don't: use `color-mix()` or another color space for a background or a text color: AC15's tests read RGB only. The
+  guardian `tests/guardians/test_every_stylesheet_color_is_one_the_contrast_check_reads.py` fails on one.

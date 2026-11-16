@@ -88,7 +88,7 @@ def test_s15_help_has_one_section_per_feature_with_its_examples(server, open_pag
     examples = examples_by_role(server)
     expect(page.locator("#help .guide-intro")).to_have_text(strings["help_intro"])
     titles = [strings[f"help_{s}_title"] for s in SECTIONS]
-    expect(page.locator("#help .guide-section h3")).to_have_text(titles)
+    expect(page.locator("#help .guide-section h2")).to_have_text(titles)
     contents = page.locator("#help .guide-contents a")
     expect(contents).to_have_text(titles)
     assert contents.evaluate_all("as => as.map(a => a.getAttribute('href'))") == [f"#guide-{s}" for s in SECTIONS]
@@ -131,7 +131,7 @@ def test_s16_a_language_switch_rewrites_the_open_guide(server, open_page):
     page = open_page(server.url)
     settle(page, lambda: page.click("#help-toggle"))
     choose_language(page, "es")
-    expect(page.locator("#help .guide-section h3").first).to_have_text(ES["help_range_title"])
+    expect(page.locator("#help .guide-section h2").first).to_have_text(ES["help_range_title"])
     expect(section(page, "range").locator(".guide-text").first).to_have_text(ES["help_range"].split("\n\n")[0])
     expect(section(page, "business").locator(".guide-example").first).to_contain_text(WEEKDAYS["es"][4])  # viernes
 

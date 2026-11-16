@@ -68,11 +68,14 @@ function errorText(answer) {
   return t(`error_${error.code}`, { field: error.field ? t(`field_${error.field}`) : "" });
 }
 
-// The message shows beside the form its field belongs to, and that field is marked invalid and points to it.
-function showError(text, field = null) {
+// The message shows where it belongs: "add" beside the list and its add form, "top" at the top of the page (the
+// language field is in the header), otherwise beside the count form. A field the user typed a refused value into is
+// marked invalid and points to the message.
+function showError(text, { field = null, place = field === "day" ? "add" : "count" } = {}) {
   clearInvalid();
   const error = $("error");
-  (field === "day" ? $("add-form") : $("count-form")).after(error);
+  if (place === "top") document.querySelector("main").prepend(error);
+  else $(place === "add" ? "add-form" : "count-form").after(error);
   if (FIELDS[field]) {
     $(FIELDS[field]).setAttribute("aria-invalid", "true");
     $(FIELDS[field]).setAttribute("aria-describedby", "error");
@@ -82,9 +85,9 @@ function showError(text, field = null) {
 }
 
 // A storage failure takes the count off the screen too: the message says no count is shown (SPEC, AC9).
-function showFailure(answer) {
+function showFailure(answer, where = { field: answer.body?.error?.field }) {
   if (answer.body?.error?.code === "storage") hideResult();
-  showError(errorText(answer), answer.body?.error?.field);
+  showError(errorText(answer), where);
 }
 
 function clearInvalid() {
@@ -178,7 +181,7 @@ function renderGuide() {
     links.lastChild.append(link);
     const section = element("section", "guide-section");
     section.id = `guide-${id}`;
-    const heading = element("h3", null, title);
+    const heading = element("h2", null, title);
     heading.id = `guide-${id}-title`;
     section.setAttribute("aria-labelledby", heading.id);
     section.append(heading, ...t(`help_${id}`).split("\n\n").map((text) => element("p", "guide-text", text)));
@@ -301,7 +304,7 @@ async function count() {
     renderResult(answer.body);
   } else {
     hideResult();
-    showError(errorText(answer), answer.body?.error?.field);
+    showError(errorText(answer), { field: answer.body?.error?.field });
   }
 }
 
@@ -358,7 +361,7 @@ async function removeHoliday(calendar, day) {
     clearError();
     await afterListChange();
   } else {
-    showFailure(answer);
+    showFailure(answer, { place: "add" }); // nothing was typed: no field is marked
   }
 }
 
@@ -371,7 +374,7 @@ function switchLanguage(chosen) {
     const answer = await api("PUT", "/api/language", { language: chosen });
     if (request !== languageRequest) return;
     if (answer.status === 200) clearError();
-    else showError(t("error_language_not_stored"));
+    else showError(t("error_language_not_stored"), { place: "top" });
   });
 }
 
