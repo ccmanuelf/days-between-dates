@@ -1,6 +1,6 @@
 """The security audit's fixes of 2026-11-15, on the running server: a write with a body (adding a holiday, storing the
 language) must be sent as application/json, at most 4096 bytes; a request must be addressed to a known host name; and
-environment files stay out of git."""
+environment files stay out of git. Also, since 2026-11-16, FastAPI's documentation routes are not served."""
 
 import http.client
 import json
@@ -126,3 +126,10 @@ def test_environment_files_are_ignored_by_this_repository(name):
     source, _, pattern = result.stdout.split("\t")[0].split(":", 2)
     assert source == ".gitignore", result.stdout
     assert not pattern.startswith("!"), f"{name} is un-ignored: {result.stdout.strip()}"
+
+
+@pytest.mark.parametrize("path", ["/docs", "/redoc", "/openapi.json", "/docs/oauth2-redirect"])
+def test_the_framework_documentation_routes_are_not_served(server, path):
+    """Nothing on the page calls FastAPI's documentation routes, so the app does not serve them (no orphans)."""
+    status, _ = send(server, "GET", path)
+    assert status == 404, (path, status)

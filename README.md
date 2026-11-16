@@ -81,6 +81,25 @@ that every control on the page reaches a route, every route has a caller, and ev
 (`scripts/orphans.py`). CI also builds the Docker image and checks the running container, its volume included
 (`scripts/docker_check.py`). The specification, with its scenarios, acceptance criteria and sources, is `SPEC.md`.
 
+## Updating the Python pins
+
+`requirements.txt` and `requirements-dev.txt` are generated from the two `.in` files, and pin every package in the
+tree, on every platform (`--universal`: a package one platform needs, such as colorama on Windows, is pinned with its
+marker). The cutoff makes the tool enforce the two-week rule: it can't see a release younger than two weeks.
+
+```
+# On Linux: CUTOFF="$(date -u -d '14 days ago' +%Y-%m-%dT%H:%M:%SZ)"
+CUTOFF="$(date -u -v-14d +%Y-%m-%dT%H:%M:%SZ)"
+uv pip compile requirements.in --universal --python-version 3.13 --exclude-newer "$CUTOFF" -o requirements.txt
+uv pip compile requirements-dev.in --universal --python-version 3.13 --exclude-newer "$CUTOFF" -o requirements-dev.txt
+```
+
+A rerun keeps the current pins and updates the cutoff in the file's header. Add `--upgrade` to both commands to move to
+the newest allowed releases. If a version named in an `.in` file is too new, the command stops with an error: that is
+the rule working. `tests/test_pins.py` checks that each list starts with uv's header and names an `--exclude-newer`
+cutoff, that each pin an `.in` file names is in its compiled list at the same version, and that every runtime pin is
+tested at the same version.
+
 ## Licence
 
 MIT. See `LICENSE`.

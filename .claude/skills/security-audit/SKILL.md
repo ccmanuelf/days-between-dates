@@ -1,6 +1,6 @@
 ---
 name: security-audit
-description: Read-only security audit of the whole app, run only with /security-audit, which the owner types, once before each release. Checks input validation, injection and secrets always, and IDOR, auth and roles, tokens and links, rate limits and headers when the app has logins. Reports a table per area and the top 5 fixes, and flags overlap with /security-review. Changes no file.
+description: Read-only security audit of the whole app, run only with /security-audit, which the owner types, once before each publish. Checks input validation, injection and secrets always, and IDOR, auth and roles, tokens and links, rate limits and headers when the app has logins. Reports a table per area and the top 5 fixes, and flags overlap with /security-review. Changes no file.
 disable-model-invocation: true
 disallowed-tools: Edit, Write, NotebookEdit, Bash, WebFetch, WebSearch
 ---
@@ -12,8 +12,8 @@ WebFetch, WebSearch). Tools from MCP servers, and the Agent tool, are not on tha
 files, runs processes or reaches the network. The list does not enforce this line; it is an instruction. It reads
 the whole app, not only a diff, and starts no server.
 
-Run it once before each release (`CLAUDE.md`, *Where the agent stops*). Not before every push, although every push
-to this public repository is publication (*Publication check* in `CLAUDE.md`).
+Run it once before each publish: the repository's first push, each release and each production deploy. Not before
+every push, although every push to this public repository is publication (*Publication check* in `CLAUDE.md`).
 
 ## 1. Areas
 
