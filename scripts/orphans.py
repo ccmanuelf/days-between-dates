@@ -2,8 +2,8 @@
 the app has a caller, and every table is written and read.
 
 It starts the server on a scratch database, drives every control of the page in a real browser and records each
-request the page makes. FastAPI's own documentation routes (/docs, /docs/oauth2-redirect, /redoc, /openapi.json) are
-the framework's, not the app's, and are left out by name. Tables are read from the SQL in app/storage.py.
+request the page makes. FastAPI's documentation routes are turned off (app/main.py), so every route is the app's.
+Tables are read from the SQL in app/storage.py.
 
     python scripts/orphans.py        # prints one orphan per line; exits 1 if there is any
 
@@ -24,7 +24,6 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 ROOT = Path(__file__).resolve().parent.parent
-FRAMEWORK_ROUTES = {"/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc"}
 
 
 def app_routes() -> list[tuple[str, str, re.Pattern]]:
@@ -37,7 +36,7 @@ def app_routes() -> list[tuple[str, str, re.Pattern]]:
     return [
         (method, route.path, route.path_regex)
         for route in app.routes
-        if isinstance(route, APIRoute) and route.path not in FRAMEWORK_ROUTES
+        if isinstance(route, APIRoute)
         for method in sorted(route.methods)
     ]
 

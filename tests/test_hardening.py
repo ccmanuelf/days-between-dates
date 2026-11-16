@@ -126,3 +126,10 @@ def test_environment_files_are_ignored_by_this_repository(name):
     source, _, pattern = result.stdout.split("\t")[0].split(":", 2)
     assert source == ".gitignore", result.stdout
     assert not pattern.startswith("!"), f"{name} is un-ignored: {result.stdout.strip()}"
+
+
+@pytest.mark.parametrize("path", ["/docs", "/redoc", "/openapi.json", "/docs/oauth2-redirect"])
+def test_the_framework_documentation_routes_are_not_served(server, path):
+    """Nothing on the page calls FastAPI's documentation routes, so the app does not serve them (no orphans)."""
+    status, _ = send(server, "GET", path)
+    assert status == 404, (path, status)

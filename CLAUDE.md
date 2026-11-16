@@ -53,7 +53,7 @@ If any item above was not done, the task is not done, and saying it is done is t
 - The agent carries the agreed plan to the end without stopping: commit, push, pull request, CI, merge, and the merged
   branch deleted. It stops and asks the owner only for a scope change, a new product decision, or an irreversible step
   outside the plan, and where another line of this file says to ask (an ambiguous SPEC, a gate set aside, a command
-  denied twice, a change to CI, the security audit before a release). A failed CI test it fixes itself, and asks only
+  denied twice, a change to CI, the security audit before a publish). A failed CI test it fixes itself, and asks only
   if the fix changes behaviour the owner agreed.
 - A command denied by a permission check is retried once, as one plain command with no pipe or chain; denied again,
   the agent asks the owner.
@@ -66,11 +66,13 @@ If any item above was not done, the task is not done, and saying it is done is t
   the owner's. Then it reads the merge back: the merge commit with its trailer, and `main` matching the merged
   branch. Once the read-back passes, and only with a clean working tree, it switches to `main`, runs
   `git fetch --prune` and `git merge --ff-only origin/main`, and deletes the merged local branch with
-  `git branch -d`, never `-D`.
+  `git branch -d`, never `-D`. Pruning first makes `-d` refuse a branch whose commits are not in `main`; a merged
+  branch's commits live on in `main`.
 - The agent never suggests a `!` command for anything a rule or deny rule blocks: a `!` command runs past the deny
   rules.
-- Once before each release (not every push), the agent asks the owner to run `/security-audit`, the read-only audit
-  of the whole app, and releases nothing until its report has gone to the owner.
+- Once before each publish (the repository's first push, each release and each production deploy; not every push),
+  the agent asks the owner to run `/security-audit`, the read-only audit of the whole app, and publishes nothing
+  until its report has gone to the owner.
 
 ## Rules
 
@@ -141,9 +143,10 @@ Write a guardian when all three are true:
 Otherwise, the fix and its normal test are enough.
 
 How:
-- Prefer a rule in a free Python linter when it can express the pattern; use a scan test in pytest when it cannot.
-  Either way it runs in the check command, so CI enforces it, and it is never skipped or deselected. No paid
-  services. Adding a linter to the check command changes CI: ask the owner first.
+- Prefer a rule in the stack's own free linter when it can express the pattern. Use a scan test in the app's own
+  test runner when it cannot. Either way it runs in the normal check command, so CI enforces it, and it is never
+  skipped or deselected. No paid services. If the linter is not yet in the check command, adding it changes CI: ask
+  the owner first.
 - Every guardian has:
   1. A name that states the rule in plain, positive words, under `tests/guardians/`.
   2. A scan of all source files that reports each hit with file, line, and what to use instead.
@@ -173,8 +176,8 @@ words, approvals and notes stay outside this repository (close-session).
 
 ## Proven work
 
-Before the app's first release, the README gains a section called "Proven work", kept current
-after. In this order:
+Once the app meets the definition of done, and before its first release or production deploy, the README gains a
+section called "Proven work", kept current after. In this order:
 
 1. Problem: who has it, and what it costs them: a number only if it was measured, with its source; otherwise in words.
 2. What I built: screenshots, with made-up data only.
@@ -187,7 +190,8 @@ after. In this order:
 Claude Code drafts it, marking each part the owner writes `[OWNER: …]`. Those parts are the owner's account, not
 wording: *Rules* (wording settled by the agent) does not cover them. The draft is not committed while a marker
 remains: every pushed commit is published, its history included. A session without the owner leaves the draft
-uncommitted and names it in its close-session list.
+uncommitted and names it in its close-session list. The owner's input is about 15 minutes per app (the owner's
+estimate).
 
 Its publication check (*Publication check*, above, run by the reviewer agent) also fails on:
 - an `[OWNER:` marker left;

@@ -44,7 +44,8 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="Days between dates", lifespan=lifespan)
+# No /docs, /redoc or /openapi.json: nothing on the page calls them (no orphans).
+app = FastAPI(title="Days between dates", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
