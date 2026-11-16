@@ -45,14 +45,16 @@ If any item above was not done, the task is not done, and saying it is done is t
 - The agent's work ends at: pull request open, checks green, and one separate review, by a pass that did not do the
   work, run and answered. Claude Code then merges it (below).
 - The separate review is the reviewer agent in `.claude/agents/reviewer.md`, run as its own subagent, never as a fork
-  (a fork inherits this conversation). It returns its findings and `"passed"`, true or false.
+  (a fork inherits this conversation). It returns its findings and `"passed"`, true or false. A pass that returns
+  FAIL for missing inputs is not the review pass: the session supplies them and runs it.
 - One review pass and one publication check per pull request. A finding about wording only is fixed once, without a
   rerun. Any other finding is fixed, with a test when it is about behaviour, and the checks rerun; the review is not
   run again.
 - The agent carries the agreed plan to the end without stopping: commit, push, pull request, CI, merge, and the merged
   branch deleted. It stops and asks the owner only for a scope change, a new product decision, or an irreversible step
-  outside the plan; the other asks in this file are cases of these. A failed CI test it fixes itself, and asks only if
-  the fix changes behaviour the owner agreed.
+  outside the plan, and where another line of this file says to ask (an ambiguous SPEC, a gate set aside, a command
+  denied twice, a change to CI, the security audit before a release). A failed CI test it fixes itself, and asks only
+  if the fix changes behaviour the owner agreed.
 - A command denied by a permission check is retried once, as one plain command with no pipe or chain; denied again,
   the agent asks the owner.
 - The agent never pushes to `main` and never runs `git add -A`. It stages named files only.
@@ -101,8 +103,8 @@ If any item above was not done, the task is not done, and saying it is done is t
 ## Publication check
 
 This repository is public, so a push, a commit message, a branch name, pull-request text, release notes and deploy
-settings are all publication. Before any of them leaves the working machine (in a cloud session, the session's
-machine), a pass that did not write the content, the reviewer agent, checks it for:
+settings are all publication. Once per pull request (*Where the agent stops*), before its first push, a pass that did
+not write the content, the reviewer agent, checks it for:
 
 1. Names of people, companies or clients that are not already public in this repository.
 2. Numbers or data whose source is not public.
@@ -117,11 +119,12 @@ It also checks every "only", "none", "nothing", "all" or "never" used as a claim
 other docs, comments, commit messages, pull-request text): each names what was searched or counted, and where, or its
 sentence narrows itself ("in X", "as far as Y showed"); one that does neither is a finding.
 
-The result is PASS, or numbered findings, each with a proposed fix. It runs once per pull request (*Where the agent
-stops*), and the agent fixes each finding: one about wording once, without a rerun, with the choice and its reason in
-the work log; one that would publish something under items 1 to 5, before anything leaves the machine, named in its
-report. When unsure, the check fails. After anything is posted, read back what was posted and compare it with what
-was checked.
+The result is PASS, or numbered findings, each with a proposed fix. The agent fixes each finding: one about wording
+once, without a rerun, with the choice and its reason in the work log; one that would publish something under items 1
+to 5, before anything leaves the machine, named in its report. Content changed after the check, by those fixes or
+later in the pull request, leaves without a second check, each change logged in the work log. When unsure, the check
+fails. After anything is posted, read back what was posted and compare it with what was checked and the logged
+changes.
 
 The README's *Proven work* section (below) gets this check and the extra checks listed there.
 
@@ -181,7 +184,8 @@ after. In this order:
 6. What I'd do differently.
 7. Where it applies.
 
-Claude Code drafts it, marking each part the owner writes `[OWNER: …]`. The draft is not committed while a marker
+Claude Code drafts it, marking each part the owner writes `[OWNER: …]`. Those parts are the owner's account, not
+wording: *Rules* (wording settled by the agent) does not cover them. The draft is not committed while a marker
 remains: every pushed commit is published, its history included. A session without the owner leaves the draft
 uncommitted and names it in its close-session list.
 

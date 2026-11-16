@@ -1,6 +1,6 @@
 ---
 name: close-session
-description: End-of-session routine, run only with /close-session. Rewrites STATE.md, saves what the session taught to the owner's memory (the /reflect step) and proposes rules learned, checks for secrets, and stops with the list of files to commit. Commits on the owner's go, given in words; pushes only the feature branch, after the publication check; does not merge (the merge follows the review, CLAUDE.md › Where the agent stops).
+description: End-of-session routine, run only with /close-session. Rewrites STATE.md, saves what the session taught to the owner's memory (the /reflect step) and proposes rules learned, checks for secrets, commits the named files on the open work's feature branch and pushes that branch, then reports. Does not merge (the merge follows the review, CLAUDE.md › Where the agent stops).
 disable-model-invocation: true
 ---
 
@@ -29,25 +29,24 @@ owner's words, approvals and private notes are kept outside this repository.
    main>...HEAD`), report by file and line only, never the matched text, anything that looks like a secret: `.env`
    files, keys, tokens, passwords, `*.pem`, connection strings. If anything is found, stop and tell the owner before
    anything else.
-5. Stop and report, opening with one line: `Needed from you: nothing` or `Needed from you: <one thing>` (with the
-   owner present, usually the go to commit). Then:
+5. Commit, push and report. Stage the named files and commit them on the open work's feature branch, so the records
+   go into that work's pull request (CLAUDE.md › Rules: no records-only rounds), and push that branch, never `main`.
+   The pull request's one publication check (CLAUDE.md › Publication check) runs before its first push; content
+   changed after it leaves without a second check, each change logged in the work log. Then report, opening with one
+   line: `Needed from you: nothing` or `Needed from you: <one thing>`. Then:
    - the current branch, and whether it is ahead of or behind its upstream. If it is `main`, create a feature branch
      (`git switch -c <short-name>`) before anything is staged, and say so;
    - every changed or new file, by name, with one line on why it changed. A file the session created or changed that
      `git status` does not list is ignored: check it with `git check-ignore -v <file>` and name the rule;
-   - the exact staging command with named files only; `git add -f` only for a file the owner means to commit that a
+   - the staging command used, with named files only; `git add -f` only for a file the owner means to commit that a
      tooling-folder rule (such as `.claude/`) hides, never for one a secrets rule hides;
-   - a proposed commit message;
+   - the commit message used;
    - the memory step's report (step 3), in the sections /reflect's report uses, or why it was skipped;
-   - once it has run before a push, the publication check's verdict: PASS, or its numbered findings. On a FAIL,
-     report the numbered findings with their proposed fixes and stop; apply none until the owner decides (CLAUDE.md
-     › Publication check);
+   - the publication check's verdict, PASS or its numbered findings, and how each was fixed: a wording finding once,
+     without a rerun, the choice and its reason in the work log; one under its items 1 to 5 before the push, named
+     here (CLAUDE.md › Publication check);
    - three closing lines: Not done, Not verified, Decided alone, each "none" when empty, never dropped.
-   When the owner is present, the session waits for the owner's go, given in words, then stages and commits the
-   named files and pushes its feature branch, never `main`, after the publication check passes. The merge comes
-   later, after the checks and the separate review (CLAUDE.md › Where the agent stops), not in this routine.
-   When the session runs without the owner, it commits the named files on its feature branch and pushes that
-   branch, never `main`, after the publication check passes, so the work survives the session. The publication
-   check is defined in CLAUDE.md › Publication check.
+   The merge comes later, after the checks and the separate review (CLAUDE.md › Where the agent stops), not in this
+   routine.
 
 Never run `git add -A` or `git add .`, never push to `main`, never merge from this routine, never use --force.

@@ -24,10 +24,9 @@ Updated 2026-11-15. A snapshot, replaced at each close (close-session); the hist
 
 ## Pending
 
-- The owner's decision: the cost of a count over years 1 to 9999, reopened by the owner on 2026-11-15 after the earlier
-  pick "Keep as is": "The only product decision left for me is the cost of supporting years 1 to 9999." Measured on this
-  machine against the running server: 0.08 s for Mexico's calendar and 0.16 s for the United States', about 0.001 s for
-  one year.
+- The owner's decision: the cost of a count over years 1 to 9999, reopened on 2026-11-15 as the owner's one open
+  product decision, after the earlier pick "Keep as is". Measured on this machine against the running server: 0.08 s
+  for Mexico's calendar and 0.16 s for the United States', about 0.001 s for one year.
 - Before the first release: the README gains *Proven work* (`CLAUDE.md`, *Proven work*).
 - An intermittent failure seen once on 2026-11-14 in
   `test_e3_a_storage_failure_on_an_edit_takes_the_count_off_the_screen[add-unwritable]`; its cause is not
@@ -43,8 +42,8 @@ Updated 2026-11-15. A snapshot, replaced at each close (close-session); the hist
 - After `/security-audit`: merge pull request #14, then fix the audit's top four findings and the review's three
   minor findings in one follow-up pull request (#15, merged).
 - The working rules now in `CLAUDE.md`, effective 2026-11-15.
-- "Docker only. No public demo and no external host for this project, now or as a pending item. The passing Docker
-  check is the deployment validation." The question of one database serving every visitor of a demo is dropped.
+- Docker only, with no public demo or external host; the passing Docker check is the deployment validation (SPEC,
+  *Approval*, 2026-11-15). The question of one database serving every visitor of a demo is dropped.
 
 ## Last session (2026-11-14 and 2026-11-15)
 

@@ -1,5 +1,5 @@
 """The scenarios through the page, on the running server: page → API → SQLite → back (plan step 6). These are the
-tests that count for the SPEC's scenarios and for AC1–AC9, AC11, AC13 and AC14."""
+tests that count for the SPEC's scenarios and for AC1–AC9, AC11 and AC13."""
 
 import json
 import re
