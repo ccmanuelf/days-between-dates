@@ -7,7 +7,7 @@ from playwright.sync_api import expect
 
 from test_page import EN, ES, STRINGS, choose_language, count, settle
 
-SECTIONS = ["range", "business", "own", "reversed", "past", "elections", "language", "demo", "sources"]
+SECTIONS = ["range", "business", "own", "reversed", "past", "elections", "language", "sources"]
 WITH_EXAMPLE = {"range": "total", "business": "business", "reversed": "reversed"}
 
 

@@ -22,7 +22,8 @@ the known answer every time, not once.
 
 A task is done only when all of these are true:
 
-- Every acceptance criterion in `SPEC.md` passes, the scenarios run without crashing, and a live demo exists.
+- Every acceptance criterion in `SPEC.md` passes, the scenarios run without crashing, and the Docker check passes:
+  it is the deployment validation; there is no public demo and no external host.
 - Each criterion is verified through the real wiring: page → API → SQLite → back, on the running server. Every UI
   action reaches that path, the path runs, and it returns real data.
 - No orphans: every UI control reaches a backend path that executes; every endpoint has a caller, or it is removed;
@@ -35,32 +36,39 @@ A task is done only when all of these are true:
 - The known-answer checks run on every pull request and every push to `main`, against reference values that carry a
   source.
 - Checks are green.
-- Done is shown with evidence (test output, the orphan list, the live demo), never asserted.
+- Done is shown with evidence (test output, the orphan list, the Docker check), never asserted.
 
 If any item above was not done, the task is not done, and saying it is done is the failure.
 
 ## Where the agent stops
 
-- The agent's work ends at: pull request open, checks green, and a separate review, by a pass that did not do the
-  work, passed. Claude Code then merges it (below).
+- The agent's work ends at: pull request open, checks green, and one separate review, by a pass that did not do the
+  work, run and answered. Claude Code then merges it (below).
 - The separate review is the reviewer agent in `.claude/agents/reviewer.md`, run as its own subagent, never as a fork
-  (a fork inherits this conversation). It passed when it returned `"passed": true`.
-- After a reviewer FAIL, the working session fixes the findings, then reruns the checks and the reviewer, once. If it
-  fails again, stop and report the findings to the owner, instead of trying again.
+  (a fork inherits this conversation). It returns its findings and `"passed"`, true or false.
+- One review pass and one publication check per pull request. A finding about wording only is fixed once, without a
+  rerun. Any other finding is fixed, with a test when it is about behaviour, and the checks rerun; the review is not
+  run again.
+- The agent carries the agreed plan to the end without stopping: commit, push, pull request, CI, merge, and the merged
+  branch deleted. It stops and asks the owner only for a scope change, a new product decision, or an irreversible step
+  outside the plan; the other asks in this file are cases of these. A failed CI test it fixes itself, and asks only if
+  the fix changes behaviour the owner agreed.
+- A command denied by a permission check is retried once, as one plain command with no pipe or chain; denied again,
+  the agent asks the owner.
 - The agent never pushes to `main` and never runs `git add -A`. It stages named files only.
 - Claude Code merges work the owner agreed (the owner approves the plan once), after the checks are green and the
-  separate review passed. No other agent merges, and nothing the owner has not agreed is merged. It merges with
-  `gh pr merge <n> --repo ccmanuelf/days-between-dates --merge --delete-branch --match-head-commit <reviewed head>`,
-  so a branch that moved after the review is not merged, and `--body` set to the pull request's title, a blank line
-  and the `Co-Authored-By:` trailer its commits carry, so its merges stand apart from the owner's. Then it reads the
-  merge back: the merge commit with its trailer, and `main` matching the reviewed branch. Once the read-back passes,
-  and only with a clean working tree, it switches to `main`, runs `git fetch --prune` and
-  `git merge --ff-only origin/main`, and deletes the merged local branch with `git branch -d`, never `-D`.
+  separate review's findings are fixed. No other agent merges, and nothing the owner has not agreed is merged. It
+  merges with `gh pr merge <n> --repo ccmanuelf/days-between-dates --merge --delete-branch --match-head-commit
+  <checked head>`, so a branch that moved after its last green checks is not merged, and `--body` set to the pull
+  request's title, a blank line and the `Co-Authored-By:` trailer its commits carry, so its merges stand apart from
+  the owner's. Then it reads the merge back: the merge commit with its trailer, and `main` matching the merged
+  branch. Once the read-back passes, and only with a clean working tree, it switches to `main`, runs
+  `git fetch --prune` and `git merge --ff-only origin/main`, and deletes the merged local branch with
+  `git branch -d`, never `-D`.
 - The agent never suggests a `!` command for anything a rule or deny rule blocks: a `!` command runs past the deny
   rules.
-- Once before each publish (each release and each production deploy; not every push), the agent asks the owner to run
-  `/security-audit`, the read-only audit of the whole app, and publishes nothing until its report has gone to the
-  owner.
+- Once before each release (not every push), the agent asks the owner to run `/security-audit`, the read-only audit
+  of the whole app, and releases nothing until its report has gone to the owner.
 
 ## Rules
 
@@ -79,8 +87,12 @@ If any item above was not done, the task is not done, and saying it is done is t
 - Scope changes go back to the SPEC and its approval.
 - A holiday rule carries its primary source and the date it was checked; a value without a source does not ship.
 - A string shown on the page exists in English and in Spanish; a missing one fails a test, never falls back silently.
-- A session starts with the open-session skill and ends with the close-session skill; with the owner present,
-  close-session stops at the list of files to commit and commits them on the owner's go.
+- Wording, documentation sentences, records and minor gate findings are the agent's to settle: it picks the most
+  accurate, shortest wording, writes the choice and its reason in the work log (the session's decisions file, kept
+  outside this repository), and keeps going. It never asks the owner how a sentence should read.
+- No records-only rounds: records (`STATE.md`, `JUDGMENT.md`, the docs) go in the same pull request as the work.
+- A session starts with the open-session skill and ends with the close-session skill, whose records go into the
+  open work's pull request.
 - When a fixed bug is a repeatable pattern, add a lint rule if one exists, otherwise a guardian test with a fixture
   it must catch. *Guardians*, below, governs both: a pattern counts only when all three of its conditions hold, and
   every guardian, a lint rule included, has its fixture and its proof.
@@ -105,8 +117,11 @@ It also checks every "only", "none", "nothing", "all" or "never" used as a claim
 other docs, comments, commit messages, pull-request text): each names what was searched or counted, and where, or its
 sentence narrows itself ("in X", "as far as Y showed"); one that does neither is a finding.
 
-The result is PASS, or numbered findings, each with a proposed fix. Findings go to the owner and are never fixed
-silently; when unsure, the check fails. After anything is posted, read back what was posted and check it again.
+The result is PASS, or numbered findings, each with a proposed fix. It runs once per pull request (*Where the agent
+stops*), and the agent fixes each finding: one about wording once, without a rerun, with the choice and its reason in
+the work log; one that would publish something under items 1 to 5, before anything leaves the machine, named in its
+report. When unsure, the check fails. After anything is posted, read back what was posted and compare it with what
+was checked.
 
 The README's *Proven work* section (below) gets this check and the extra checks listed there.
 
@@ -147,14 +162,15 @@ commit as the change, and never for a trivial fix. The file is created with its 
   - Wrong: what was wrong with it.
   - Caught by: who or what flagged it, credited by role (the owner, the reviewer agent, a named test or check, CI),
     or by a name already public in this repository (*Publication check*, item 1).
-  - Decision: the owner's decision, in the words the owner gives for this file.
+  - Decision: the owner's decision, in the words the owner gives for this file; for a finding the agent settled
+    itself (*Rules*), "settled by the agent" and the reason.
 
 `JUDGMENT.md` is published like everything else here, so its entries pass the publication check. The owner's other
 words, approvals and notes stay outside this repository (close-session).
 
 ## Proven work
 
-Before the app's first release or production deploy, the README gains a section called "Proven work", kept current
+Before the app's first release, the README gains a section called "Proven work", kept current
 after. In this order:
 
 1. Problem: who has it, and what it costs them: a number only if it was measured, with its source; otherwise in words.
@@ -185,8 +201,9 @@ space, no admin. The SQLite file is created at run time, at `DBD_DB_PATH` (defau
 committed. A request addressed to a host name other than `127.0.0.1`, `localhost` or one listed in
 `DBD_ALLOWED_HOSTS` is refused; a write with a body (adding a holiday, storing the language) must be sent as
 `application/json`, at most 4096 bytes. Docker:
-`Dockerfile` and `compose.yaml` run the app with its database in a named volume. Live demo: Render's free plan, whose
-storage resets on restart, which the demo page says (S12, AC14). Licence: MIT. Interface: English and Spanish.
+`Dockerfile` and `compose.yaml` run the app with its database in a named volume. Deployment: Docker only; the passing
+Docker check is the deployment validation, with no public demo and no external host (the owner, 2026-11-15).
+Licence: MIT. Interface: English and Spanish.
 
 ## Commands
 
@@ -202,8 +219,9 @@ docker compose up --build             # the same app in Docker, http://127.0.0.1
 `CHROMIUM_PATH`, if set, points the browser tests to a Chromium already installed.
 
 CI: `.github/workflows/ci.yml` runs `python -m pytest -v`, the known-answer checks among them, on every pull request
-and every push to `main`; the branch rule on `main` requires its `test` check. Its `docker` job builds and starts the
-app with compose and checks it with `scripts/docker_check.py`, the volume included; it is not a required check.
+and every push to `main`; the branch rule on `main` requires its `test` check. Its `docker` job, the deployment
+validation, builds and starts the app with compose and checks it with `scripts/docker_check.py`, the volume included;
+it is not a required check.
 Changing the workflow changes CI: ask the owner first.
 
 ## Known traps

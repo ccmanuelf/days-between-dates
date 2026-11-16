@@ -32,8 +32,7 @@ class Server:
 
     def start(self) -> None:
         port = free_port()
-        env = {k: v for k, v in os.environ.items() if k != "DBD_LIVE_DEMO"}  # a local install unless asked
-        env.update({"DBD_DB_PATH": str(self.db), **self.env})
+        env = {**os.environ, "DBD_DB_PATH": str(self.db), **self.env}
         self.proc = subprocess.Popen(
             [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", str(port)],
             cwd=ROOT,
@@ -42,7 +41,7 @@ class Server:
         self.url = f"http://127.0.0.1:{port}"
         for _ in range(100):
             try:
-                urllib.request.urlopen(f"{self.url}/api/config", timeout=1)
+                urllib.request.urlopen(f"{self.url}/api/status", timeout=1)
                 return
             except urllib.error.HTTPError:
                 return  # the server answered, with an error status
@@ -90,7 +89,7 @@ def start_server():
 
 @pytest.fixture
 def server(tmp_path, start_server) -> Server:
-    """A running server, run as a local install, with its own SQLite file."""
+    """A running server with its own SQLite file."""
     return start_server(tmp_path / "app.db")
 
 

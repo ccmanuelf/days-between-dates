@@ -100,17 +100,6 @@ def test_ac15_the_error_keeps_its_contrast(server, browser, scheme, language):
 
 
 @pytest.mark.parametrize("scheme", ["light", "dark"])
-@pytest.mark.parametrize("language", ["en", "es"])
-def test_ac15_the_live_demo_notice_keeps_its_contrast(tmp_path, start_server, browser, scheme, language):
-    demo = start_server(tmp_path / "demo.db", {"DBD_LIVE_DEMO": "1"})
-    page = open_scheme(browser, demo.url, scheme)
-    choose_language(page, language)
-    expect(page.locator("#demo-notice")).to_have_text(STRINGS[language]["notice_live_demo"])
-    (notice,) = [f for f in page.evaluate(CONTRAST) if f["name"] == "demo-notice"]
-    assert notice["ratio"] >= 4.5, notice
-
-
-@pytest.mark.parametrize("scheme", ["light", "dark"])
 def test_ac15_the_placeholders_are_measured(server, browser, scheme):
     """Each date field's placeholder is in the contrast check, and keeps its contrast."""
     page = open_scheme(browser, server.url, scheme)

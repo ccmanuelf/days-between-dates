@@ -164,12 +164,3 @@ def test_each_calendar_returns_its_sources_and_the_date_checked(server):
     for calendar in by_id.values():
         assert calendar["checked"] == "2026-10-26"
         assert all(s["url"].startswith("https://") and s["retrieved"] == "2026-10-26" for s in calendar["sources"])
-
-
-def test_the_live_demo_setting_is_off_on_a_local_install(server):
-    assert server.call("GET", "/api/config") == (200, {"live_demo": False})
-
-
-def test_the_live_demo_setting_is_on_where_the_deploy_sets_it(tmp_path, start_server):
-    demo = start_server(tmp_path / "app.db", env={"DBD_LIVE_DEMO": "1"})
-    assert demo.call("GET", "/api/config") == (200, {"live_demo": True})

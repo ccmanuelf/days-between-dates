@@ -53,12 +53,12 @@ four of its dark color values.
 The browser's defaults for text, background and links, which `color-scheme: light dark` turns dark when the
 system is dark (SPEC, S13). Four color tokens in `tokens.css`, read by `style.css`: `--error` for every error message
 (refused input, storage, network, a language choice not stored), `--notice-bg` behind notices (dates swapped, past
-years, the live demo's storage), `--note-text` for notes, and `--table-border` for the result table's lines. Their
+years), `--note-text` for notes, and `--table-border` for the result table's lines. Their
 light values are the page's colors as built; their dark values (`*-dark` above) are the owner's visual standard's
 dark destructive, warning-soft, muted-foreground and input. In dark mode the fields' placeholders take
 `--note-text`; in light mode they keep the browser's own. AC15's tests measure each visible text, field and
 placeholder on a page with a result, both notices, the notes, a day of one's own, Help and both formulas open, plus
-the error and the live-demo notice, in both schemes and both languages: each keeps at least 4.5:1 with its background
+the error, in both schemes and both languages: each keeps at least 4.5:1 with its background
 (WCAG 2.2, 1.4.3).
 
 ## Typography

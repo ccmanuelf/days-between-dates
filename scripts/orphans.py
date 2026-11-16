@@ -148,8 +148,7 @@ def drive_page(url: str) -> tuple[list, list[str]]:
 def find_orphans() -> list[str]:
     with tempfile.TemporaryDirectory() as scratch:
         port = free_port()
-        env = {k: v for k, v in os.environ.items() if k != "DBD_LIVE_DEMO"}
-        env["DBD_DB_PATH"] = str(Path(scratch) / "app.db")
+        env = {**os.environ, "DBD_DB_PATH": str(Path(scratch) / "app.db")}
         server = subprocess.Popen(
             [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", str(port)],
             cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
@@ -158,8 +157,10 @@ def find_orphans() -> list[str]:
         try:
             for _ in range(100):
                 try:
-                    urllib.request.urlopen(f"{url}/api/config", timeout=1)
+                    urllib.request.urlopen(f"{url}/api/status", timeout=1)
                     break
+                except urllib.error.HTTPError:
+                    break  # the server answered, with an error status
                 except (urllib.error.URLError, OSError):
                     time.sleep(0.1)
             seen, orphans = drive_page(url)
