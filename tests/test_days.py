@@ -9,6 +9,11 @@ from app.days import count_days, monday_to_friday, weekday_of_ordinal
 
 D = date.fromisoformat
 
+
+def weekdays(c) -> tuple[int, int]:
+    """The Monday–Friday days of each convention's span, as app/counting.py counts them."""
+    return tuple(monday_to_friday(span.first, span.last) for span in c.spans)
+
 # id, start, end, total (start not counted, both counted), Monday–Friday days (same order)
 KNOWN = [
     ("K1", "2026-10-26", "2026-10-30", (4, 5), (4, 5)),
@@ -20,13 +25,13 @@ KNOWN = [
 ]
 
 
-@pytest.mark.parametrize("kid,start,end,total,weekdays", KNOWN, ids=[k[0] for k in KNOWN])
-def test_known_answers(kid, start, end, total, weekdays):
+@pytest.mark.parametrize("kid,start,end,total,expected_weekdays", KNOWN, ids=[k[0] for k in KNOWN])
+def test_known_answers(kid, start, end, total, expected_weekdays):
     c = count_days(D(start), D(end))
     assert not c.swapped
     assert (c.total.start_not_counted, c.total.both_counted) == total
-    if weekdays is not None:
-        assert (c.monday_to_friday.start_not_counted, c.monday_to_friday.both_counted) == weekdays
+    if expected_weekdays is not None:
+        assert weekdays(c) == expected_weekdays
 
 
 def test_k4_reversed_dates_are_swapped_and_flagged():
@@ -34,22 +39,22 @@ def test_k4_reversed_dates_are_swapped_and_flagged():
     c = count_days(D("2026-10-30"), D("2026-10-26"))
     assert c.swapped
     assert (c.start, c.end) == (D("2026-10-26"), D("2026-10-30"))
-    assert (c.total, c.monday_to_friday, c.spans) == (forward.total, forward.monday_to_friday, forward.spans)
+    assert (c.total, c.spans) == (forward.total, forward.spans)
 
 
 def test_the_last_dates_accepted():
     c = count_days(D("2150-12-27"), D("2150-12-31"))  # Sunday to Thursday
     assert (c.total.start_not_counted, c.total.both_counted) == (4, 5)
-    assert (c.monday_to_friday.start_not_counted, c.monday_to_friday.both_counted) == (4, 4)
+    assert weekdays(c) == (4, 4)
     last = count_days(D("2150-12-31"), D("2150-12-31"))
     assert (last.total.start_not_counted, last.total.both_counted) == (0, 1)
-    assert last.monday_to_friday.start_not_counted == 0
+    assert weekdays(last)[0] == 0
 
 
 def test_the_first_dates_accepted():
     c = count_days(D("1950-01-01"), D("1950-01-07"))  # 1950-01-01 was a Sunday
     assert (c.total.start_not_counted, c.total.both_counted) == (6, 7)
-    assert (c.monday_to_friday.start_not_counted, c.monday_to_friday.both_counted) == (5, 5)
+    assert weekdays(c) == (5, 5)
 
 
 def test_weekday_of_ordinal_matches_the_date_type():

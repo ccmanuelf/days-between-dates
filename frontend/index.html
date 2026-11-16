@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Days between dates</title>
+    <script>
+      // Before the first paint, so a reload in dark mode does not flash light. The stored choice is the API's
+      // (src/state.ts); this copy in the browser only avoids the flash, and the API's answer wins once it arrives.
+      try {
+        if (localStorage.getItem('theme') === 'dark')
+          document.documentElement.classList.add('dark')
+      }
+      catch {
+        // Storage can be blocked. Stay light until the API answers.
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

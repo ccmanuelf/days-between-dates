@@ -74,6 +74,21 @@ def test_a_stored_language_that_cannot_be_read_counts_as_none(db):
     assert storage.get_language() is None
 
 
+def test_the_theme_choice_is_stored(db):
+    assert storage.get_theme() is None
+    storage.set_theme("dark")
+    assert storage.get_theme() == "dark"
+    with pytest.raises(ValueError):
+        storage.set_theme("blue")
+    assert storage.get_theme() == "dark"
+
+
+def test_a_stored_theme_that_cannot_be_read_counts_as_none(db):
+    with sqlite3.connect(db) as conn:
+        conn.execute("INSERT INTO settings (key, value) VALUES ('theme', 'xx')")
+    assert storage.get_theme() is None
+
+
 def test_e3_an_unreadable_database_raises_on_every_call(tmp_path, monkeypatch):
     path = tmp_path / "app.db"
     path.write_bytes(b"this is not a database" * 100)
@@ -85,6 +100,8 @@ def test_e3_an_unreadable_database_raises_on_every_call(tmp_path, monkeypatch):
         lambda: storage.remove_holiday("us", D("2026-10-28")),
         storage.get_language,
         lambda: storage.set_language("es"),
+        storage.get_theme,
+        lambda: storage.set_theme("dark"),
     ):
         with pytest.raises(storage.StorageError):
             call()

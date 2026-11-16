@@ -1,12 +1,11 @@
-# docker compose up --build, then open http://127.0.0.1:8000
-# With port 8000 taken on your machine: DBD_PORT=8765 docker compose up --build, then http://127.0.0.1:8765
-# The own holidays and the language choice live in the named volume app-data, so they survive a restart;
+# docker compose up --build, then open http://127.0.0.1:8765 (BACKEND_PORT, from .env if you have one; .env.example)
+# The own holidays and the language and theme choices live in the named volume app-data, so they survive a restart;
 # docker compose down -v deletes them; docker compose down -v --rmi local also deletes the app image built here.
 services:
   app:
     build: .
     ports:
-      - "127.0.0.1:${DBD_PORT:-8000}:8000"
+      - "127.0.0.1:${BACKEND_PORT:-8765}:8000"
     volumes:
       - app-data:/data
 

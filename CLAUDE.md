@@ -27,18 +27,41 @@ A task is done only when all of these are true:
 - Each criterion is verified through the real wiring: page → API → SQLite → back, on the running server. Every UI
   action reaches that path, the path runs, and it returns real data.
 - No orphans: every UI control reaches a backend path that executes; every endpoint has a caller, or it is removed;
-  every schema object is written and read. An orphan is a defect, not partial progress.
+  every schema object is written and read. An orphan is a defect, not partial progress. For now, the User Guide is
+  the exception (*User Guide*): it is static help with no backend.
 - No half-built schemas, stubs or placeholder data left behind. Design tokens are the one exception, on the owner's
-  decision of 2026-11-14 (`JUDGMENT.md`): `app/static/tokens.css` may define a token before any rule reads it, and
-  `DESIGN.md` names the tokens no rule reads yet.
+  decision of 2026-11-14 (`JUDGMENT.md`): `frontend/src/design-system/tokens.css`, the visual standard's file, may
+  define a token before any rule reads it, and `DESIGN.md` names the tokens no rule reads yet.
 - Tests fail on the broken version and pass on the fixed one; a test that accepts two different answers defends
   neither.
 - The known-answer checks run on every pull request and every push to `main`, against reference values that carry a
   source.
+- The feature has its section in the User Guide, and that section's worked examples pass as tests (*User Guide*).
 - Checks are green.
 - Done is shown with evidence (test output, the orphan list, the Docker check), never asserted.
 
 If any item above was not done, the task is not done, and saying it is done is the failure.
+
+## User Guide
+
+Every app includes its own User Guide, inside the app. It explains what each feature does and, wherever a
+calculation is involved, the calculation underneath: the formula and a worked example, for clarity and transparency,
+so that users don't assume results come from "internet goblins or the God of AI" (the owner's words). It must not be
+larger than the app itself: one short section per feature.
+
+Every worked example in the guide is also a test, so the guide can't drift from the code. The test reads the
+example's inputs and result from the guide's own text and runs them through the code the feature uses, so changing
+the guide or the code alone fails it; like every test here, it is shown failing (on an altered example) before it is
+trusted. Here, the guide is the page's *Help and user guide* tab, with the two "How this is calculated" panels under
+the result; its examples are in `frontend/src/locales/`, and `tests/test_guide.py` reads them.
+
+Working guidance for now (the owner, 2026-11-14), to revise as apps show what works:
+
+- Worked examples come from the SPEC's known answers, so each one carries its source.
+- The guide is static help with no backend, so *No orphans* in the definition of done does not apply to it.
+- In an app with two interface languages, the guide is written in both, and its size limit counts one of them.
+- An app without a screen of its own keeps its guide in the README and in its `--help` output.
+- "Not larger than the app" means about 150 words per feature, worked examples not counted.
 
 ## Where the agent stops
 
@@ -203,15 +226,19 @@ Its publication check (*Publication check*, above, run by the reviewer agent) al
 
 ## Stack
 
-Python and FastAPI, SQLite, one HTML page with a JavaScript module calling the JSON API; tests with pytest and
-Playwright for Python. Plain CSS, no build step; the look and its tokens are in `DESIGN.md`. Delivery rung 1: user
-space, no admin. The SQLite file is created at run time, at `DBD_DB_PATH` (default `data/app.db`), and never
-committed. A request addressed to a host name other than `127.0.0.1`, `localhost` or one listed in
-`DBD_ALLOWED_HOSTS` is refused; a write with a body (adding a holiday, storing the language) must be sent as
-`application/json`, at most 4096 bytes. Docker:
+Python and FastAPI, SQLite; the page built on the owner's web starter: Vue 3, Vite and TypeScript, Tailwind CSS 4 with
+shadcn-vue, vue-i18n and AG Grid, in `frontend/`, built into `frontend/dist`, which FastAPI serves. It follows the
+owner's visual standard in full: its files are in `frontend/src/design-system/`, their values unchanged, and `DESIGN.md`
+says how the app applies them. Tests: pytest with Playwright for Python, through the running server; the page's type
+check and unit tests (vue-tsc, Vitest). The two ports, `BACKEND_PORT` (8765) and `FRONTEND_PORT` (5765), come from a
+`.env` at the root (`.env.example`; `frontend/ports.js`). Python pins are compiled with a two-week cutoff (README,
+*Updating the Python pins*); npm pins are exact (`frontend/.npmrc`). Delivery rung 1: user space, no admin. The SQLite
+file is created at run time, at `DBD_DB_PATH` (default `data/app.db`), and never committed. A request addressed to a
+host name other than `127.0.0.1`, `localhost` or one listed in `DBD_ALLOWED_HOSTS` is refused; a write with a body
+(adding a holiday, storing the language or the theme) must be sent as `application/json`, at most 4096 bytes. Docker:
 `Dockerfile` and `compose.yaml` run the app with its database in a named volume. Deployment: Docker only; the passing
-Docker check is the deployment validation, with no public demo and no external host (the owner, 2026-11-15).
-Licence: MIT. Interface: English and Spanish.
+Docker check is the deployment validation, with no public demo and no external host (the owner, 2026-11-15). Licence:
+MIT. Interface: English and Spanish.
 
 ## Commands
 
@@ -219,17 +246,20 @@ Licence: MIT. Interface: English and Spanish.
 python -m venv .venv && . .venv/bin/activate
 pip install -r requirements-dev.txt
 python -m playwright install chromium
-python -m uvicorn app.main:app        # http://127.0.0.1:8000
-python -m pytest -v
-docker compose up --build             # the same app in Docker, http://127.0.0.1:8000
+cd frontend && npm ci && npm run build && cd ..     # the page, into frontend/dist
+cd frontend && npm run backend                       # the app, http://127.0.0.1:8765 (BACKEND_PORT)
+cd frontend && npm run dev                           # while working on the page, beside the backend (FRONTEND_PORT)
+cd frontend && npm run typecheck && npm test         # the page's type check and unit tests
+python -m pytest -v                                  # needs the built page
+docker compose up --build                            # the same app in Docker, http://127.0.0.1:8765
 ```
 
 `CHROMIUM_PATH`, if set, points the browser tests to a Chromium already installed.
 
-CI: `.github/workflows/ci.yml` runs `python -m pytest -v`, the known-answer checks among them, on every pull request
-and every push to `main`. Its `docker` job, the deployment validation, builds and starts the app with compose and
-checks it with `scripts/docker_check.py`, the volume included. The branch rule on `main` requires both, `test` and
-`docker`.
+CI: `.github/workflows/ci.yml` checks the page's types, runs its unit tests and builds it, then runs `python -m pytest
+-v`, the known-answer checks among them, on every pull request and every push to `main`. Its `docker` job, the
+deployment validation, builds and starts the app with compose and checks it with `scripts/docker_check.py`, the volume
+included. The branch rule on `main` requires both, `test` and `docker`.
 Changing the workflow changes CI: ask the owner first.
 
 Leave nothing that slowly eats space (the owner, 2026-11-15). A CI artifact or cache gets a short retention, or is
@@ -238,7 +268,8 @@ included (`docker images --filter dangling=true` lists those, and `docker image 
 `Dockerfile`'s `CMD`); and its build cache: the records of this `Dockerfile`'s steps, and those of the base image
 when no other build sits on them (`docker buildx du --verbose` shows each record's description and parents;
 `docker buildx prune -f --filter id=<id>` takes one id at a time). It prunes nothing that belongs to another
-project, and keeps the `days-between-dates_app-data` volume, which holds the user's own holidays and language. It
+project, and keeps the `days-between-dates_app-data` volume, which holds the user's own holidays, language and theme.
+It
 keeps the raw output of each listing, before and after, with the work.
 
 ## Known traps
@@ -256,10 +287,11 @@ One entry per guardian: what goes wrong, why, the correct pattern, and the guard
   `tests/guardians/test_every_write_reads_its_body_through_json_body.py`. It does not see a route parameter typed
   `dict`, which needs none of those imports: FastAPI reads that body itself, and took a JSON body over 4096 bytes
   when tried on 2026-11-15. Take the body with `json_body`, not as a typed parameter.
-- **A color the contrast check cannot read.** What goes wrong: a stylesheet writes a color with `color-mix()`,
-  `oklch()`, `oklab()`, `lab()`, `lch()`, `hwb()` or `color()`. Why: AC15's contrast tests read colors with
-  `getComputedStyle` and parse `rgb()` only; Chromium reports these functions in another form, so the test throws, or,
-  on a state it does not measure (a `:hover` it never triggers), the color goes unchecked. On 2026-11-15 a
-  `color-mix()` hover color on the Count button made the error's contrast test throw. Correct pattern: a hex value,
-  `rgb()`, a token from `app/static/tokens.css` or a system color (`Canvas`, `CanvasText`). Guardian:
-  `tests/guardians/test_every_stylesheet_color_is_one_the_contrast_check_reads.py`.
+- **A color written outside the tokens, or a grid row height outside the approved theme.** What goes wrong: a
+  component or stylesheet in `frontend/src` writes its own color (`#f00`, `rgb()`, `oklch()`, a Tailwind palette class
+  such as `bg-red-500`) or sets a grid's row or header height. Why: the visual standard keeps `tokens.css` as the one
+  source of color, so light and dark stay paired, and fixes grid rows at 32px (rule 4). Correct pattern: a token
+  through its Tailwind utility (`bg-card`, `text-muted-foreground`); row heights only in
+  `frontend/src/design-system/grid-theme.js`. Guardian: the web starter's scans in
+  `frontend/tests/unit/design-system.test.ts`, kept in the starter's form: they run in Vitest, not under
+  `tests/guardians/`, and carry their bad patterns as inline samples each must flag, in place of a fixture file.

@@ -1,0 +1,11 @@
+/* Visual standard, batch 3: the few grid details the Theming API has no parameter for. */
+.ag-cell { display: flex; align-items: center; }
+.ag-right-aligned-cell { justify-content: flex-end; font-variant-numeric: tabular-nums; }
+.ds-editable { background: color-mix(in srgb, var(--primary-soft) 35%, transparent); }
+/* Status cells (rule 2): icon plus word, colored by tone. */
+.ds-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.ds-status svg { width: 16px; height: 16px; flex: none; }
+.ds-status--success { color: var(--success); }
+.ds-status--warning { color: var(--warning); }
+.ds-status--danger { color: var(--destructive); }
+.ds-status--neutral { color: var(--muted-foreground); }

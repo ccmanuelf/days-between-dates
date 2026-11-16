@@ -9,6 +9,11 @@ __pycache__/
 venv/
 .pytest_cache/
 
-# Environment files hold settings that may be private.
+# Environment files hold settings that may be private; .env.example shows the names (README, Ports).
 .env
 .env.*
+!.env.example
+
+# The page's packages and its build.
+frontend/node_modules/
+frontend/dist/

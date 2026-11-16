@@ -1,0 +1,21 @@
+/* In frontend/src, colors come from tokens.css: tests/unit/design-system.test.ts fails on one written in any other
+   file there, the vendored shadcn-vue stylesheet aside (the test says why). */
+@import "./design-system/tokens.css";
+@import "./design-system/grid-theme.css";
+@import "tw-animate-css";
+@import "./vendor/shadcn-vue-tailwind.css";
+
+/* Tailwind would otherwise read test files as a source of class names, so their words would reach production CSS. */
+@source not "../tests";
+
+/* A result, or a tab's content, comes in with a short fade and rise. The movement goes through --motion-scale, so under
+   reduced motion only the fade remains (the visual standard's README, Motion). */
+@keyframes dbd-enter {
+  from {
+    opacity: 0;
+    transform: translateY(calc(4px * var(--motion-scale)));
+  }
+}
+.dbd-enter {
+  animation: dbd-enter var(--duration-slow) var(--ease-out);
+}

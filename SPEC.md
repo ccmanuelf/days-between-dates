@@ -74,40 +74,47 @@ can be added to the user's own list; with the US calendar active, no such note. 
 ### S12 — Withdrawn
 Withdrawn 2026-11-15: the project has no public demo (*Approval*).
 
-### S13 — Dark mode
-Given the system or browser set to a dark color scheme, when the page opens, then it shows in the dark values of
-its color tokens (`DESIGN.md`), each text keeps a contrast ratio of at least 4.5:1 with its background, and the
-counts and notices are unchanged; with a light scheme, the color tokens keep their light values. 【M】 2026-11-14,
-*"dark mode through the existing tokens, following DESIGN.md"*; 【C】 it follows the system setting, with no new
-control; 【C】 2026-11-15, "the color tokens keep their light values" in place of "the page looks as before", which
-the restyle the owner asked for changes (*Approval*). The 4.5:1: WCAG
+### S13 — Light by default, with a dark mode
+Given any system setting, when the page opens, then it is light; when the user switches the toggle in the app bar,
+the page shows in the dark values of the visual standard's tokens, and the choice is stored through the API and kept,
+after a restart too. In both, each text keeps a contrast ratio of at least 4.5:1 with its background, and the counts
+and notices are unchanged. 【M】 2026-11-14, *"dark mode through the existing tokens, following DESIGN.md"*; 【M】
+2026-11-16, the visual standard applies in full (*Approval*), whose rule 10 reads: light by default, a toggle in the
+app bar that switches to dark and remembers the choice; 【C】 the choice stored through the API, as the language is
+(Q15), so the toggle reaches a route (AC10). The 4.5:1: WCAG
 2.2, success criterion 1.4.3 Contrast (Minimum), Level AA, *"a contrast ratio of at least 4.5:1"*
 (https://www.w3.org/TR/WCAG22/#contrast-minimum, W3C Recommendation 12 December 2024, retrieved 2026-11-14).
 
 ### S14 — Results announced, controls within reach
 Given a screen reader, when a count completes, then the active calendar, the range, the four counts and any notice
 are announced, in the page's language; each Remove button's name includes its date; every button, field and list is
-at least 24 px tall; and at 375 px wide each label stays on the line of its field. 【M】 2026-11-14, four of the five
-findings of the design audit of 2026-11-14 (the fifth is S13). The 24 px: WCAG 2.2, success criterion 2.5.8 Target
+at least 24 px tall; and each field's label sits above it. 【M】 2026-11-14, four of the five findings of the design
+audit of 2026-11-14 (the fifth is S13); 【M】 2026-11-16, the label above its field, the visual standard's rule 6, in
+place of the label on its field's line (*Approval*). The 24 px: WCAG 2.2, success criterion 2.5.8 Target
 Size (Minimum), Level AA, *"at least 24 by 24 CSS pixels"* (https://www.w3.org/TR/WCAG22/#target-size-minimum, W3C
 Recommendation 12 December 2024, retrieved 2026-11-14).
 
-### S15 — Help
-Given the page in either language, when the user opens Help, then it shows a short introduction, the guide's
+### S15 — Help and user guide
+Given the page in either language, when the user opens the guide's tab, beside the counter and in view when the page
+opens, then it shows a short introduction, the guide's
 contents, and one section per feature, in that language: a range and its two conventions, business days and the
 calendars, your own holidays, reversed dates, past years, the note on local election days, the language switch, and
-the sources. Each section explains its feature in plain words, with its worked examples where it has any (S16), in
-at most 150 words: the guide is no more elaborate than the app. The section on a range names the first and last
+the sources. Each section explains its feature in plain words, in at most 150 words, worked examples not counted,
+with its worked examples where it has any (S16): the guide is no more elaborate than the app. The section on a range names the first and last
 dates accepted, from the app's own limit. 【M】 2026-11-14; 【M】 2026-11-15, a visible user guide that explains each
 feature and how the counts are calculated, with examples from the known answers, in both languages, no more
 elaborate than the app (*Approval*); 【C】 the introduction, the contents, the dates accepted, and the ceiling of 150
-words per section, read from the owner's "about 150 words per feature".
+words per section, read from the owner's "about 150 words per feature"; 2026-11-16, worked examples not counted, as
+the owner's app template words it (*Approval*).
 
 ### S16 — How a result is calculated
 Given a result on screen, when the user opens "How this is calculated" beside total days or business days, then it
-shows the formula and a worked example: a range from the known-answer checks, counted by the app's own code when the
-user opens it, with the answer the checks expect. 【M】 2026-11-14, *"Every worked example is also a test, so the guide
-can't drift from the code."*
+shows the formula and a worked example: a range from the known-answer checks, written in the guide's text with the
+answer the checks expect. A test reads each example's dates and numbers from that text and counts them again through
+the API, so changing the text or the code alone fails it. 【M】 2026-11-14, *"Every worked example is also a test, so
+the guide can't drift from the code."*; 2026-11-16, the examples written in the guide's text and read by the test, as
+the owner's app template's User Guide rule says, in place of examples counted by the API when a panel opens
+(*Approval*).
 
 ### E1 — Invalid date
 Given an empty or impossible date (2026-02-30), or one outside the years accepted (1949-12-31), when the user counts
@@ -143,11 +150,11 @@ Will:
 - Keep the language choice in SQLite, through the API, so it survives a restart. 【M】 Q15. With no choice stored, or
   one that cannot be read, open in the browser's language when it is English or Spanish, in English otherwise. 【M】
   Q16.
-- Follow the system's dark color scheme (S13); announce each result to screen readers and keep every control within
-  reach (S14). 【M】 2026-11-14.
+- Open light, with a toggle in the app bar for dark that is remembered (S13); announce each result to screen readers
+  and keep every control within reach (S14). 【M】 2026-11-14; the toggle 2026-11-16 (*Approval*).
 - Explain each feature in a Help panel, and each result with its formula and a worked example that is a known answer
-  (S15, S16), in English and Spanish, each section of the guide at most 150 words. 【M】 2026-11-14; its length
-  2026-11-15 (*Approval*).
+  (S15, S16), in English and Spanish, each section of the guide at most 150 words, worked examples not counted. 【M】
+  2026-11-14; its length 2026-11-15 and 2026-11-16 (*Approval*).
 
 Will not:
 - Other countries, state or municipal holidays, bank closing days. 【C】
@@ -184,15 +191,15 @@ Will not:
 | AC7 | The past-years notice shows when the range includes an earlier year, and only then | S9 tests, both cases |
 | AC8 | Invalid input is refused with a message naming the field; nothing is stored | E1 tests, including a database read after the refusal |
 | AC9 | A storage failure shows an error and no business-day count; a language choice that cannot be stored shows an error, and the page keeps the language on screen | E3 tests with an unwritable and with an unreadable database, for the holidays and for the language setting, through the page |
-| AC10 | No orphans: every control (two dates, calendar selector, add, remove, language switch, Help, the two "How this is calculated") reaches a route that executes; every route has a caller; the holidays table and the language setting are written and read | The judge's orphan list |
+| AC10 | No orphans: every control (two dates, calendar choice, add, remove, language switch, theme toggle) reaches a route that executes; every route has a caller; the holidays table and the language and theme settings are written and read. The two tabs (Count, and Help and user guide) and the two "How this is calculated" show static help and reach no route (the app template's User Guide rule) | The judge's orphan list |
 | AC11 | The screen names each built-in calendar's source and the date its rules were checked; with Mexico active, the note on local election days shows, and with the US calendar it does not (Q13) | A test on the page for each; S11, both cases |
 | AC12 | The known-answer checks run on every pull request and every push to main, through the API | CI log |
 | AC13 | Every label, notice and message exists in English and Spanish; in Spanish, business days read *días hábiles* with the art. 715 note (Q14); switching the language changes the text, not the counts; the choice is stored through page → API → SQLite and survives a restart (Q15); with none stored, or one unreadable, the page opens in the browser's language when it is English or Spanish, in English otherwise (Q16) | A test per notice in each language; S10 through the page, with a restart; the opening language with the browser set to English, to Spanish and to a third language, and with the stored choice unreadable |
 | AC14 | Withdrawn 2026-11-15: the project has no public demo (S12) | — |
-| AC15 | With a dark color scheme the page uses the dark values of its color tokens, and each text keeps at least 4.5:1 contrast with its background (WCAG 2.2, 1.4.3); with a light scheme the four color tokens `DESIGN.md` recorded before (error, notice, note, table border) keep their light values (S13) | A page test under each scheme that computes every contrast ratio |
-| AC16 | After a count, a polite live region holds the result and its notices in the page's language; each Remove button's accessible name contains its date; every button, field and list is at least 24 px tall; at 375 px each label and its field share a line (S14) | Page tests for each, in both languages where text is involved |
-| AC17 | Help shows an introduction, its contents and one section per feature in English and Spanish; in each language, each section of Help and each "How this is calculated", as shown with its examples, holds at most 150 words (S15) | A page test per language; a word count of each part, on the page, per language |
-| AC18 | Every worked example is a known answer: its numbers come from the app's count through the API, and a test fails if one differs from the K table or names a range the table lacks (S16) | A test over every example the API returns; the page test of S16 |
+| AC15 | The page opens light whatever the system's setting; the app bar's toggle switches it to dark, and the choice is stored through the API and survives a restart; light and dark use the visual standard's tokens; in each, each text keeps at least 4.5:1 contrast with its background (WCAG 2.2, 1.4.3) (S13) | Page tests in each mode that compute every contrast ratio and read the tokens' values; the toggle through the page, with a restart |
+| AC16 | After a count, a polite live region holds the result and its notices in the page's language; each Remove button's accessible name contains its date; every button, field and list is at least 24 px tall; each label sits above its field, at 375 px and 1280 px (S14) | Page tests for each, in both languages where text is involved |
+| AC17 | The guide shows an introduction, its contents and one section per feature in English and Spanish; in each language, each section of the guide and each "How this is calculated", as shown, holds at most 150 words, worked examples not counted (S15) | A page test per language; a word count of each part, on the page, per language |
+| AC18 | Every worked example is a known answer written in the guide's text, in each language: a test reads its dates and numbers from the text, counts them through the API, and fails if they differ from the count or from the K table, or name a range the table lacks (S16) | A test per example and language, shown failing on an altered example; the page test of S16 |
 
 ## Known-answer checks
 
@@ -315,6 +322,9 @@ Real-wiring path: page → API → SQLite → back.
 Deployment: Docker only. `Dockerfile` and `compose.yaml` run the app with its database in a named volume, and the
 passing Docker check (CI's `docker` job, `scripts/docker_check.py`) is the deployment validation. No public demo and
 no external host. 【M】 2026-11-15.
+Web interface: follows the owner's visual standard (its rules and tokens), built on the owner's web starter: Vue 3,
+Vite and TypeScript, Tailwind CSS 4 with shadcn-vue, vue-i18n, AG Grid for the grids; FastAPI serves the built page.
+【M】 2026-11-16 (*Approval*).
 Licence: MIT. 【M】 D2, portfolio-wide, 2026-10-25.
 Interface language: English and Spanish, switchable. 【M】 D3, portfolio-wide, 2026-10-25.
 
@@ -383,4 +393,14 @@ and S15 names the guide's introduction, contents and dates accepted: the agent's
 before" and "the colors are those `DESIGN.md` recorded before", narrowed to the four color tokens keeping their light
 values, because the owner asked for the page to be restyled "in light and dark" (【M】 *"Restyle days-between-dates
 so it can count as finished. [...] Follow DESIGN.md: polish the layout, typography, spacing and states, in light and
-dark, with accessibility."*); the narrowed wording is the agent's (【C】).
+dark, with accessibility."*); the narrowed wording is the agent's (【C】). 2026-11-16: the app reflects the owner's whole
+foundation, in the owner's decision: 【M】 *"New scope: days-between-dates is the first app that must reflect our whole
+foundation, not an app that predates it. DESIGN.md's line saying the visual standard doesn't apply is wrong; it applies
+in full."*, and, asked whether to rebuild on the web starter or keep the plain page: 【M】 *"Rebuild on the web starter."*
+The SPEC follows: S13 and AC15 (light by default, a toggle in the app bar, remembered), S14 and AC16 (labels above
+fields), S15, S16, AC17 and AC18 (the guide a tab; its examples written in its text and read by a test; worked examples
+not counted in its length), AC10 (the theme toggle; the guide as static help), *Expectations* and *Stack and
+deployment*. The wording, the theme stored through the API, and the guide as a tab are the agent's (【C】). The changes
+above were then approved in the owner's word on the audit's gap list, which named them (the labels above fields, the
+remembered toggle stored through the API, the guide's examples in its text and read by a test, the guide as static help,
+the web-interface line) along with the change to CI: 【M】 *"Now fix all 27 gaps end to end without stopping"*.
