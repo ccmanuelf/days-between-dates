@@ -1,8 +1,9 @@
 """The worked examples of the page's Help and "How this is calculated" (SPEC, S15, S16, AC18).
 
 Each example is a range from the SPEC's known-answer checks, counted by the app's own code each time it is asked
-for, with no holidays of the user's own, as the known answers assume. tests/test_guide.py checks each example's
-total and business days, and its dates, against the known answer it names, and the business example's subtraction.
+for, with no holidays of the user's own, as the known answers assume, except K10's one day, which that known answer
+names. tests/test_guide.py checks each example's total and business days, and its dates, against the known answer it
+names, and the business example's subtraction.
 """
 
 from datetime import date
@@ -10,11 +11,14 @@ from datetime import date
 from app import counting
 from app.days import Pair
 
-# role on the page, known answer (SPEC, Known-answer checks), calendar, start and end as the user would enter them
+# role on the page, known answer (SPEC, Known-answer checks), calendar, start and end as the user would enter them,
+# and the days of one's own the known answer counts
 EXAMPLES = (
-    ("total", "K1", "mx", date(2026, 10, 26), date(2026, 10, 30)),
-    ("business", "K9a", "us", date(2026, 6, 29), date(2026, 7, 6)),
-    ("reversed", "K4", "mx", date(2026, 10, 30), date(2026, 10, 26)),
+    ("total", "K1", "mx", date(2026, 10, 26), date(2026, 10, 30), []),
+    ("weekend", "K3", "mx", date(2026, 10, 30), date(2026, 11, 2), []),
+    ("business", "K9a", "us", date(2026, 6, 29), date(2026, 7, 6), []),
+    ("own", "K10", "mx", date(2026, 10, 30), date(2026, 11, 2), [date(2026, 10, 31)]),
+    ("reversed", "K4", "mx", date(2026, 10, 30), date(2026, 10, 26), []),
 )
 
 
@@ -24,12 +28,13 @@ def as_pair(p: Pair) -> dict:
 
 def examples() -> list[dict]:
     found = []
-    for role, known, calendar, start, end in EXAMPLES:
-        result = counting.count(calendar, start, end, own_holidays=[])
+    for role, known, calendar, start, end, own in EXAMPLES:
+        result = counting.count(calendar, start, end, own_holidays=own)
         found.append({
             "role": role,
             "known_answer": known,
             "calendar": calendar,
+            "own_holidays": [d.isoformat() for d in own],
             "entered": {"start": start.isoformat(), "end": end.isoformat()},
             "start": result.days.start.isoformat(),
             "end": result.days.end.isoformat(),

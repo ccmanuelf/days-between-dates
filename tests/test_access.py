@@ -203,3 +203,29 @@ def test_ac16_each_label_shares_a_line_with_its_field_at_375_px(server, open_pag
     assert len(pairs) == 5, pairs
     apart = [p for p in pairs if not p[1]]
     assert not apart, apart
+
+
+def invalid_fields(page) -> list[str]:
+    return page.locator("[aria-invalid=true]").evaluate_all("els => els.map(e => e.id)")
+
+
+def error_follows(page, form: str) -> bool:
+    return page.evaluate(f"document.getElementById('{form}').nextElementSibling?.id === 'error'")
+
+
+def test_an_error_marks_its_field_and_shows_beside_its_form(server, open_page):
+    """A refused date marks its field invalid and points it to the message, which shows beside the form that sent it;
+    the next accepted request clears the mark (E1)."""
+    page = open_page(server.url)
+    count(page, "2026-02-30", "2026-03-02")
+    assert invalid_fields(page) == ["start"]
+    expect(page.locator("#start")).to_have_attribute("aria-describedby", "error")
+    assert error_follows(page, "count-form")
+    add_holiday(page, "2026-02-30")
+    assert invalid_fields(page) == ["new-day"]
+    assert error_follows(page, "add-form")
+    expect(page.locator("#error")).to_be_visible()
+    count(page, "2026-10-26", "2026-10-30")
+    assert invalid_fields(page) == []
+    expect(page.locator("#error")).to_be_hidden()
+    expect(page.locator("#start")).not_to_have_attribute("aria-describedby", "error")

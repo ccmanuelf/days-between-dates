@@ -1,16 +1,20 @@
 """The guide's worked examples through the API on the running server (SPEC, S16, AC18): every example is a known
-answer, counted by the app's own code, with no holidays of the user's own."""
+answer, counted by the app's own code, with no holidays of the user's own except the one K10 names."""
 
 from datetime import date
 
 from test_known_answers import ROWS
 
 # The known answers by (id, calendar): total and business days, each (start not counted, both counted). K4 is K1's
-# range entered in reverse: swapped, with K1's counts (SPEC, Known-answer checks).
+# range entered in reverse: swapped, with K1's counts. K10 is K3's range with one own holiday, Saturday 2026-10-31:
+# business 1 · 2, unchanged (SPEC, Known-answer checks).
 KNOWN = {(kid, calendar): (total, business) for kid, calendar, _, _, total, business in ROWS}
 KNOWN[("K4", "mx")] = KNOWN[("K1", "mx")]
+KNOWN[("K10", "mx")] = ((3, 4), (1, 2))
 RANGES = {(kid, calendar): (start, end) for kid, calendar, start, end, _, _ in ROWS}
 RANGES[("K4", "mx")] = ("2026-10-30", "2026-10-26")
+RANGES[("K10", "mx")] = ("2026-10-30", "2026-11-02")
+OWN = {"K10": ["2026-10-31"]}  # the only example with a day of one's own
 
 
 def examples(server) -> list[dict]:
@@ -25,11 +29,12 @@ def pair(value: dict) -> tuple[int, int]:
 
 def test_every_example_is_a_known_answer_with_its_counts(server):
     found = examples(server)
-    assert {e["role"] for e in found} == {"total", "business", "reversed"}
+    assert {e["role"] for e in found} == {"total", "weekend", "business", "own", "reversed"}
     for example in found:
         key = (example["known_answer"], example["calendar"])
         assert key in KNOWN, f"{key} is not in the known-answer table"
         assert (example["entered"]["start"], example["entered"]["end"]) == RANGES[key]
+        assert example["own_holidays"] == OWN.get(example["known_answer"], []), key
         total, business = KNOWN[key]
         assert pair(example["total"]) == total, key
         if business is not None:
@@ -60,3 +65,20 @@ def test_own_holidays_do_not_change_the_examples(server):
     assert status == 200 and pair(body["business"]) == (3, 4)
     (example,) = [e for e in examples(server) if e["role"] == "total"]
     assert pair(example["business"]) == (4, 5)
+
+
+def test_the_own_example_is_k10_a_saturday_that_changes_no_count(server):
+    """K10: an own holiday on a Saturday leaves K3's business days as they were (SPEC, S8)."""
+    by_role = {e["role"]: e for e in examples(server)}
+    own, weekend = by_role["own"], by_role["weekend"]
+    assert date.fromisoformat(own["own_holidays"][0]).weekday() == 5  # Saturday
+    assert (own["known_answer"], weekend["known_answer"]) == ("K10", "K3")
+    assert pair(own["business"]) == pair(weekend["business"]) == (1, 2)
+    assert own["excluded"] == weekend["excluded"] == []
+
+
+def test_the_guide_names_the_dates_accepted(server):
+    """The first and last dates the app accepts, from its own limit (SPEC, Expectations), for the guide's text."""
+    status, body = server.call("GET", "/api/guide")
+    assert status == 200, body
+    assert body["dates"] == {"first": "1950-01-01", "last": "2150-12-31"}

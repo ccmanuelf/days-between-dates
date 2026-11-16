@@ -91,9 +91,13 @@ Size (Minimum), Level AA, *"at least 24 by 24 CSS pixels"* (https://www.w3.org/T
 Recommendation 12 December 2024, retrieved 2026-11-14).
 
 ### S15 — Help
-Given the page in either language, when the user opens Help, then it shows one short section per feature, in that
-language: a range and its two conventions, business days and the calendars, your own holidays, reversed dates, past
-years, the note on local election days, the language switch, and the sources. 【M】 2026-11-14.
+Given the page in either language, when the user opens Help, then it shows a short introduction, the guide's
+contents, and one section per feature, in that language: a range and its two conventions, business days and the
+calendars, your own holidays, reversed dates, past years, the note on local election days, the language switch, and
+the sources. Each section explains its feature in plain words, with its worked examples where it has any (S16), in
+at most 150 words: the guide is no more elaborate than the app. The section on a range names the first and last
+dates accepted, from the app's own limit. 【M】 2026-11-14; 【M】 2026-11-15, the user guide and its length
+(*Approval*); 【C】 the ceiling of 150 words per section, read from the owner's "about 150 words per feature".
 
 ### S16 — How a result is calculated
 Given a result on screen, when the user opens "How this is calculated" beside total days or business days, then it
@@ -138,7 +142,8 @@ Will:
 - Follow the system's dark color scheme (S13); announce each result to screen readers and keep every control within
   reach (S14). 【M】 2026-11-14.
 - Explain each feature in a Help panel, and each result with its formula and a worked example that is a known answer
-  (S15, S16), in English and Spanish, never longer than the rest of the page's text. 【M】 2026-11-14.
+  (S15, S16), in English and Spanish, each section of the guide at most 150 words. 【M】 2026-11-14; its length
+  2026-11-15 (*Approval*).
 
 Will not:
 - Other countries, state or municipal holidays, bank closing days. 【C】
@@ -182,7 +187,7 @@ Will not:
 | AC14 | Withdrawn 2026-11-15: the project has no public demo (S12) | — |
 | AC15 | With a dark color scheme the page uses the dark values of its color tokens, and each text keeps at least 4.5:1 contrast with its background (WCAG 2.2, 1.4.3); with a light scheme the colors are those `DESIGN.md` recorded before (S13) | A page test under each scheme that computes every contrast ratio |
 | AC16 | After a count, a polite live region holds the result and its notices in the page's language; each Remove button's accessible name contains its date; every button, field and list is at least 24 px tall; at 375 px each label and its field share a line (S14) | Page tests for each, in both languages where text is involved |
-| AC17 | Help shows one section per feature in English and Spanish; in each language, the text of Help and of "How this is calculated" together is shorter than the rest of the page's text (characters in `strings.json`) (S15) | A page test per language; a length test |
+| AC17 | Help shows an introduction, its contents and one section per feature in English and Spanish; in each language, each section of Help and each "How this is calculated", as shown with its examples, holds at most 150 words (S15) | A page test per language; a word count of each part, on the page, per language |
 | AC18 | Every worked example is a known answer: its numbers come from the app's count through the API, and a test fails if one differs from the K table or names a range the table lacks (S16) | A test over every example the API returns; the page test of S16 |
 
 ## Known-answer checks
@@ -362,4 +367,11 @@ names no host, in the owner's decision:
 【M】 *"Docker only. No public demo and no external host for this project, now or as a pending item. The passing
 Docker check is the deployment validation."* 2026-11-15: the years accepted narrowed to 1950–2150 (*Expectations*,
 E1), in the owner's answer to the cost of a count over years 1 to 9999: 【M】 *"1950-2150 is more than enough"*; K11
-moved to the new last dates, the range and its values derived by the agent from that limit (【C】).
+moved to the new last dates, the range and its values derived by the agent from that limit (【C】). 2026-11-15:
+the user guide (S15, AC17 and the *Expectations* line that names them), in the owner's request: 【M】 *"Add a visible
+Help / User Guide in the app itself. It explains each feature and how the day counts are calculated, with examples
+taken from SPEC's known answers, in both languages. Keep it smaller than the app itself, about 150 words per
+feature."*; on AC17's comparison with the rest of the page's text, which that length could not meet, the owner's
+answer: 【M】 *"This rules shouldn't be taken literal. The goal is the user-guide must not be more elaborated and
+complicated that the app solution and features."* The comparison is replaced by a ceiling of 150 words per section,
+the agent's reading of those two answers (【C】).

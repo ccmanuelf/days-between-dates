@@ -105,3 +105,13 @@ What reviews changed, one entry per change (`CLAUDE.md`, *Judgment log*).
     and the agent had kept them).
   - Decision: settled by the agent: the branches and their tests removed, nothing changes for 1950 to 2150; a page
     test refuses a date outside the years.
+- **2026-11-15 — the cleanup rule covers untagged builds, and its evidence is kept** (pull request #18)
+  - Produced: a rule to remove this project's containers, "its image" and its build cache after a local Docker run,
+    and a pull request whose read-back and cleanup claims had no raw output behind them.
+  - Wrong: an untagged earlier build of the app is also a leftover that slowly eats space, and the rule did not name
+    it; the protection's other settings, the caches and artifacts count and the pruned records were asserted, not
+    shown.
+  - Caught by: the reviewer agent, full review of pull request #18.
+  - Decision: settled by the agent: the rule removes untagged earlier builds too and keeps the raw listings with the
+    work; the full protection read before and after, the API counts and the Docker listings were saved, and the one
+    untagged image on the machine was checked (not this app's).
