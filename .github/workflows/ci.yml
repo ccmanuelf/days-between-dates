@@ -24,7 +24,7 @@ jobs:
       - name: Test
         run: python -m pytest -v
 
-  # The app as compose.yaml runs it: built from the Dockerfile, its data in the named volume. Not a required check.
+  # The app as compose.yaml runs it: built from the Dockerfile, its data in the named volume. A required check on main.
   docker:
     runs-on: ubuntu-latest
     timeout-minutes: 15
