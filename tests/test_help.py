@@ -115,6 +115,43 @@ def test_ac18_the_guide_writes_no_digit_of_its_own():
         assert not typed, (language, typed)
 
 
+@pytest.mark.parametrize(
+    "language,words", [("en", "without your own holidays"), ("es", "sin sus días festivos propios")]
+)
+def test_s16_each_worked_example_says_it_leaves_out_your_own_holidays(server, open_page, language, words):
+    """The words are written here, not read from strings.json, so removing them from the page's text fails."""
+    page = open_page(server.url)
+    choose_language(page, language)
+    count(page, "2026-10-26", "2026-10-30")
+    for toggle in ("#help-toggle", "#how-total-toggle", "#how-business-toggle"):
+        settle(page, lambda t=toggle: page.click(t))
+    shown = [page.locator("#help dd").nth(SECTIONS.index(s)).text_content() for s in WITH_EXAMPLE]
+    shown += [page.locator(f"#{panel} .how-text").text_content() for panel in ("how-total", "how-business")]
+    assert len(shown) == 5
+    assert all(words in text for text in shown), shown
+
+
+def test_s16_a_failed_request_for_the_examples_shows_no_earlier_example(server, open_page):
+    """After a failed GET /api/guide, Help and both "How this is calculated" panels show their texts alone and the
+    error says the server did not answer; no example from an earlier opening stands in for one this opening could
+    not count."""
+    toggles = ("#help-toggle", "#how-total-toggle", "#how-business-toggle")
+    page = open_page(server.url)
+    count(page, "2026-10-26", "2026-10-30")
+    for toggle in toggles:  # open, so the examples are counted and shown
+        settle(page, lambda t=toggle: page.click(t))
+    expect(page.locator("#help dd").first).to_contain_text("K1")
+    expect(page.locator("#how-business .how-text")).to_contain_text("K9a")
+    for toggle in toggles:  # close
+        page.click(toggle)
+    page.route("**/api/guide", lambda route: route.abort())
+    settle(page, lambda: page.click("#help-toggle"))
+    expect(page.locator("#help dd")).to_have_text([EN[f"help_{s}"] for s in SECTIONS])
+    expect(page.locator("#how-total .how-text")).to_have_text(EN["how_total"])
+    expect(page.locator("#how-business .how-text")).to_have_text(EN["how_business"])
+    expect(page.locator("#error")).to_have_text(EN["error_network"])
+
+
 def test_the_guide_has_every_section_in_both_languages():
     for key in [f"help_{s}" for s in SECTIONS] + [f"help_{s}_title" for s in SECTIONS]:
         assert EN.get(key) and ES.get(key), key

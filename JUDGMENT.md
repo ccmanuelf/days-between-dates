@@ -55,3 +55,38 @@ What reviews changed, one entry per change (`CLAUDE.md`, *Judgment log*).
     count can differ from the example's, a convention not shown on screen in an app built to show them.
   - Caught by: the reviewer agent, full review of pull request #14.
   - Decision: the owner's pick, 2026-11-15: "Add the words (Recommended)".
+- **2026-11-15 — the security audit's four fixes** (pull request #15)
+  - Produced: write routes that read a request body as JSON whatever its declared content type and size, a server
+    that answered any host name, and a `.gitignore` with no entry for environment files.
+  - Wrong: a page on another site could make a visitor's browser add a holiday to the app on their machine, with a
+    `text/plain` request the browser sends without asking the server first (`tests/test_hardening.py` shows it).
+  - Caught by: `/security-audit`, run by the owner before publishing.
+  - Decision: the owner's words, 2026-11-15: "Decision on the audit: merge, then fix."
+- **2026-11-15 — a failed request for the worked examples shows no earlier example** (pull request #15)
+  - Produced: after a failed `GET /api/guide`, Help and "How this is calculated" kept the examples from an earlier
+    opening.
+  - Wrong: S16 asks for an example counted by the app's code when the panel opens.
+  - Caught by: the reviewer agent, full review rerun of pull request #14.
+  - Decision: the owner's words, 2026-11-15: "plus the review's 3 minor findings".
+- **2026-11-15 — a guardian for the cross-site write fix** (pull request #15)
+  - Produced: the fix in `json_body`, with tests of the two routes that call it.
+  - Wrong: a later route that reads its body another way would skip the checks unnoticed; `CLAUDE.md`, *Guardians*,
+    asks for a guardian when a fixed bug is a pattern that can be written again, looks reasonable, and can be found
+    by reading the code.
+  - Caught by: the reviewer agent, full review of pull request #15.
+  - Decision: the owner's pick, 2026-11-15: "Apply all, rerun once (Recommended)".
+- **2026-11-15 — the guardian flags a body read with arguments; the `.env` test reads the pattern** (pull request #15)
+  - Produced: a guardian that flagged `request.form()` only when called with no arguments, with a fixture holding
+    only that form; a `.env` test that took any `git check-ignore -v` match from `.gitignore` as ignored; and a
+    *Known traps* entry that said, without a measurement, that a Pydantic model or `Body` lets a page on another site
+    write with a `text/plain` request, and said nothing of a route parameter typed `dict`.
+  - Wrong: Starlette's `form()` takes `max_fields` and others, so a route calling `request.form(max_fields=10)` would
+    reopen the cross-site write with the guardian green; `git check-ignore -v` also succeeds on a negated pattern
+    such as `!.env.local`, which un-ignores the file, and the test's earlier `-q` version caught that; a `dict`
+    parameter skips the 4096-byte limit and the guardian does not see it; tried, a `Body()` parameter typed `str`,
+    `bytes` or `Any`, and a `RootModel[str]`, accepted a `text/plain` body, while a model with one `int` field, a
+    model with one `str` field, `Body(embed=True)` typed `int` and a `dict` refused one.
+  - Caught by: the reviewer agent, full review rerun of pull request #15; the Pydantic and `Body` sentence, its
+    publication checks of the fix, which also failed two rewordings that each said a Pydantic model refused
+    `text/plain`.
+  - Decision: the owner's pick, 2026-11-15: "Fix all, one more review (Recommended)".

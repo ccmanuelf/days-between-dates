@@ -182,9 +182,11 @@ Its publication check (*Publication check*, above, run by the reviewer agent) al
 Python and FastAPI, SQLite, one HTML page with a JavaScript module calling the JSON API; tests with pytest and
 Playwright for Python. Plain CSS, no build step; the look and its tokens are in `DESIGN.md`. Delivery rung 1: user
 space, no admin. The SQLite file is created at run time, at `DBD_DB_PATH` (default `data/app.db`), and never
-committed. Docker: `Dockerfile` and `compose.yaml` run the app with its database in a named volume. Live demo:
-Render's free plan, whose storage resets on restart, which the demo page says (S12, AC14). Licence: MIT. Interface:
-English and Spanish.
+committed. A request addressed to a host name other than `127.0.0.1`, `localhost` or one listed in
+`DBD_ALLOWED_HOSTS` is refused; a write with a body (adding a holiday, storing the language) must be sent as
+`application/json`, at most 4096 bytes. Docker:
+`Dockerfile` and `compose.yaml` run the app with its database in a named volume. Live demo: Render's free plan, whose
+storage resets on restart, which the demo page says (S12, AC14). Licence: MIT. Interface: English and Spanish.
 
 ## Commands
 
@@ -208,4 +210,14 @@ Changing the workflow changes CI: ask the owner first.
 
 One entry per guardian: what goes wrong, why, the correct pattern, and the guardian's name.
 
-None yet.
+- **A write that reads its own body.** What goes wrong: a route reads its body with `request.json()`, `.body()`,
+  `.form()` or `.stream()` outside `json_body`, a Pydantic model, or FastAPI's `Body`, `Form`, `File` or
+  `UploadFile`. Why: that skips `json_body`'s checks, so a body over 4096 bytes is read whole. `request.json()`,
+  `.body()` and `.stream()` also read a `text/plain` body, which a page on another site can make a browser send
+  without asking the server; `.form()`, `Form`, `File` and `UploadFile` read form bodies, which a browser sends the
+  same way. Tried on 2026-11-15 (FastAPI 0.162.0): a `Body()` parameter typed `str`, `bytes` or `Any`, and a
+  `RootModel[str]`, accepted a `text/plain` body; whether a parameter refuses one depends on its type. Correct
+  pattern: `body = await json_body(request)` (`app/main.py`). Guardian:
+  `tests/guardians/test_every_write_reads_its_body_through_json_body.py`. It does not see a route parameter typed
+  `dict`, which needs none of those imports: FastAPI reads that body itself, and took a JSON body over 4096 bytes
+  when tried on 2026-11-15. Take the body with `json_body`, not as a typed parameter.
