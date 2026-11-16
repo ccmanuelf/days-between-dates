@@ -4,26 +4,33 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
 
 ## Where the work stands
 
-- `main`: pull request #19 merged (the restyle within the old palette, and Help as a user guide).
-- The owner's decision of 2026-11-16: this app must reflect the whole foundation (the visual standard, the web
-  starter, the app template, the quality gates, the four adds, the User Guide rule, the publication check); the old
-  "not restyled" line in `DESIGN.md` was wrong. An audit listed the gaps between this app and the foundation; the
-  owner chose to rebuild on the web starter.
-- Branch `foundation-hygiene`, for one pull request: the Python pins compiled from `.in` files with a two-week
-  cutoff and `--universal`, with `tests/test_pins.py`; FastAPI's documentation routes turned off, with a test that
-  each answers 404 (the orphan check's name filter for them was dead code: they were never `APIRoute`s, so it is
-  removed); `CLAUDE.md` and the security-audit skill in the app template's wording (the audit before each
-  publish, the merge rule's last sentence, *Proven work*'s trigger, the guardians' linter).
-- Next: the rebuild on the web starter, a pull request of its own.
-- The app from `main` at 6e52eb8 runs in Docker at http://127.0.0.1:8765 for the owner's review; nothing is pruned
-  until the owner says the review is done.
+- `main`: pull request #20 merged (the Python pins compiled with a two-week cutoff, the documentation routes off,
+  `CLAUDE.md` in the app template's wording).
+- Branch `web-starter`, for one pull request, on the owner's decision of 2026-11-16 (the app reflects the whole
+  foundation; rebuilt on the web starter): the page rebuilt in Vue 3 with the starter's shell, components and the
+  visual standard's files unchanged; an app bar with the storage status, the EN/ES switch and a theme toggle (light by
+  default, the choice stored through the API); labels above fields; the result and the own holidays in AG Grids; the
+  guide a tab, its worked examples written in its text and read by `tests/test_guide.py`; `/api/guide` removed and
+  `/api/theme` added; the ports `BACKEND_PORT` 8765 and `FRONTEND_PORT` 5765; a two-stage Docker image (Node builds
+  the page); CI checks the page's types and unit tests and builds it before the Python suite; `SPEC.md` (S13–S16,
+  AC10, AC15–AC18, the web interface), `DESIGN.md` (rewritten from the standard), `CLAUDE.md` (the *User Guide*
+  section), README.
+- The app from `main` at 6e52eb8 runs in Docker at http://127.0.0.1:8765 for the owner's review; after this branch
+  merges it is rebuilt from `main` at the same address. Nothing of this project's Docker data is pruned until the
+  owner says the review is done.
 
 ## Checked on this branch (2026-11-16)
 
-- The new tests failed before the change: the documentation routes answered (4 cases), and the header test failed
-  on `main`'s two hand-written lists. Each pin test also failed on the drift it guards, on a copy: a shared pin
-  changed in one list, and a pin raised by hand in the compiled lists only.
-- The full suite on this machine: 220 passed (213 on `main`, in CI run 43806269163).
+- The page: type check clean; 117 unit tests passed (the starter's, adapted: ports, locales, the color source, the
+  grid's row height, the button's outline default).
+- The full Python suite on this machine, on the built page: 233 passed (220 on `main`).
+- Twelve mutations, each breaking one guarantee of this branch (an altered worked example, a wrong weekday in one,
+  the theme not stored, dark by default, a second cobalt button, labels beside fields, the status chip without its
+  icon, the How example left out, a guide section over 150 words, the theme stored under another key, a color written
+  outside `tokens.css`, the removal error without its field's name): each made its test fail. Dark by default first
+  passed, because its test switched the theme itself; the test now checks the page as it opens.
+- Screenshots in light and dark, at 1280 and 375 px wide, with a result, both notices, a day of one's own, an error
+  and the guide: looked at, not committed.
 
 ## Pending
 
@@ -33,11 +40,9 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
 - `python -m pip install` is not covered by the ask rules (the template has the `python3` form only).
 - `DESIGN.md` restates values from `style.css` and `tokens.css`. No test reads `DESIGN.md` (searched `tests/` and
   `scripts/`), so its copies can drift from those files.
-- `DESIGN.md` still says the app predates the visual standard and is not restyled to its palette; the rebuild's pull
-  request rewrites it from the standard.
 - Notes outside this repository still say existing apps are not restyled; they are updated in their own session.
 - *Proven work*: due once the app meets the definition of done, before its first release or production deploy; the
-  owner writes his parts (about 15 minutes).
+  README holds a marked placeholder until the owner writes it (about 15 minutes).
 
 ## Decisions (the owner's)
 
@@ -54,6 +59,6 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
 
 ## Last session (2026-11-15 and 2026-11-16)
 
-Done: pull requests #18 and #19 merged; the app run in Docker for review; the foundation audit; this branch's
+Done: pull requests #18 to #20 merged; the app run in Docker for review; the foundation audit; this branch's
 work and its checks above.
-Half-done: this branch's pull request; the rebuild.
+Half-done: this branch's pull request.

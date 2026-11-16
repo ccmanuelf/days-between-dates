@@ -1,4 +1,4 @@
-"""The app: one page, served with the JSON API it calls.
+"""The app: the JSON API, and the page it serves, built from frontend/ (npm run build) into frontend/dist.
 
 Errors come back as {"error": {"code": ..., "field": ..., "message": ...}}: the page shows them in the user's language
 from the code, and the field names where the input was refused (SPEC, E1). A storage failure is 503 with a fixed
@@ -14,15 +14,16 @@ from datetime import MAXYEAR, MINYEAR, date
 from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from app import counting, guide, storage
-from app.guide import as_pair as pair
+from app import counting, storage
+from app.days import Pair
 from app.holidays import CALENDARS
 
-STATIC = Path(__file__).parent / "static"
+# The page, built by `npm run build` in frontend/. A missing folder stops the server at startup: build the page first.
+FRONTEND_DIST = Path(__file__).resolve().parents[1] / "frontend" / "dist"
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 FIRST_YEAR, LAST_YEAR = 1950, 2150  # the years accepted: the owner's decision of 2026-11-15 (SPEC, Expectations)
 STORAGE_MESSAGE = "The database cannot be read or written."
@@ -47,7 +48,6 @@ async def lifespan(_: FastAPI):
 # No /docs, /redoc or /openapi.json: nothing on the page calls them (no orphans).
 app = FastAPI(title="Days between dates", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
-app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
 
 class Refused(Exception):
@@ -87,6 +87,10 @@ def parse_date(field: str, value: object, years: tuple[int, int] = (FIRST_YEAR, 
         raise Refused(422, "invalid_date", field, f"{field} is not a valid date (YYYY-MM-DD, years {first} to {last}).")
 
 
+def pair(p: Pair) -> dict:
+    return {"start_not_counted": p.start_not_counted, "both_counted": p.both_counted}
+
+
 def parse_calendar(value: object) -> str:
     if not isinstance(value, str) or value not in CALENDARS:
         raise Refused(422, "unknown_calendar", "calendar", f"calendar must be one of: {', '.join(CALENDARS)}.")
@@ -117,11 +121,6 @@ async def json_body(request: Request) -> dict:
     if not isinstance(body, dict):
         raise Refused(422, "invalid_body", None, "The request body must be a JSON object.")
     return body
-
-
-@app.get("/")
-def page() -> FileResponse:
-    return FileResponse(STATIC / "index.html")
 
 
 @app.get("/api/status")
@@ -160,17 +159,6 @@ def count(calendar: str | None = None, start: str | None = None, end: str | None
         "past_years": result.past_years,
         "total": pair(result.days.total),
         "business": pair(result.business),
-    }
-
-
-@app.get("/api/guide")
-def guide_examples() -> dict:
-    """The worked examples of Help and "How this is calculated", each a known answer counted now (SPEC, S16, AC18),
-    and the first and last dates accepted, which Help names. The page asks for them each time one of those panels
-    opens."""
-    return {
-        "examples": guide.examples(),
-        "dates": {"first": date(FIRST_YEAR, 1, 1).isoformat(), "last": date(LAST_YEAR, 12, 31).isoformat()},
     }
 
 
@@ -217,3 +205,24 @@ async def set_language(request: Request) -> dict:
         )
     storage.set_language(language)
     return {"language": language}
+
+
+@app.get("/api/theme")
+def get_theme() -> dict:
+    """The stored theme, or null when none is stored or the stored one cannot be read: the page then opens light
+    (SPEC, S13; the visual standard's rule 10)."""
+    return {"theme": storage.get_theme()}
+
+
+@app.put("/api/theme")
+async def set_theme(request: Request) -> dict:
+    body = await json_body(request)
+    theme = body.get("theme")
+    if theme not in storage.THEMES:
+        raise Refused(422, "unknown_theme", "theme", f"theme must be one of: {', '.join(storage.THEMES)}.")
+    storage.set_theme(theme)
+    return {"theme": theme}
+
+
+# Mounted last, so it can't shadow a route.
+app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="page")

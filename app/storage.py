@@ -1,7 +1,8 @@
 """SQLite storage. The database file is created at run time, never committed.
 
-It holds the user's own holidays, one list per calendar, and the language choice. A database that cannot be read or
-written raises `StorageError`, so no caller can show a count that silently leaves the stored holidays out (SPEC, E3).
+It holds the user's own holidays, one list per calendar, and the language and theme choices. A database that cannot
+be read or written raises `StorageError`, so no caller can show a count that silently leaves the stored holidays out
+(SPEC, E3).
 """
 
 import os
@@ -12,6 +13,7 @@ from pathlib import Path
 
 SCHEMA_VERSION = "1"
 LANGUAGES = ("en", "es")
+THEMES = ("light", "dark")
 BUSY_TIMEOUT = 2.0  # seconds to wait for a lock before the database counts as unwritable
 
 
@@ -92,21 +94,39 @@ def remove_holiday(calendar: str, day: date) -> bool:
     return cursor.rowcount > 0
 
 
-def set_language(language: str) -> None:
-    if language not in LANGUAGES:
-        raise ValueError(f"unknown language: {language!r}")
+def _set_setting(key: str, value: str, allowed: tuple[str, ...]) -> None:
+    if value not in allowed:
+        raise ValueError(f"unknown {key}: {value!r}")
     with _db() as conn:
         conn.execute(
-            "INSERT INTO settings (key, value) VALUES ('language', ?) "
-            "ON CONFLICT (key) DO UPDATE SET value = excluded.value",
-            (language,),
+            "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value",
+            (key, value),
         )
 
 
-def get_language() -> str | None:
-    """The stored language; None when none is stored or the stored value is not one of LANGUAGES (SPEC, Q16)."""
+def _get_setting(key: str, allowed: tuple[str, ...]) -> str | None:
+    """The stored value; None when none is stored or the stored value is not one of `allowed`."""
     with _db() as conn:
-        row = conn.execute("SELECT value FROM settings WHERE key = 'language'").fetchone()
-    if row is None or row[0] not in LANGUAGES:
+        row = conn.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
+    if row is None or row[0] not in allowed:
         return None
     return row[0]
+
+
+def set_language(language: str) -> None:
+    _set_setting("language", language, LANGUAGES)
+
+
+def get_language() -> str | None:
+    """The stored language; None when none is stored or the stored one cannot be read (SPEC, Q16)."""
+    return _get_setting("language", LANGUAGES)
+
+
+def set_theme(theme: str) -> None:
+    _set_setting("theme", theme, THEMES)
+
+
+def get_theme() -> str | None:
+    """The stored theme; None when none is stored or the stored one cannot be read: the page then opens light (SPEC,
+    S13)."""
+    return _get_setting("theme", THEMES)

@@ -1,6 +1,11 @@
-# The image needs requirements.txt and app/ (Dockerfile); everything else stays out of the build context.
+# The image needs requirements.txt, app/ and the page's sources (Dockerfile); everything else stays out of the build
+# context, the page's installed packages and its build included: the page stage installs and builds its own.
 *
 !requirements.txt
 !app/
+!frontend/
+frontend/node_modules
+frontend/dist
+frontend/tests
 **/__pycache__
 **/.DS_Store

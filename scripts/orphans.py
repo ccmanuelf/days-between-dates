@@ -1,5 +1,6 @@
 """The orphan check (plan step 7, SPEC AC10): every control on the page reaches a route that executes, every route of
-the app has a caller, and every table is written and read.
+the app has a caller, and every table is written and read. The User Guide is the one exception, static help with no
+backend (STATIC_HELP, below).
 
 It starts the server on a scratch database, drives every control of the page in a real browser and records each
 request the page makes. FastAPI's documentation routes are turned off (app/main.py), so every route is the app's.
@@ -66,9 +67,19 @@ def free_port() -> int:
         return s.getsockname()[1]
 
 
+# Static help with no backend (the app template's User Guide rule): the guide's tab and the two "How this is
+# calculated" panels reach no route, by design, and are named here so the check still lists every other control.
+STATIC_HELP = {"tab:guide", "tab:count", "how-total-toggle", "how-business-toggle"}
+
+# How a control is named in this check: a tab by its data-tab; otherwise its id; a choice in a toggle group by its
+# group's id and its value; a remove button by its class.
+CONTROL_NAME = """e => (e.dataset.tab && `tab:${e.dataset.tab}`) || e.id
+  || (e.dataset.value && `${e.parentElement.closest('[id]')?.id}:${e.dataset.value}`)
+  || (e.classList.contains('remove') && 'remove') || e.outerHTML.slice(0, 80)"""
+
+
 def drive_page(url: str) -> tuple[list, list[str]]:
     """Use every control once; return the requests seen and the orphan controls."""
-    from playwright.sync_api import TimeoutError as PlaywrightTimeout
     from playwright.sync_api import sync_playwright
 
     requests, orphans = [], []
@@ -82,6 +93,9 @@ def drive_page(url: str) -> tuple[list, list[str]]:
         def sent(method: str, path: str) -> list:
             return [r for r in requests if r.method == method and urlsplit(r.url).path == path]
 
+        def body_of(request) -> dict:
+            return json.loads(request.post_data or "{}")
+
         page.fill("#start", "2026-10-26")
         page.fill("#end", "2026-10-30")
         with page.expect_response(lambda r: "/api/count" in r.url):
@@ -91,49 +105,45 @@ def drive_page(url: str) -> tuple[list, list[str]]:
             if query.get(field) != [value]:
                 orphans.append(f"control does not reach its route: {control}")
         with page.expect_response(lambda r: "/api/count" in r.url):
-            page.select_option("#calendar", "us")
+            page.click("#calendar [data-value=us]")
         if parse_qs(urlsplit(sent("GET", "/api/count")[-1].url).query).get("calendar") != ["us"]:
-            orphans.append("control does not reach its route: #calendar")
+            orphans.append("control does not reach its route: calendar:us")
+        with page.expect_response(lambda r: "/api/count" in r.url):
+            page.click("#calendar [data-value=mx]")
+        if parse_qs(urlsplit(sent("GET", "/api/count")[-1].url).query).get("calendar") != ["mx"]:
+            orphans.append("control does not reach its route: calendar:mx")
 
         page.fill("#new-day", "2026-10-28")
         with page.expect_response(lambda r: "/api/count" in r.url):
             page.click("#add")
         posts = sent("POST", "/api/holidays")
-        if not posts or json.loads(posts[-1].post_data or "{}").get("day") != "2026-10-28":
+        if not posts or body_of(posts[-1]).get("day") != "2026-10-28":
             orphans.append("control does not reach its route: #new-day, #add")
         with page.expect_response(lambda r: "/api/count" in r.url):
             page.click("#own-list button.remove")
-        if not sent("DELETE", "/api/holidays/us/2026-10-28"):
-            orphans.append("control does not reach its route: .remove")
+        if not sent("DELETE", "/api/holidays/mx/2026-10-28"):
+            orphans.append("control does not reach its route: remove")
 
-        with page.expect_response(lambda r: "/api/language" in r.url and r.request.method == "PUT"):
-            page.select_option("#language", "es")
-        puts = sent("PUT", "/api/language")
-        if not puts or json.loads(puts[-1].post_data or "{}").get("language") != "es":
-            orphans.append("control does not reach its route: #language")
+        for value in ("es", "en"):
+            with page.expect_response(lambda r: "/api/language" in r.url and r.request.method == "PUT"):
+                page.click(f"#language [data-value={value}]")
+            puts = sent("PUT", "/api/language")
+            if not puts or body_of(puts[-1]).get("language") != value:
+                orphans.append(f"control does not reach its route: language:{value}")
+        with page.expect_response(lambda r: "/api/theme" in r.url and r.request.method == "PUT"):
+            page.click("#theme")
+        puts = sent("PUT", "/api/theme")
+        if not puts or body_of(puts[-1]).get("theme") != "dark":
+            orphans.append("control does not reach its route: #theme")
 
-        # Help and the two "How this is calculated" panels ask for the worked examples when they open (SPEC, S16).
-        page.fill("#start", "2026-10-26")
-        with page.expect_response(lambda r: "/api/count" in r.url):
-            page.click("#count")
-        for toggle in ("#help-toggle", "#how-total-toggle", "#how-business-toggle"):
-            before = len(sent("GET", "/api/guide"))
-            try:
-                with page.expect_response(lambda r: "/api/guide" in r.url, timeout=5000):
-                    page.click(toggle)
-            except PlaywrightTimeout:
-                pass  # no answer: the count below names the control
-            if len(sent("GET", "/api/guide")) == before:
-                orphans.append(f"control does not reach its route: {toggle}")
-
-        driven = {
-            "language", "start", "end", "calendar", "count", "new-day", "add",
-            "help-toggle", "how-total-toggle", "how-business-toggle",
-        }
-        for control in page.locator("input, select, button, summary").evaluate_all(
-            "els => els.map(e => e.id || e.className)"
-        ):
-            if control not in driven and control != "remove":
+        driven = {"start", "end", "calendar:mx", "calendar:us", "count", "new-day", "add", "remove", "language:en",
+                  "language:es", "theme"}
+        selector = "input, select, button, summary, [role=tab], [role=radio]"
+        # The controls a user can see: the grid keeps a hidden pagination field of its own, which this app does not turn
+        # on (frontend/src sets no pagination option).
+        shown = f"els => els.filter(e => e.getClientRects().length).map({CONTROL_NAME})"
+        for control in page.locator(selector).evaluate_all(shown):
+            if control not in driven and control not in STATIC_HELP:
                 orphans.append(f"control not driven by this check: {control}")
 
         seen = []

@@ -1,0 +1,171 @@
+/*
+  Visual standard, batch 1: tokens. Approved by Manuel, 2026-11-03.
+  Format: shadcn-vue on Tailwind CSS 4. Role names follow shadcn-vue, so its components work unchanged.
+  Dark mode: the .dark class on <html>, as shadcn-vue does. Light is the default.
+  Values from the approved mockups, under shadcn-vue's role names.
+
+  Naming trap: in shadcn-vue, "accent" is the neutral hover surface, NOT the brand color.
+  Cobalt is "primary". Use it only where rule 1 allows.
+*/
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Surfaces */
+  --background: #f4f5f7;          /* page */
+  --card: #ffffff;                /* panels, grids, fields */
+  --card-foreground: #191e29;
+  --popover: #ffffff;             /* menus' panel */
+  --popover-foreground: #191e29;
+  --secondary: #f8f9fb;           /* raised strip: grid header, toolbar */
+  --secondary-foreground: #191e29;
+  --accent: #f1f3f6;              /* hover surface (shadcn name) */
+  --accent-foreground: #191e29;
+  --muted: #eef0f3;               /* neutral chip, track */
+
+  /* Text */
+  --foreground: #191e29;          /* body text, values */
+  --muted-foreground: #4d5666;    /* labels, secondary text */
+  --subtle-foreground: #646d7d;   /* hints, units, axis ticks */
+
+  /* Lines */
+  --border: #e3e6eb;              /* card and grid lines */
+  --border-strong: #c9cfd8;       /* outline buttons */
+  --input: #8b94a3;               /* field outline */
+  --ring: #2350d8;                /* focus outline */
+
+  /* Cobalt */
+  --primary: #2350d8;
+  --primary-hover: #1b41b5;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e8eeff;        /* selected row */
+
+  /* Status: always shown with an icon and a word, never color alone */
+  --success: #1d7a4b;
+  --success-soft: #e6f4ec;
+  --warning: #965a00;
+  --warning-soft: #fdf1dc;
+  --destructive: #be2a22;         /* danger (shadcn name) */
+  --destructive-soft: #fcebe9;
+
+  /* Charts: neutral by default, cobalt for the selected item, status colors only for status */
+  --chart-1: #8c96a8;             /* main bars */
+  --chart-2: #c2c8d2;             /* comparison bars, e.g. capacity */
+  --chart-grid: #e8ebef;
+
+  /* Shape and depth */
+  --radius: 8px;                  /* cards; controls use radius-md (6px) */
+  --shadow-card: 0 1px 2px rgba(20, 28, 45, 0.05), 0 1px 3px rgba(20, 28, 45, 0.07);
+  --shadow-pop: 0 6px 16px rgba(20, 28, 45, 0.10), 0 2px 4px rgba(20, 28, 45, 0.06);
+
+  /* Motion (added 2026-11-13): UI motion stays under 300ms. Values: emilkowalski/skills,
+     skills/animate/SKILL.md at 0f2e23b (the visual standard's README, Motion, documents them). */
+  --duration-fast: 150ms;         /* press feedback, hover, color */
+  --duration-base: 200ms;         /* tooltips, small popovers, dropdowns */
+  --duration-slow: 250ms;         /* the slowest UI motion */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);       /* entering and exiting */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);   /* moving or morphing on screen */
+  --motion-scale: 1;              /* movement: write translate and scale distances times this */
+}
+
+/* Reduced motion: movement drops out; fades and color changes keep their durations. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-scale: 0;
+  }
+}
+
+.dark {
+  --background: #0f1218;
+  --card: #171b23;
+  --card-foreground: #e8ebf1;
+  --popover: #171b23;
+  --popover-foreground: #e8ebf1;
+  --secondary: #1c212b;
+  --secondary-foreground: #e8ebf1;
+  --accent: #222835;
+  --accent-foreground: #e8ebf1;
+  --muted: #222835;
+  --foreground: #e8ebf1;
+  --muted-foreground: #aeb5c2;
+  --subtle-foreground: #818999;
+  --border: #2a303c;
+  --border-strong: #3b4351;
+  --input: #646d7e;
+  --ring: #9cb4ff;
+  --primary: #7f9dff;
+  --primary-hover: #9cb4ff;
+  --primary-foreground: #0b1020;
+  --primary-soft: #1f2b4d;
+  --success: #5fc492;
+  --success-soft: #14291f;
+  --warning: #e9ab4f;
+  --warning-soft: #2e2311;
+  --destructive: #f2807a;
+  --destructive-soft: #331918;
+  --chart-1: #6c7586;
+  --chart-2: #3c4454;
+  --chart-grid: #252b36;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-pop: 0 8px 20px rgba(0, 0, 0, 0.45), 0 2px 4px rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
+}
+
+/* Tailwind utilities (bg-card, text-muted-foreground, rounded-md, shadow-card, text-body ...) */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-grid: var(--chart-grid);
+
+  --radius-sm: 4px;
+  --radius-md: 6px;                /* buttons, fields, toggles */
+  --radius-lg: var(--radius);      /* cards, grids, menus */
+
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
+
+  /* Type: Carbon's productive scale set in Inter. Weights: 400 body, 500 labels, 600 headings. */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --text-label: 12px;            --text-label--line-height: 16px;            --text-label--font-weight: 500;
+  --text-body-compact: 14px;     --text-body-compact--line-height: 18px;
+  --text-body: 14px;             --text-body--line-height: 20px;
+  --text-heading-compact: 14px;  --text-heading-compact--line-height: 18px;  --text-heading-compact--font-weight: 600;
+  --text-heading-2: 16px;        --text-heading-2--line-height: 24px;        --text-heading-2--font-weight: 600;
+  --text-heading-3: 20px;        --text-heading-3--line-height: 28px;        --text-heading-3--font-weight: 600;
+  --text-heading-4: 28px;        --text-heading-4--line-height: 36px;        --text-heading-4--font-weight: 600;
+
+  /* Spacing: Tailwind's 4px unit is kept. Carbon 2, 4, 8, 12, 16, 24, 32, 40, 48 px = Tailwind 0.5, 1, 2, 3, 4, 6, 8, 10, 12 (p-4 is 16px). */
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground font-sans text-body; -webkit-font-smoothing: antialiased; }
+}

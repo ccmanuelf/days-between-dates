@@ -12,9 +12,12 @@ from playwright.sync_api import expect
 from app.holidays import CALENDARS
 
 ROOT = Path(__file__).resolve().parent.parent
-STRINGS = json.loads((ROOT / "app/static/strings.json").read_text())
+STRINGS = {lang: json.loads((ROOT / f"frontend/src/locales/{lang}.json").read_text()) for lang in ("en", "es")}
 EN, ES = STRINGS["en"], STRINGS["es"]
-CELLS = ["#total-snc", "#total-bc", "#business-snc", "#business-bc"]
+# The result grid's four counts: total and business days, each with the start date not counted and both counted.
+CELLS = [
+    f"#result .ag-row[row-id={row}] .ag-cell[col-id={col}]" for row in ("total", "business") for col in ("snc", "bc")
+]
 TOTALS, BUSINESS = CELLS[:2], CELLS[2:]
 
 
@@ -33,12 +36,17 @@ def count(page, start: str, end: str):
 
 
 def choose_calendar(page, calendar: str):
-    """Switch calendar: the page loads that calendar's list, and recounts with a result on screen."""
-    settle(page, lambda: page.select_option("#calendar", calendar))
+    """Switch calendar: the page loads that calendar's list, and recounts with a result on screen. The calendar already
+    chosen asks for nothing."""
+    choice = page.locator(f"#calendar [data-value={calendar}]")
+    if choice.get_attribute("data-state") != "on":
+        settle(page, lambda: choice.click())
 
 
 def choose_language(page, language: str):
-    settle(page, lambda: page.select_option("#language", language))
+    """Switch language: the page stores the choice. The language already on screen asks for nothing."""
+    if page.evaluate("document.documentElement.lang") != language:
+        settle(page, lambda: page.click(f"#language [data-value={language}]"))
 
 
 def add_holiday(page, day: str):
@@ -48,7 +56,7 @@ def add_holiday(page, day: str):
 
 
 def remove_holiday(page, day: str):
-    settle(page, lambda: page.click(f"#own-list li[data-day='{day}'] button.remove"))
+    settle(page, lambda: page.click(f"#own-list .ag-row[row-id='{day}'] button.remove"))
 
 
 def is_count(response) -> bool:
@@ -65,10 +73,14 @@ def expect_counts(page, values: tuple, cells: list = CELLS):
 
 
 def expect_own_list(page, days: list):
-    """The days of one's own on screen, in order."""
-    items = page.locator("#own-list li span")
+    """The days of one's own on screen, in the grid's order."""
+    items = page.locator("#own-list .ag-row[row-id] .ag-cell[col-id=day]")
     if days:
-        expect(items).to_have_text(days)
+        expect(items).to_have_count(len(days))
+        shown = items.evaluate_all(
+            "cells => cells.map(c => [Number(c.closest('.ag-row').getAttribute('row-index')), c.textContent.trim()])"
+        )
+        assert [text for _, text in sorted(shown)] == days
     else:
         expect(items).to_have_count(0)
 
@@ -78,7 +90,9 @@ def test_s1_count_a_range_with_both_conventions_and_the_calendar_named(server, o
     count(page, "2026-10-26", "2026-10-30")
     expect_counts(page, ("4", "5", "4", "5"))  # K1
     expect(page.locator("#active-calendar")).to_have_text(EN["active_calendar"].replace("{name}", "Mexico"))
-    expect(page.locator("#result thead th")).to_have_text(["", EN["col_start_not_counted"], EN["col_both_counted"]])
+    expect(page.locator("#result .ag-header-cell-text")).to_have_text(
+        [EN["col_days"], EN["col_start_not_counted"], EN["col_both_counted"]]
+    )
 
 
 def test_s2_the_same_date_twice(server, open_page):
@@ -91,7 +105,7 @@ def test_s3_reversed_dates_are_swapped_with_a_notice(server, open_page):
     page = open_page(server.url)
     count(page, "2026-10-30", "2026-10-26")
     expect_counts(page, ("4", "5", "4", "5"))  # K4, as K1
-    expect(page.locator("#notice-swapped")).to_have_text(EN["notice_swapped"])
+    expect(page.locator("#notice-swapped .notice-text")).to_have_text(EN["notice_swapped"])
     expect(page.locator("#range")).to_have_text("From 2026-10-26 to 2026-10-30")
     count(page, "2026-10-26", "2026-10-30")
     expect(page.locator("#notice-swapped")).to_be_hidden()
@@ -138,10 +152,10 @@ def test_f1_a_late_list_does_not_replace_the_list_of_the_calendar_chosen_after_i
     assert server.call("POST", "/api/holidays", {"calendar": "us", "day": "2026-10-28"})[0] == 201
     page = open_page(server.url)
     page.evaluate("window.__hold = 'holidays?calendar=us'")
-    page.select_option("#calendar", "us")
+    page.click("#calendar [data-value=us]")
     page.wait_for_function("window.__release !== null")  # the US list has arrived and is held
     before = settled(page)
-    page.select_option("#calendar", "mx")
+    page.click("#calendar [data-value=mx]")
     page.wait_for_function(f"window.__settled >= {before + 1}")  # Mexico's list, handled
     page.evaluate("window.__release()")
     page.wait_for_function("window.__settled === window.__started")  # the late US list, handled too
@@ -154,10 +168,10 @@ def test_f1_a_late_count_does_not_replace_the_count_of_the_calendar_chosen_after
     page = open_page(server.url)
     count(page, "2026-11-09", "2026-11-13")  # Wednesday 11 November: Veterans Day in the US calendar only
     page.evaluate("window.__hold = 'count?calendar=us'")
-    page.select_option("#calendar", "us")
+    page.click("#calendar [data-value=us]")
     page.wait_for_function("window.__release !== null")  # the US recount has arrived and is held
     before = settled(page)
-    page.select_option("#calendar", "mx")
+    page.click("#calendar [data-value=mx]")
     page.wait_for_function(f"window.__settled >= {before + 2}")  # Mexico's list and recount, handled
     page.evaluate("window.__release()")
     page.wait_for_function("window.__settled === window.__started")  # the late US recount, handled too
@@ -203,7 +217,7 @@ def test_s8_a_day_is_excluded_once(server, open_page, day):
 def test_s9_the_past_years_notice_in_both_cases(server, open_page):
     page = open_page(server.url)
     count(page, "2000-01-03", "2026-10-30")
-    expect(page.locator("#notice-past-years")).to_have_text(EN["notice_past_years"])
+    expect(page.locator("#notice-past-years .notice-text")).to_have_text(EN["notice_past_years"])
     count(page, "2150-01-05", "2150-01-09")
     expect(page.locator("#notice-past-years")).to_be_hidden()
 
@@ -213,7 +227,7 @@ def test_s10_switching_to_spanish_changes_the_text_not_the_counts_and_survives_a
     count(page, "2026-01-01", "2026-12-31")
     expect_counts(page, ("364", "365", "254", "254"))  # K7, Mexico
     choose_language(page, "es")
-    expect(page.locator("#result tbody th").nth(1)).to_have_text("Días hábiles")
+    expect(page.locator("#result .ag-row[row-id=business] .ag-cell[col-id=name]")).to_have_text("Días hábiles")
     expect(page.locator("#note-business-days")).to_have_text(ES["note_business_days"])
     assert "715" in ES["note_business_days"]
     expect_counts(page, ("364", "365", "254", "254"))
@@ -339,9 +353,9 @@ def test_e3_an_unwritable_database_refuses_the_language_and_the_page_keeps_it_on
 def test_n7_two_quick_language_choices_are_stored_in_the_order_made(server, open_page):
     page = open_page(server.url)
     page.evaluate("window.__holdRequest = 'PUT /api/language'")
-    page.select_option("#language", "es")
+    page.click("#language [data-value=es]")
     page.wait_for_function("window.__releaseRequest !== null")  # the Spanish choice is held before it is sent
-    page.select_option("#language", "en")
+    page.click("#language [data-value=en]")
     page.wait_for_function("window.__settled === window.__started - 1")  # all handled but the held choice
     page.evaluate("window.__releaseRequest()")
     page.wait_for_function("window.__settled === window.__started")
@@ -353,10 +367,10 @@ def test_n7_the_message_comes_from_the_latest_language_choice(server, open_page)
     page = open_page(server.url)
     undo = break_storage(server.db, "unwritable")
     page.evaluate("window.__hold = 'PUT /api/language'")
-    page.select_option("#language", "es")
+    page.click("#language [data-value=es]")
     page.wait_for_function("window.__release !== null")  # the Spanish choice was refused; its answer is held
     undo()
-    page.select_option("#language", "en")
+    page.click("#language [data-value=en]")
     page.wait_for_function("window.__settled === window.__started - 1")  # all handled but the held answer
     page.evaluate("window.__release()")
     page.wait_for_function("window.__settled === window.__started")
@@ -369,10 +383,10 @@ def test_n7_a_choice_overtaken_before_its_turn_is_not_sent(server, open_page):
     sent = []
     page.on("request", lambda r: sent.append(json.loads(r.post_data)["language"]) if r.method == "PUT" else None)
     page.evaluate("window.__holdRequest = 'PUT /api/language'")
-    page.select_option("#language", "es")
+    page.click("#language [data-value=es]")
     page.wait_for_function("window.__releaseRequest !== null")  # the first Spanish choice is held before it is sent
-    page.select_option("#language", "en")
-    page.select_option("#language", "es")
+    page.click("#language [data-value=en]")
+    page.click("#language [data-value=es]")
     page.evaluate("window.__releaseRequest()")
     page.wait_for_function("window.__settled === window.__started")
     assert sent == ["es", "es"]  # English, overtaken before its turn, was never sent
@@ -383,10 +397,10 @@ def test_n7_an_answer_overtaken_by_a_later_choice_sets_no_message(server, open_p
     page = open_page(server.url)
     undo = break_storage(server.db, "unwritable")
     page.evaluate("window.__hold = 'PUT /api/language'")
-    page.select_option("#language", "es")
+    page.click("#language [data-value=es]")
     page.wait_for_function("window.__release !== null")  # the Spanish choice was refused; its answer is held
     undo()
-    page.select_option("#language", "en")
+    page.click("#language [data-value=en]")
     page.evaluate("window.__holdRequest = 'PUT /api/language'")
     page.evaluate("window.__release()")
     page.wait_for_function("window.__releaseRequest !== null")  # Spanish's answer handled; English's request held
@@ -494,24 +508,30 @@ def test_q16_an_unreadable_stored_language_counts_as_none(server, open_page):
 def test_the_notices_in_spanish(server, open_page):
     page = open_page(server.url, "es-MX")
     count(page, "2026-10-30", "2000-01-03")
-    expect(page.locator("#notice-swapped")).to_have_text(ES["notice_swapped"])
-    expect(page.locator("#notice-past-years")).to_have_text(ES["notice_past_years"])
+    expect(page.locator("#notice-swapped .notice-text")).to_have_text(ES["notice_swapped"])
+    expect(page.locator("#notice-past-years .notice-text")).to_have_text(ES["notice_past_years"])
     expect(page.locator("#note-local-elections")).to_have_text(ES["note_local_elections"])
     expect(page.locator("#active-calendar")).to_have_text("Calendario: México")
+
+
+def page_sources() -> str:
+    """The page's own code: every Vue and TypeScript file under frontend/src."""
+    files = sorted((ROOT / "frontend/src").rglob("*.vue")) + sorted((ROOT / "frontend/src").rglob("*.ts"))
+    return "\n".join(path.read_text() for path in files)
 
 
 def test_every_string_exists_in_both_languages():
     assert set(EN) == set(ES)
     assert all(value.strip() for value in list(EN.values()) + list(ES.values()))
-    html = (ROOT / "app/static/index.html").read_text()
-    js = (ROOT / "app/static/app.js").read_text()
-    used = set(re.findall(r'data-i18n(?:-placeholder)?="(\w+)"', html)) | set(re.findall(r'\bt\("(\w+)"', js))
+    used = set(re.findall(r"\bt\(\s*'(\w+)'", page_sources())) | set(re.findall(r"show\('(\w+)'", page_sources()))
     used |= {f"calendar_{c}" for c in ("mx", "us")}
     used |= {f"error_{c}" for c in (
-        "required", "invalid_date", "unknown_calendar", "unknown_language", "duplicate", "not_found",
-        "invalid_body", "storage",
+        "required", "invalid_date", "unknown_calendar", "unknown_language", "unknown_theme", "duplicate", "not_found",
+        "invalid_body", "storage", "network", "language_not_stored", "theme_not_stored",
     )}
-    used |= {f"field_{f}" for f in ("start", "end", "day", "calendar", "language")}
+    used |= {f"field_{f}" for f in ("start", "end", "day", "calendar", "language", "theme")}
+    used |= {f"help_{s}{part}" for s in ("range", "business", "own", "reversed", "past", "elections", "language",
+                                         "sources") for part in ("", "_title")}
     sources = {f"source_{s.key.lower()}" for rules in CALENDARS.values() for s in rules.SOURCES}
     used |= sources
     assert used <= set(EN), used - set(EN)
@@ -519,7 +539,7 @@ def test_every_string_exists_in_both_languages():
 
 
 def test_the_page_sets_no_timers():
-    """PAGE_PROBE (tests/conftest.py) counts an answer as handled on a timer, which holds while the page's own script
-    sets none: a timer of the page's could run after the count, and these tests would read the page too early."""
-    js = (ROOT / "app/static/app.js").read_text()
-    assert not re.findall(r"\b(?:setTimeout|setInterval|requestAnimationFrame|requestIdleCallback)\b", js)
+    """PAGE_PROBE (tests/conftest.py) counts an answer as handled on a timer, which holds while the page's own code
+    sets none: a timer of the page's could run after the count, and these tests would read the page too early. The
+    grid library renders its rows on its own timers; the tests read the grids with expect(), which waits for them."""
+    assert not re.findall(r"\b(?:setTimeout|setInterval|requestAnimationFrame|requestIdleCallback)\b", page_sources())

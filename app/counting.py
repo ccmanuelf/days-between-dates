@@ -20,29 +20,22 @@ class Count:
     days: DayCounts
     business: Pair
     past_years: bool
-    excluded: tuple[date, ...]  # the Monday–Friday days the both-counted span leaves out, built-in and own
 
 
-def count(
-    calendar: str, start: date, end: date, today: date | None = None, own_holidays: list[date] | None = None
-) -> Count:
-    """`own_holidays`, when given, replaces the stored list: the guide's worked examples pass the days their known
-    answer names, none except K10's one day (SPEC, S16)."""
+def count(calendar: str, start: date, end: date, today: date | None = None) -> Count:
+    """The counts for one range, with the calendar's holidays and the user's own, read from storage."""
     days = count_days(start, end)
     rules = CALENDARS[calendar]
-    own_days = storage.list_holidays(calendar) if own_holidays is None else own_holidays
-    own = [d.toordinal() for d in own_days]
-    business, excluded = [], set()
+    own = [d.toordinal() for d in storage.list_holidays(calendar)]
+    business = []
     for span in days.spans:
         built_in = {h.ordinal for h in rules.weekday_holidays(span.first, span.last)}
         mine = {o for o in own if span.first <= o <= span.last and is_monday_to_friday(o)}
-        excluded = built_in | mine  # the last span is the both-counted one
-        business.append(monday_to_friday(span.first, span.last) - len(excluded))
+        business.append(monday_to_friday(span.first, span.last) - len(built_in | mine))  # each day once
     this_year = (today or date.today()).year
     return Count(
         calendar,
         days,
         Pair(*business),
         past_years=days.start.year < this_year,
-        excluded=tuple(date.fromordinal(o) for o in sorted(excluded)),
     )

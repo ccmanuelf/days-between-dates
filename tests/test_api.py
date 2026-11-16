@@ -160,6 +160,8 @@ def test_e3_an_unreadable_database_gives_no_count(tmp_path, start_server):
         ("POST", "/api/holidays", {"calendar": "us", "day": "2026-10-28"}),
         ("GET", "/api/language", None),
         ("PUT", "/api/language", {"language": "es"}),
+        ("GET", "/api/theme", None),
+        ("PUT", "/api/theme", {"theme": "dark"}),
     ]:
         status, answer = server.call(method, path, body)
         assert status == 503, (method, path)
@@ -172,6 +174,7 @@ def test_e3_an_unwritable_database_refuses_writes_and_still_counts(server):
     try:
         assert server.call("POST", "/api/holidays", {"calendar": "us", "day": "2026-10-28"})[0] == 503
         assert server.call("PUT", "/api/language", {"language": "es"})[0] == 503
+        assert server.call("PUT", "/api/theme", {"theme": "dark"})[0] == 503
         assert business(server, US_RANGE) == (4, 5)  # reading still works, and nothing was added
     finally:
         lock.execute("ROLLBACK")
@@ -186,6 +189,19 @@ def test_the_language_choice_is_stored_and_survives_a_restart(server):
     status, body = server.call("PUT", "/api/language", {"language": "fr"})
     assert status == 422 and body["error"]["field"] == "language"
     assert server.call("GET", "/api/language") == (200, {"language": "es"})
+
+
+def test_the_theme_choice_is_stored_and_survives_a_restart(server):
+    """Light by default, dark once chosen, and the choice kept (visual standard, rule 10; SPEC, S13)."""
+    assert server.call("GET", "/api/theme") == (200, {"theme": None})
+    assert server.call("PUT", "/api/theme", {"theme": "dark"}) == (200, {"theme": "dark"})
+    server.restart()
+    assert server.call("GET", "/api/theme") == (200, {"theme": "dark"})
+    status, body = server.call("PUT", "/api/theme", {"theme": "blue"})
+    assert status == 422 and body["error"] == {
+        "code": "unknown_theme", "field": "theme", "message": "theme must be one of: light, dark."
+    }
+    assert server.call("GET", "/api/theme") == (200, {"theme": "dark"})
 
 
 def test_each_calendar_returns_its_sources_and_the_date_checked(server):

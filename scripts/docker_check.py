@@ -4,13 +4,13 @@ is discarded after the job.
 
 By hand, the steps name their own compose project, `dbd-check`, so they store their test holiday in the volume
 `dbd-check_app-data` and delete that volume at the end, not `days-between-dates_app-data`, where `docker compose up`
-keeps your own holidays. With port 8000 taken, set DBD_PORT (for example DBD_PORT=8765) on each `up` and use that
-port in the address.
+keeps your own holidays. The app answers on BACKEND_PORT (default 8765, `.env.example`); with that port taken, set
+BACKEND_PORT on each `up` and use that port in the address.
 
     docker compose -p dbd-check up --build -d
-    python scripts/docker_check.py serves http://127.0.0.1:8000     # page, assets, a known answer, adds a holiday
+    python scripts/docker_check.py serves http://127.0.0.1:8765     # page, assets, a known answer, adds a holiday
     docker compose -p dbd-check down && docker compose -p dbd-check up -d
-    python scripts/docker_check.py kept http://127.0.0.1:8000       # the holiday came back from the volume
+    python scripts/docker_check.py kept http://127.0.0.1:8765       # the holiday came back from the volume
     docker compose -p dbd-check down -v --rmi local
 
 Its imports (__future__, json, sys, time, urllib) are from Python's standard library, so it needs no package install
@@ -21,6 +21,7 @@ first failed check.
 from __future__ import annotations
 
 import json
+import re
 import sys
 import time
 import urllib.error
@@ -67,11 +68,14 @@ def check(name: str, ok: bool, detail: str = "") -> None:
 
 def serves(base: str) -> None:
     status, html = request(base, "GET", "/")
-    check("page served", status == 200 and "/static/app.js" in html, f"HTTP {status}")
-    for asset, marker in (("/static/app.js", "/api/count"), ("/static/style.css", "font-variant-numeric"),
-                          ("/static/tokens.css", "--motion-scale"), ("/static/strings.json", '"es"')):
+    scripts = re.findall(r'<script[^>]+src="(/assets/[^"]+\.js)"', html)
+    styles = re.findall(r'<link[^>]+href="(/assets/[^"]+\.css)"', html)
+    check("page served", status == 200 and len(scripts) == 1 and len(styles) == 1, f"HTTP {status}")
+    # The built page's script calls the API and carries both languages; its stylesheet carries the standard's tokens.
+    assets = ((scripts[0], ("/api/count", "Días entre fechas")), (styles[0], ("--primary", "--motion-scale")))
+    for asset, markers in assets:
         status, text = request(base, "GET", asset)
-        check(f"{asset} served", status == 200 and marker in text, f"HTTP {status}")
+        check(f"{asset.split('-')[0]}… served", status == 200 and all(m in text for m in markers), f"HTTP {status}")
     # K1 (SPEC.md, Known-answer checks): 2026-10-26 to 2026-10-30, Mexico: total 4 · 5, business 4 · 5.
     status, text = request(base, "GET", "/api/count?calendar=mx&start=2026-10-26&end=2026-10-30")
     body = json.loads(text) if status == 200 else {}

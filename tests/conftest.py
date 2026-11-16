@@ -31,6 +31,8 @@ class Server:
         self.start()
 
     def start(self) -> None:
+        if not (ROOT / "frontend/dist/index.html").exists():
+            raise RuntimeError("the page is not built: run `npm ci` and `npm run build` in frontend/ first")
         port = free_port()
         env = {**os.environ, "DBD_DB_PATH": str(self.db), **self.env}
         self.proc = subprocess.Popen(
@@ -105,7 +107,7 @@ def browser():
 # Installed in every page before the page's own script runs. Each request the page makes is counted when it starts
 # (window.__started) and again once the page has handled its answer (window.__settled): reading the answer schedules
 # the second count on a timer, and the page handles an answer, and starts any request that follows from it, before
-# any timer runs, since the page itself sets no timers (tests/test_page.py checks that). So when the two counts are
+# any timer runs, since the page's own code sets no timers (tests/test_page.py checks that). So when the two counts are
 # equal, the page has handled every answer it asked for. Holds match a part of "METHOD /address": window.__hold holds
 # the next such answer until the test calls window.__release(), as a slow network would; window.__holdRequest holds
 # the next such request before it is sent, until window.__releaseRequest().
