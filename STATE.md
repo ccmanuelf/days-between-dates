@@ -16,21 +16,25 @@ Updated 2026-11-15. A snapshot, replaced at each close (close-session); the hist
     examples' words "without your own holidays" in both languages;
   - a guardian, `tests/guardians/test_every_write_reads_its_body_through_json_body.py`, with its fixture and its
     *Known traps* entry in `CLAUDE.md`;
-  - tests: `tests/test_hardening.py`, and two new tests (three cases) in `tests/test_help.py`.
+  - tests: `tests/test_hardening.py`, and two new tests (three cases) in `tests/test_help.py`;
+  - after the reviewer's rerun: the guardian also flags a body read called with arguments
+    (`request.form(max_fields=10)`), the `.env` test refuses a negated pattern, and *Known traps* says the guardian
+    does not see a route parameter typed `dict`.
 
 ## Checked on this branch (2026-11-15)
 
-- The full suite on this machine: 203 passed, 29 of them new test cases.
-- A sweep of 25 mutations, each altering one fix, the guardian or its exception rule: each run failed (exit 1), and
+- The full suite on this machine, on the third commit's code: 203 passed, 29 of them new test cases.
+- A sweep of 28 mutations, each altering one fix, the guardian or its exception rule: each run failed (exit 1), and
   each of the 29 new test cases failed at least once. With the content-type check removed, a page on another origin
   added a holiday through the browser; with it, it did not.
 - The guardian flags `app/main.py:82` in `main`'s code (`await request.json()` inside `json_body`), finds no hit in
-  this branch's `app/`, and flags each of the 11 marked lines in its fixture.
+  this branch's `app/`, and flags each of the 12 marked lines in its fixture; the second commit's guardian misses
+  the `form(max_fields=10)` line.
+- With `!.env.local` appended to `.gitignore`, the second commit's `.env` test passed and this one fails.
 
 ## Pending
 
-- The owner's decisions, from the audit: (1) on a deployed demo, one database serves every visitor; (2) a count over
-  years 1 to 9999 loops over each year (cost not measured).
+- Before any deploy: on a deployed demo, one database would serve every visitor; the owner settles it with the host.
 - `SPEC.md` (D8) and `CLAUDE.md` name Render's free plan for the live demo; the owner said on 2026-11-15 that the host
   is not decided.
 - Before the first release or production deploy: the README gains *Proven work* (`CLAUDE.md`, *Proven work*).
@@ -46,6 +50,11 @@ Updated 2026-11-15. A snapshot, replaced at each close (close-session); the hist
 
 - After `/security-audit`: merge pull request #14, then fix the audit's top four findings and the review's three
   minor findings in one follow-up pull request, which lands before anything goes public.
+- After the reviewer's rerun of that pull request failed: "Fix all, one more review (Recommended)", for this one
+  round.
+- One database serving every visitor of a demo: "Decide with the host (Recommended)".
+- A count over years 1 to 9999: "Keep as is (Recommended)". Measured on this machine against the running server: 0.08 s
+  for Mexico's calendar and 0.16 s for the United States', about 0.001 s for one year.
 
 ## Last session (2026-11-14 and 2026-11-15)
 

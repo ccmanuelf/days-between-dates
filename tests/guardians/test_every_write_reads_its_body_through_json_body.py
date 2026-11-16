@@ -2,12 +2,19 @@
 
 `json_body` refuses a body not sent as application/json (415) and one over 4096 bytes (413). A route that reads its
 body with `request.json()`, `.body()`, `.form()` or `.stream()` outside `json_body`, with a Pydantic model, or with
-FastAPI's `Body`, `Form`, `File` or `UploadFile`, skips both checks, and a page on another site can again make a
-browser write to the app with a text/plain request. Before pull request #15, `json_body` itself read the body with
-`request.json()` and checked neither (app/main.py:82 there). CLAUDE.md, *Known traps*, has the entry.
+FastAPI's `Body`, `Form`, `File` or `UploadFile`, skips both, so a body over 4096 bytes is read whole.
+`request.json()`, `.body()` and `.stream()` also read a text/plain body, which a page on another site can make a
+browser send without asking the server; `.form()`, `Form`, `File` and `UploadFile` read form bodies, which a browser
+sends the same way. Tried on 2026-11-15 (FastAPI 0.162.0): a `Body()` parameter typed `str`, `bytes` or `Any`, and a
+`RootModel[str]`, accepted a text/plain body; whether a parameter refuses one depends on its type. Before pull request
+#15, `json_body` itself read the body with `request.json()` and checked neither (app/main.py:82 there). CLAUDE.md,
+*Known traps*, has the entry.
 
 The scan reads every Python file in app/; tests/fixtures/route_reading_its_own_body.py holds the patterns on purpose,
 each on a line marked "guardian: flag", and each must be flagged.
+
+A route parameter typed `dict` is not seen: it needs no import this scan looks for. FastAPI reads that body itself;
+tried on 2026-11-15, it accepted a 10 KB JSON body, past the 4096-byte limit. *Known traps* says so.
 """
 
 import ast
@@ -42,8 +49,9 @@ def enclosing_functions(tree: ast.AST) -> dict[int, str]:
 
 def hits_in(path: Path) -> list[tuple[str, int, str, str, str]]:
     """(file, line, enclosing function, pattern, what was found) for each pattern this scan looks for in one Python
-    file: a BODY_READS method called with no arguments, an import of a BODY_MODULES module as a whole, an import from
-    pydantic, or a BODY_PARAMETERS name imported from fastapi."""
+    file: a call of a BODY_READS method, with or without arguments (Starlette's `form()` takes `max_fields` and
+    others), an import of a BODY_MODULES module as a whole, an import from pydantic, or a BODY_PARAMETERS name
+    imported from fastapi."""
     tree = ast.parse(path.read_text(), filename=str(path))
     owner = enclosing_functions(tree)
     name = str(path.relative_to(ROOT))
@@ -51,8 +59,7 @@ def hits_in(path: Path) -> list[tuple[str, int, str, str, str]]:
     for node in ast.walk(tree):
         where = owner.get(id(node), "")
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr in BODY_READS:
-            if not node.args and not node.keywords:  # json.loads(raw) has an argument; request.json() has none
-                found.append((name, node.lineno, where, node.func.attr, f"`.{node.func.attr}()` reads the body"))
+            found.append((name, node.lineno, where, node.func.attr, f"`.{node.func.attr}()` reads the body"))
         elif isinstance(node, ast.Import):
             for alias in node.names:
                 if alias.name.split(".")[0] in BODY_MODULES:
@@ -89,7 +96,7 @@ def test_the_guardian_flags_each_pattern_in_its_fixture():
     lines = FIXTURE.read_text().splitlines()
     marked = {number for number, text in enumerate(lines, start=1) if text.rstrip().endswith(MARK)}
     flagged = {int(line.split(":")[1]) for line in scan([FIXTURE])}
-    assert len(marked) == 11, marked
+    assert len(marked) == 12, marked
     assert flagged == marked, (sorted(marked - flagged), sorted(flagged - marked))
 
 

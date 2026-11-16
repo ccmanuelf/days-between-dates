@@ -75,3 +75,18 @@ What reviews changed, one entry per change (`CLAUDE.md`, *Judgment log*).
     by reading the code.
   - Caught by: the reviewer agent, full review of pull request #15.
   - Decision: the owner's pick, 2026-11-15: "Apply all, rerun once (Recommended)".
+- **2026-11-15 — the guardian flags a body read with arguments; the `.env` test reads the pattern** (pull request #15)
+  - Produced: a guardian that flagged `request.form()` only when called with no arguments, with a fixture holding
+    only that form; a `.env` test that took any `git check-ignore -v` match from `.gitignore` as ignored; and a
+    *Known traps* entry that said, without a measurement, that a Pydantic model or `Body` lets a page on another site
+    write with a `text/plain` request, and said nothing of a route parameter typed `dict`.
+  - Wrong: Starlette's `form()` takes `max_fields` and others, so a route calling `request.form(max_fields=10)` would
+    reopen the cross-site write with the guardian green; `git check-ignore -v` also succeeds on a negated pattern
+    such as `!.env.local`, which un-ignores the file, and the test's earlier `-q` version caught that; a `dict`
+    parameter skips the 4096-byte limit and the guardian does not see it; tried, a `Body()` parameter typed `str`,
+    `bytes` or `Any`, and a `RootModel[str]`, accepted a `text/plain` body, while a model with one `int` field, a
+    model with one `str` field, `Body(embed=True)` typed `int` and a `dict` refused one.
+  - Caught by: the reviewer agent, full review rerun of pull request #15; the Pydantic and `Body` sentence, its
+    publication checks of the fix, which also failed two rewordings that each said a Pydantic model refused
+    `text/plain`.
+  - Decision: the owner's pick, 2026-11-15: "Fix all, one more review (Recommended)".

@@ -118,7 +118,11 @@ def test_the_limit_is_4096_bytes(server, size, expected, chunked):
 
 @pytest.mark.parametrize("name", [".env", ".env.local", "app/.env.production"])
 def test_environment_files_are_ignored_by_this_repository(name):
-    """Ignored by this repository's .gitignore, not by a machine's global excludes file or .git/info/exclude."""
+    """Ignored by this repository's .gitignore, not by a machine's global excludes file or .git/info/exclude. With -v,
+    git check-ignore also succeeds when the deciding pattern is a negation such as "!.env.local", which un-ignores
+    the file, so the pattern is read too."""
     result = subprocess.run(["git", "check-ignore", "-v", name], cwd=ROOT, capture_output=True, text=True)
     assert result.returncode == 0, f"{name} is not ignored"
-    assert result.stdout.startswith(".gitignore:"), result.stdout
+    source, _, pattern = result.stdout.split("\t")[0].split(":", 2)
+    assert source == ".gitignore", result.stdout
+    assert not pattern.startswith("!"), f"{name} is un-ignored: {result.stdout.strip()}"

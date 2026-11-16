@@ -212,6 +212,12 @@ One entry per guardian: what goes wrong, why, the correct pattern, and the guard
 
 - **A write that reads its own body.** What goes wrong: a route reads its body with `request.json()`, `.body()`,
   `.form()` or `.stream()` outside `json_body`, a Pydantic model, or FastAPI's `Body`, `Form`, `File` or
-  `UploadFile`. Why: that skips `json_body`'s checks, so a page on another site can again make a browser write with
-  a `text/plain` request, and a large body is read whole. Correct pattern: `body = await json_body(request)`
-  (`app/main.py`). Guardian: `tests/guardians/test_every_write_reads_its_body_through_json_body.py`.
+  `UploadFile`. Why: that skips `json_body`'s checks, so a body over 4096 bytes is read whole. `request.json()`,
+  `.body()` and `.stream()` also read a `text/plain` body, which a page on another site can make a browser send
+  without asking the server; `.form()`, `Form`, `File` and `UploadFile` read form bodies, which a browser sends the
+  same way. Tried on 2026-11-15 (FastAPI 0.162.0): a `Body()` parameter typed `str`, `bytes` or `Any`, and a
+  `RootModel[str]`, accepted a `text/plain` body; whether a parameter refuses one depends on its type. Correct
+  pattern: `body = await json_body(request)` (`app/main.py`). Guardian:
+  `tests/guardians/test_every_write_reads_its_body_through_json_body.py`. It does not see a route parameter typed
+  `dict`, which needs none of those imports: FastAPI reads that body itself, and took a JSON body over 4096 bytes
+  when tried on 2026-11-15. Take the body with `json_body`, not as a typed parameter.

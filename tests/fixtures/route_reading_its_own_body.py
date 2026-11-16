@@ -30,6 +30,11 @@ async def form(request: Request) -> dict:
     return dict(await request.form())  # guardian: flag
 
 
+@app.post("/api/form-limited")
+async def form_limited(request: Request) -> dict:
+    return dict(await request.form(max_fields=10))  # guardian: flag
+
+
 @app.post("/api/stream")
 async def stream(request: Request) -> int:
     size = 0
