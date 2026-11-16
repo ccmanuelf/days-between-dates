@@ -543,3 +543,31 @@ def test_the_page_sets_no_timers():
     sets none: a timer of the page's could run after the count, and these tests would read the page too early. The
     grid library renders its rows on its own timers; the tests read the grids with expect(), which waits for them."""
     assert not re.findall(r"\b(?:setTimeout|setInterval|requestAnimationFrame|requestIdleCallback)\b", page_sources())
+
+
+def test_the_page_loads_with_no_failed_request_and_no_error(server, browser):
+    """On load: no request fails or answers with an error status (400 or above), the page's icon among them; no
+    uncaught error is thrown; and no console message is an error. The icon is served, in the standard's cobalt."""
+    page = browser.new_context().new_page()
+    errors, failed = [], []
+    page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+    page.on("pageerror", lambda e: errors.append(f"uncaught: {e}"))
+    page.on("response", lambda r: failed.append(f"{r.status} {r.url}") if r.status >= 400 else None)
+    page.on("requestfailed", lambda r: failed.append(f"failed {r.url}"))
+    page.goto(server.url)
+    page.wait_for_selector("body[data-ready=true]")
+    page.wait_for_load_state("networkidle")
+    assert (failed, errors) == ([], []), (failed, errors)
+    expect(page.locator("link[rel=icon]")).to_have_attribute("href", "/favicon.svg")
+    status, icon = urlopen_status(f"{server.url}/favicon.svg")
+    assert status == (200, "image/svg+xml"), status
+    primary = re.search(r"--primary:\s*(#[0-9a-f]{6});", (ROOT / "frontend/src/design-system/tokens.css").read_text())
+    assert f'fill="{primary.group(1)}"' in icon.decode(), "the icon's cobalt is tokens.css's --primary"
+
+
+def urlopen_status(url: str) -> tuple[tuple[int, str], bytes]:
+    import urllib.request
+
+    with urllib.request.urlopen(url, timeout=10) as response:
+        return (response.status, response.headers.get_content_type()), response.read()
+

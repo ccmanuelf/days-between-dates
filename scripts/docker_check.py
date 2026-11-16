@@ -73,7 +73,8 @@ def serves(base: str) -> None:
     check("page served", status == 200 and len(scripts) == 1 and len(styles) == 1, f"HTTP {status}")
     # The built page's script calls the API and carries both languages; its stylesheet carries the standard's tokens.
     assets = (("page script", scripts[0], ("/api/count", "Días entre fechas")),
-              ("page stylesheet", styles[0], ("--primary", "--motion-scale")))
+              ("page stylesheet", styles[0], ("--primary", "--motion-scale")),
+              ("page icon", "/favicon.svg", ("<svg",)))
     for name, asset, markers in assets:
         status, text = request(base, "GET", asset)
         check(f"{name} served", status == 200 and all(m in text for m in markers), f"HTTP {status}")
