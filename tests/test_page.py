@@ -245,6 +245,12 @@ def test_e1_an_invalid_date_is_refused_naming_the_field_and_nothing_is_stored(se
     expect(page.locator("#error")).to_have_text(EN["error_invalid_date"].replace("{field}", EN["field_end"]))
     add_holiday(page, "2026-02-30")
     expect(page.locator("#error")).to_have_text(EN["error_invalid_date"].replace("{field}", EN["field_day"]))
+    count(page, "1949-12-31", "2026-10-30")  # outside the years accepted, 1950 to 2150
+    expect(page.locator("#error")).to_have_text(EN["error_invalid_date"].replace("{field}", EN["field_start"]))
+    count(page, "2026-10-26", "2151-01-01")
+    expect(page.locator("#error")).to_have_text(EN["error_invalid_date"].replace("{field}", EN["field_end"]))
+    add_holiday(page, "2151-01-01")
+    expect(page.locator("#error")).to_have_text(EN["error_invalid_date"].replace("{field}", EN["field_day"]))
     with sqlite3.connect(server.db) as conn:  # the database itself, read after the refusals
         assert conn.execute("SELECT COUNT(*) FROM own_holidays").fetchone() == (0,)
 

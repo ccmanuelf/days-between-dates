@@ -9,16 +9,18 @@ Updated 2026-11-15. A snapshot, replaced at each close (close-session); the hist
 - Branch `years-1950-2150`, for one pull request, on the owner's decision of 2026-11-15: the app accepts dates from
   1950-01-01 to 2150-12-31 (`SPEC.md`, *Expectations* and E1); K11 moves to the new last dates, US, 2150-12-24 →
   2150-12-31; `parse_date` refuses a date outside those years, naming them, and the page's message names them in
-  English and Spanish; removing an own holiday still accepts a day stored outside them before the change; the tests
-  pinned to year 9999 move to 2150, and those of the date modules' own limits stay, named for the date type.
+  English and Spanish, on the page too; removing an own holiday still accepts a day stored outside them before the
+  change; the holiday modules lose their year-10000 branches, which no route reaches any more; the tests pinned to
+  year 9999 move to 2150, and the date modules' tests to the first and last dates accepted.
 
 ## Checked on this branch (2026-11-15)
 
-- The full suite on this machine: 204 passed (195 on `main`, and 9 new cases).
+- The full suite on this machine: 202 passed (195 on `main`; 9 new cases; 2 net removed with the year-10000
+  code).
 - The new refusal and text tests failed on `main`'s code (7 failed), before the change; the removal test failed
   before its fix.
 - Eight mutations (each end one year off either way, no check, removal held to the limit, either language's text
-  left at 1 to 9999): each made its tests fail.
+  left at 1 to 9999): each made its tests fail; with the year check removed, the page's refusal test fails too.
 
 ## Pending
 

@@ -106,10 +106,10 @@ def test_the_years_accepted_are_1950_to_2150(server):
     assert status == 200, body
     assert server.call("POST", "/api/holidays", {"calendar": "mx", "day": "1950-01-01"})[0] == 201
     assert server.call("POST", "/api/holidays", {"calendar": "mx", "day": "2150-12-31"})[0] == 201
-    for query in ("start=1949-12-31&end=1950-01-01", "start=2150-12-31&end=2151-01-01"):
+    for query, field in (("start=1949-12-31&end=1950-01-01", "start"), ("start=2150-12-31&end=2151-01-01", "end")):
         status, body = server.call("GET", f"/api/count?calendar=mx&{query}")
         assert status == 422 and body["error"]["code"] == "invalid_date"
-        assert "1950" in body["error"]["message"] and "2150" in body["error"]["message"]
+        assert body["error"]["message"] == f"{field} is not a valid date (YYYY-MM-DD, years 1950 to 2150)."
 
 
 def test_a_day_stored_outside_the_years_accepted_can_still_be_removed(server):
@@ -122,10 +122,12 @@ def test_a_day_stored_outside_the_years_accepted_can_still_be_removed(server):
     assert server.call("GET", "/api/holidays?calendar=mx")[1]["holidays"] == []
 
 
-@pytest.mark.parametrize("language", ["en", "es"])
-def test_the_page_names_the_years_accepted_in_each_language(language):
-    text = STRINGS[language]["error_invalid_date"]
-    assert "1950" in text and "2150" in text and "9999" not in text
+@pytest.mark.parametrize("language,text", [
+    ("en", "{field}: not a valid date (YYYY-MM-DD, years 1950 to 2150)."),
+    ("es", "{field}: no es una fecha válida (AAAA-MM-DD, años 1950 a 2150)."),
+])
+def test_the_page_names_the_years_accepted_in_each_language(language, text):
+    assert STRINGS[language]["error_invalid_date"] == text
 
 
 @pytest.mark.parametrize("body,field,code", [
