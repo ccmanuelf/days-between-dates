@@ -14,15 +14,18 @@ let listRequest = 0;
 // choice overtaken before its turn is not sent, and only the latest choice's answer is shown.
 let languageRequest = 0;
 let languageStored = Promise.resolve();
-// The guide's worked examples, as the API last counted them (SPEC, S16). They are asked for each time Help or a "How
-// this is calculated" panel opens; a language switch rewrites the text from these without asking again.
-let examples = null;
+// The guide's worked examples and the dates accepted, as the API last gave them (SPEC, S16). They are asked for each
+// time Help or a "How this is calculated" panel opens; a language switch rewrites the text from these without asking
+// again.
+let guide = null;
 let guideRequest = 0;
-// Help: one section per feature (SPEC, S15); three of them carry a worked example, by its role.
+// Help: one section per feature (SPEC, S15), each with the worked examples it shows, by their role in /api/guide.
 const HELP = [
-  ["range", "total"], ["business", "business"], ["own"], ["reversed", "reversed"], ["past"], ["elections"],
-  ["language"], ["sources"],
+  ["range", ["total"]], ["business", ["weekend", "business"]], ["own", ["own"]], ["reversed", ["reversed"]],
+  ["past", []], ["elections", []], ["language", []], ["sources", []],
 ];
+// The field each refused value came from, by the API's name for it (SPEC, E1).
+const FIELDS = { start: "start", end: "end", day: "new-day", calendar: "calendar" };
 
 function t(key, values = {}) {
   const text = strings[language]?.[key];
@@ -51,6 +54,13 @@ function browserLanguage() {
   return LANGUAGES.find((code) => preferred.startsWith(code)) || "en";
 }
 
+function element(tag, className, text) {
+  const made = document.createElement(tag);
+  if (className) made.className = className;
+  if (text !== undefined) made.textContent = text;
+  return made;
+}
+
 function errorText(answer) {
   if (answer.status === 0) return t("error_network");
   const error = answer.body?.error;
@@ -58,18 +68,37 @@ function errorText(answer) {
   return t(`error_${error.code}`, { field: error.field ? t(`field_${error.field}`) : "" });
 }
 
-function showError(text) {
-  $("error").textContent = text;
-  $("error").hidden = false;
+// The message shows where it belongs: "add" beside the list and its add form, "top" at the top of the page (the
+// language field is in the header), otherwise beside the count form. A field the user typed a refused value into is
+// marked invalid and points to the message.
+function showError(text, { field = null, place = field === "day" ? "add" : "count" } = {}) {
+  clearInvalid();
+  const error = $("error");
+  if (place === "top") document.querySelector("main").prepend(error);
+  else $(place === "add" ? "add-form" : "count-form").after(error);
+  if (FIELDS[field]) {
+    $(FIELDS[field]).setAttribute("aria-invalid", "true");
+    $(FIELDS[field]).setAttribute("aria-describedby", "error");
+  }
+  error.textContent = text;
+  error.hidden = false;
 }
 
 // A storage failure takes the count off the screen too: the message says no count is shown (SPEC, AC9).
-function showFailure(answer) {
+function showFailure(answer, where = { field: answer.body?.error?.field }) {
   if (answer.body?.error?.code === "storage") hideResult();
-  showError(errorText(answer));
+  showError(errorText(answer), where);
+}
+
+function clearInvalid() {
+  for (const id of Object.values(FIELDS)) {
+    $(id).removeAttribute("aria-invalid");
+    $(id).removeAttribute("aria-describedby");
+  }
 }
 
 function clearError() {
+  clearInvalid();
   $("error").hidden = true;
   $("error").textContent = "";
 }
@@ -95,13 +124,32 @@ function applyLanguage() {
   if (resultShown) renderResultLabels();
 }
 
+// A date's weekday, named by the browser in the page's language.
+function weekday(day) {
+  return new Intl.DateTimeFormat(language, { weekday: "long", timeZone: "UTC" }).format(new Date(`${day}T00:00:00Z`));
+}
+
 function exampleText(role) {
-  const e = examples?.find((example) => example.role === role);
+  const e = guide?.examples.find((example) => example.role === role);
   if (!e) return "";
   const known = e.known_answer;
   if (role === "total") {
     return t("example_total", {
       known, start: e.start, end: e.end, snc: e.total.start_not_counted, bc: e.total.both_counted,
+    });
+  }
+  if (role === "weekend") {
+    return t("example_weekend", {
+      known, start: e.start, end: e.end, start_weekday: weekday(e.start), end_weekday: weekday(e.end),
+      total_snc: e.total.start_not_counted, total_bc: e.total.both_counted,
+      snc: e.business.start_not_counted, bc: e.business.both_counted,
+    });
+  }
+  if (role === "own") {
+    const day = e.own_holidays[0];
+    return t("example_own", {
+      known, day, weekday: weekday(day), start: e.start, end: e.end,
+      snc: e.business.start_not_counted, bc: e.business.both_counted,
     });
   }
   if (role === "business") {
@@ -116,19 +164,40 @@ function exampleText(role) {
   });
 }
 
+// Help: an introduction, the contents, then one section per feature: its text, a paragraph per blank line, and its
+// worked examples once the API has counted them.
 function renderGuide() {
-  const list = document.createElement("dl");
-  for (const [id, role] of HELP) {
-    const term = document.createElement("dt");
-    term.textContent = t(`help_${id}_title`);
-    const text = document.createElement("dd");
-    text.textContent = role && examples ? `${t(`help_${id}`)} ${exampleText(role)}` : t(`help_${id}`);
-    list.append(term, text);
+  const contents = element("nav", "guide-contents");
+  contents.setAttribute("aria-labelledby", "guide-contents-title");
+  const contentsTitle = element("p", "guide-contents-title", t("help_contents"));
+  contentsTitle.id = "guide-contents-title";
+  const links = element("ol");
+  const sections = [];
+  for (const [id, roles] of HELP) {
+    const title = t(`help_${id}_title`);
+    const link = element("a", null, title);
+    link.href = `#guide-${id}`;
+    links.append(element("li"));
+    links.lastChild.append(link);
+    const section = element("section", "guide-section");
+    section.id = `guide-${id}`;
+    const heading = element("h2", null, title);
+    heading.id = `guide-${id}-title`;
+    section.setAttribute("aria-labelledby", heading.id);
+    section.append(heading, ...t(`help_${id}`).split("\n\n").map((text) => element("p", "guide-text", text)));
+    if (guide) {
+      if (id === "range") section.append(element("p", "guide-example", t("help_range_dates", guide.dates)));
+      for (const role of roles) section.append(element("p", "guide-example", exampleText(role)));
+    }
+    sections.push(section);
   }
-  $("help-body").replaceChildren(list);
+  contents.append(contentsTitle, links);
+  $("help-body").replaceChildren(element("p", "guide-intro", t("help_intro")), contents, ...sections);
   for (const [panel, role] of [["how-total", "total"], ["how-business", "business"]]) {
-    const formula = t(role === "total" ? "how_total" : "how_business");
-    $(panel).querySelector(".how-text").textContent = examples ? `${formula} ${exampleText(role)}` : formula;
+    $(panel).querySelector(".how-text").textContent = t(role === "total" ? "how_total" : "how_business");
+    const example = $(panel).querySelector(".how-example");
+    example.textContent = guide ? exampleText(role) : "";
+    example.hidden = !guide;
   }
 }
 
@@ -138,9 +207,9 @@ async function openGuide() {
   const answer = await api("GET", "/api/guide");
   if (request !== guideRequest) return;
   if (answer.status === 200) {
-    examples = answer.body.examples;
+    guide = answer.body;
   } else {
-    examples = null; // no example from an earlier opening stands in for one this opening could not count
+    guide = null; // no example from an earlier opening stands in for one this opening could not count
     showError(errorText(answer));
   }
   renderGuide();
@@ -235,7 +304,7 @@ async function count() {
     renderResult(answer.body);
   } else {
     hideResult();
-    showError(errorText(answer));
+    showError(errorText(answer), { field: answer.body?.error?.field });
   }
 }
 
@@ -292,7 +361,7 @@ async function removeHoliday(calendar, day) {
     clearError();
     await afterListChange();
   } else {
-    showFailure(answer);
+    showFailure(answer, { place: "add" }); // nothing was typed: no field is marked
   }
 }
 
@@ -305,7 +374,7 @@ function switchLanguage(chosen) {
     const answer = await api("PUT", "/api/language", { language: chosen });
     if (request !== languageRequest) return;
     if (answer.status === 200) clearError();
-    else showError(t("error_language_not_stored"));
+    else showError(t("error_language_not_stored"), { place: "top" });
   });
 }
 

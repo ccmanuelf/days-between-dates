@@ -77,8 +77,10 @@ Withdrawn 2026-11-15: the project has no public demo (*Approval*).
 ### S13 — Dark mode
 Given the system or browser set to a dark color scheme, when the page opens, then it shows in the dark values of
 its color tokens (`DESIGN.md`), each text keeps a contrast ratio of at least 4.5:1 with its background, and the
-counts and notices are unchanged; with a light scheme, the page looks as before. 【M】 2026-11-14, *"dark mode through
-the existing tokens, following DESIGN.md"*; 【C】 it follows the system setting, with no new control. The 4.5:1: WCAG
+counts and notices are unchanged; with a light scheme, the color tokens keep their light values. 【M】 2026-11-14,
+*"dark mode through the existing tokens, following DESIGN.md"*; 【C】 it follows the system setting, with no new
+control; 【C】 2026-11-15, "the color tokens keep their light values" in place of "the page looks as before", which
+the restyle the owner asked for changes (*Approval*). The 4.5:1: WCAG
 2.2, success criterion 1.4.3 Contrast (Minimum), Level AA, *"a contrast ratio of at least 4.5:1"*
 (https://www.w3.org/TR/WCAG22/#contrast-minimum, W3C Recommendation 12 December 2024, retrieved 2026-11-14).
 
@@ -91,9 +93,15 @@ Size (Minimum), Level AA, *"at least 24 by 24 CSS pixels"* (https://www.w3.org/T
 Recommendation 12 December 2024, retrieved 2026-11-14).
 
 ### S15 — Help
-Given the page in either language, when the user opens Help, then it shows one short section per feature, in that
-language: a range and its two conventions, business days and the calendars, your own holidays, reversed dates, past
-years, the note on local election days, the language switch, and the sources. 【M】 2026-11-14.
+Given the page in either language, when the user opens Help, then it shows a short introduction, the guide's
+contents, and one section per feature, in that language: a range and its two conventions, business days and the
+calendars, your own holidays, reversed dates, past years, the note on local election days, the language switch, and
+the sources. Each section explains its feature in plain words, with its worked examples where it has any (S16), in
+at most 150 words: the guide is no more elaborate than the app. The section on a range names the first and last
+dates accepted, from the app's own limit. 【M】 2026-11-14; 【M】 2026-11-15, a visible user guide that explains each
+feature and how the counts are calculated, with examples from the known answers, in both languages, no more
+elaborate than the app (*Approval*); 【C】 the introduction, the contents, the dates accepted, and the ceiling of 150
+words per section, read from the owner's "about 150 words per feature".
 
 ### S16 — How a result is calculated
 Given a result on screen, when the user opens "How this is calculated" beside total days or business days, then it
@@ -138,7 +146,8 @@ Will:
 - Follow the system's dark color scheme (S13); announce each result to screen readers and keep every control within
   reach (S14). 【M】 2026-11-14.
 - Explain each feature in a Help panel, and each result with its formula and a worked example that is a known answer
-  (S15, S16), in English and Spanish, never longer than the rest of the page's text. 【M】 2026-11-14.
+  (S15, S16), in English and Spanish, each section of the guide at most 150 words. 【M】 2026-11-14; its length
+  2026-11-15 (*Approval*).
 
 Will not:
 - Other countries, state or municipal holidays, bank closing days. 【C】
@@ -180,9 +189,9 @@ Will not:
 | AC12 | The known-answer checks run on every pull request and every push to main, through the API | CI log |
 | AC13 | Every label, notice and message exists in English and Spanish; in Spanish, business days read *días hábiles* with the art. 715 note (Q14); switching the language changes the text, not the counts; the choice is stored through page → API → SQLite and survives a restart (Q15); with none stored, or one unreadable, the page opens in the browser's language when it is English or Spanish, in English otherwise (Q16) | A test per notice in each language; S10 through the page, with a restart; the opening language with the browser set to English, to Spanish and to a third language, and with the stored choice unreadable |
 | AC14 | Withdrawn 2026-11-15: the project has no public demo (S12) | — |
-| AC15 | With a dark color scheme the page uses the dark values of its color tokens, and each text keeps at least 4.5:1 contrast with its background (WCAG 2.2, 1.4.3); with a light scheme the colors are those `DESIGN.md` recorded before (S13) | A page test under each scheme that computes every contrast ratio |
+| AC15 | With a dark color scheme the page uses the dark values of its color tokens, and each text keeps at least 4.5:1 contrast with its background (WCAG 2.2, 1.4.3); with a light scheme the four color tokens `DESIGN.md` recorded before (error, notice, note, table border) keep their light values (S13) | A page test under each scheme that computes every contrast ratio |
 | AC16 | After a count, a polite live region holds the result and its notices in the page's language; each Remove button's accessible name contains its date; every button, field and list is at least 24 px tall; at 375 px each label and its field share a line (S14) | Page tests for each, in both languages where text is involved |
-| AC17 | Help shows one section per feature in English and Spanish; in each language, the text of Help and of "How this is calculated" together is shorter than the rest of the page's text (characters in `strings.json`) (S15) | A page test per language; a length test |
+| AC17 | Help shows an introduction, its contents and one section per feature in English and Spanish; in each language, each section of Help and each "How this is calculated", as shown with its examples, holds at most 150 words (S15) | A page test per language; a word count of each part, on the page, per language |
 | AC18 | Every worked example is a known answer: its numbers come from the app's count through the API, and a test fails if one differs from the K table or names a range the table lacks (S16) | A test over every example the API returns; the page test of S16 |
 
 ## Known-answer checks
@@ -362,4 +371,16 @@ names no host, in the owner's decision:
 【M】 *"Docker only. No public demo and no external host for this project, now or as a pending item. The passing
 Docker check is the deployment validation."* 2026-11-15: the years accepted narrowed to 1950–2150 (*Expectations*,
 E1), in the owner's answer to the cost of a count over years 1 to 9999: 【M】 *"1950-2150 is more than enough"*; K11
-moved to the new last dates, the range and its values derived by the agent from that limit (【C】).
+moved to the new last dates, the range and its values derived by the agent from that limit (【C】). 2026-11-15:
+the user guide (S15, AC17 and the *Expectations* line that names them), in the owner's request: 【M】 *"Add a visible
+Help / User Guide in the app itself. It explains each feature and how the day counts are calculated, with examples
+taken from SPEC's known answers, in both languages. Keep it smaller than the app itself, about 150 words per
+feature."*; on AC17's comparison with the rest of the page's text, which that length could not meet, the owner's
+answer: 【M】 *"This rules shouldn't be taken literal. The goal is the user-guide must not be more elaborated and
+complicated that the app solution and features."* The comparison is replaced by a ceiling of 150 words per section,
+and S15 names the guide's introduction, contents and dates accepted: the agent's reading of those two answers
+(【C】), not text the owner approved word for word. 2026-11-15: S13's and AC15's light clause, "the page looks as
+before" and "the colors are those `DESIGN.md` recorded before", narrowed to the four color tokens keeping their light
+values, because the owner asked for the page to be restyled "in light and dark" (【M】 *"Restyle days-between-dates
+so it can count as finished. [...] Follow DESIGN.md: polish the layout, typography, spacing and states, in light and
+dark, with accessibility."*); the narrowed wording is the agent's (【C】).

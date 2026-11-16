@@ -164,9 +164,13 @@ def count(calendar: str | None = None, start: str | None = None, end: str | None
 
 @app.get("/api/guide")
 def guide_examples() -> dict:
-    """The worked examples of Help and "How this is calculated", each a known answer counted now (SPEC, S16, AC18).
-    The page asks for them each time one of those panels opens."""
-    return {"examples": guide.examples()}
+    """The worked examples of Help and "How this is calculated", each a known answer counted now (SPEC, S16, AC18),
+    and the first and last dates accepted, which Help names. The page asks for them each time one of those panels
+    opens."""
+    return {
+        "examples": guide.examples(),
+        "dates": {"first": date(FIRST_YEAR, 1, 1).isoformat(), "last": date(LAST_YEAR, 12, 31).isoformat()},
+    }
 
 
 @app.get("/api/holidays")
