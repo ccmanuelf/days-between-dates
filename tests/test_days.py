@@ -37,7 +37,7 @@ def test_k4_reversed_dates_are_swapped_and_flagged():
     assert (c.total, c.monday_to_friday, c.spans) == (forward.total, forward.monday_to_friday, forward.spans)
 
 
-def test_the_last_dates_accepted_do_not_leave_the_date_type():
+def test_the_date_types_last_dates_do_not_leave_it():
     c = count_days(D("9999-12-27"), D("9999-12-31"))
     assert (c.total.start_not_counted, c.total.both_counted) == (4, 5)
     assert (c.monday_to_friday.start_not_counted, c.monday_to_friday.both_counted) == (4, 5)
@@ -46,7 +46,7 @@ def test_the_last_dates_accepted_do_not_leave_the_date_type():
     assert last.monday_to_friday.start_not_counted == 0
 
 
-def test_the_first_date_accepted():
+def test_the_date_types_first_date():
     c = count_days(date.min, D("0001-01-07"))  # 0001-01-01 was a Monday
     assert (c.total.start_not_counted, c.total.both_counted) == (6, 7)
     assert (c.monday_to_friday.start_not_counted, c.monday_to_friday.both_counted) == (4, 5)

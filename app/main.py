@@ -10,7 +10,7 @@ import json
 import os
 import re
 from contextlib import asynccontextmanager
-from datetime import date
+from datetime import MAXYEAR, MINYEAR, date
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -24,6 +24,7 @@ from app.holidays import CALENDARS
 
 STATIC = Path(__file__).parent / "static"
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+FIRST_YEAR, LAST_YEAR = 1950, 2150  # the years accepted: the owner's decision of 2026-11-15 (SPEC, Expectations)
 STORAGE_MESSAGE = "The database cannot be read or written."
 MAX_BODY = 4096  # bytes; a body the page sends with a valid date or language is under 100
 # The host names a request may be addressed to: this machine, and any a deploy adds in DBD_ALLOWED_HOSTS (comma
@@ -68,17 +69,21 @@ def storage_failed(_: Request, __: storage.StorageError) -> JSONResponse:
     )
 
 
-def parse_date(field: str, value: object) -> date:
-    """A date written YYYY-MM-DD, years 1 to 9999: the range Python's date type holds. A JSON value that is not text,
-    such as a number, is refused like any other invalid date."""
+def parse_date(field: str, value: object, years: tuple[int, int] = (FIRST_YEAR, LAST_YEAR)) -> date:
+    """A date written YYYY-MM-DD, in the years FIRST_YEAR to LAST_YEAR unless `years` says otherwise. A JSON value that
+    is not text, such as a number, is refused like any other invalid date."""
+    first, last = years
     if value is None or value == "":
         raise Refused(422, "required", field, f"{field} is required.")
     try:
         if not isinstance(value, str) or not ISO_DATE.fullmatch(value):
             raise ValueError(value)
-        return date.fromisoformat(value)
+        day = date.fromisoformat(value)
+        if not first <= day.year <= last:
+            raise ValueError(value)
+        return day
     except ValueError:
-        raise Refused(422, "invalid_date", field, f"{field} is not a valid date (YYYY-MM-DD, years 1 to 9999).")
+        raise Refused(422, "invalid_date", field, f"{field} is not a valid date (YYYY-MM-DD, years {first} to {last}).")
 
 
 def parse_calendar(value: object) -> str:
@@ -185,7 +190,7 @@ async def add_holiday(request: Request) -> dict:
 @app.delete("/api/holidays/{calendar}/{day}", status_code=204)
 def remove_holiday(calendar: str, day: str) -> Response:
     cal = parse_calendar(calendar)
-    when = parse_date("day", day)
+    when = parse_date("day", day, (MINYEAR, MAXYEAR))  # a day stored before the years were narrowed can still go
     if not storage.remove_holiday(cal, when):
         raise Refused(404, "not_found", "day", f"{when.isoformat()} is not in the {cal} list.")
     return Response(status_code=204)

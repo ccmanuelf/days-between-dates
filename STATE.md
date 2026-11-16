@@ -4,29 +4,24 @@ Updated 2026-11-15. A snapshot, replaced at each close (close-session); the hist
 
 ## Where the work stands
 
-- `main`: pull request #15 merged (the security audit's four fixes, #14's review points, a guardian for the
-  cross-site write fix).
-- Branch `docker-only-rules`, for one pull request, on the owner's word of 2026-11-15:
-  - `CLAUDE.md` carries the owner's working rules: wording, records and minor gate findings settled by the agent and
-    logged; one review pass and one publication check per pull request; no records-only rounds; the plan carried to
-    the merge; a stop only for a scope change, a new product decision or an irreversible step outside the plan; a
-    command denied by a permission check retried once as one plain command;
-  - Docker only: Render and the public demo removed from `SPEC.md` and `CLAUDE.md`; S12 and AC14 withdrawn; the
-    passing Docker check is the deployment validation;
-  - the app's live-demo notice, its entry in Help, their strings and `GET /api/config` removed; the eight test cases
-    of the notice and the route removed, and `tests/test_help.py`'s section list without "demo"; the test servers
-    and `scripts/orphans.py` wait for `GET /api/status` instead.
+- `main`: pull request #16 merged (Docker only, with no public demo or external host; the owner's working rules in
+  `CLAUDE.md`).
+- Branch `years-1950-2150`, for one pull request, on the owner's decision of 2026-11-15: the app accepts dates from
+  1950-01-01 to 2150-12-31 (`SPEC.md`, *Expectations* and E1); K11 moves to the new last dates, US, 2150-12-24 →
+  2150-12-31; `parse_date` refuses a date outside those years, naming them, and the page's message names them in
+  English and Spanish; removing an own holiday still accepts a day stored outside them before the change; the tests
+  pinned to year 9999 move to 2150, and those of the date modules' own limits stay, named for the date type.
 
 ## Checked on this branch (2026-11-15)
 
-- The full suite on this machine: 195 passed (203 on `main`, less the 8 cases of the live-demo tests removed).
-- `scripts/orphans.py`: 0 orphans; with `GET /api/config` put back without its caller, it reports that route.
+- The full suite on this machine: 204 passed (195 on `main`, and 9 new cases).
+- The new refusal and text tests failed on `main`'s code (7 failed), before the change; the removal test failed
+  before its fix.
+- Eight mutations (each end one year off either way, no check, removal held to the limit, either language's text
+  left at 1 to 9999): each made its tests fail.
 
 ## Pending
 
-- The owner's decision: the cost of a count over years 1 to 9999, reopened on 2026-11-15 as the owner's one open
-  product decision, after the earlier pick "Keep as is". Measured on this machine against the running server: 0.08 s
-  for Mexico's calendar and 0.16 s for the United States', about 0.001 s for one year.
 - Before the first release: the README gains *Proven work* (`CLAUDE.md`, *Proven work*).
 - An intermittent failure seen once on 2026-11-14 in
   `test_e3_a_storage_failure_on_an_edit_takes_the_count_off_the_screen[add-unwritable]`; its cause is not
@@ -44,8 +39,10 @@ Updated 2026-11-15. A snapshot, replaced at each close (close-session); the hist
 - The working rules now in `CLAUDE.md`, effective 2026-11-15.
 - Docker only, with no public demo or external host; the passing Docker check is the deployment validation (SPEC,
   *Approval*, 2026-11-15). The question of one database serving every visitor of a demo is dropped.
+- The years accepted: 1950 to 2150 (SPEC, *Approval*, 2026-11-15), the owner's answer to the cost of a count over
+  years 1 to 9999.
 
 ## Last session (2026-11-14 and 2026-11-15)
 
-Done: pull requests #13, #14 and #15 merged; `/security-audit` run; this branch's work and its checks above.
+Done: pull requests #13 to #16 merged; `/security-audit` run; this branch's work and its checks above.
 Half-done: this branch's pull request.

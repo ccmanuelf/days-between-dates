@@ -7,8 +7,8 @@ Day, 11 November · Thanksgiving Day, fourth Thursday in November · Christmas D
 
 A holiday on a Saturday is kept on the Friday before (§ 6103(b)(1)); one on a Sunday, on the Monday after
 (Executive Order 11582, sec. 3(a), for a Monday–Friday week), so New Year's Day on a Saturday is kept on
-31 December of the year before (SPEC, K9c), and that of year 10000 on Friday 31 December 9999 (K11). Inauguration
-Day, § 6103(c), is left out (SPEC, Q11).
+31 December of the year before (SPEC, K9c), and that of year 10000 on Friday 31 December 9999, the date type's last
+day. Inauguration Day, § 6103(c), is left out (SPEC, Q11).
 """
 
 from app.holidays.common import (

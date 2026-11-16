@@ -204,7 +204,7 @@ def test_s9_the_past_years_notice_in_both_cases(server, open_page):
     page = open_page(server.url)
     count(page, "2000-01-03", "2026-10-30")
     expect(page.locator("#notice-past-years")).to_have_text(EN["notice_past_years"])
-    count(page, "9999-01-04", "9999-01-08")
+    count(page, "2150-01-05", "2150-01-09")
     expect(page.locator("#notice-past-years")).to_be_hidden()
 
 

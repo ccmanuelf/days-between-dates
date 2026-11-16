@@ -6,6 +6,7 @@ import sqlite3
 import pytest
 
 from app.main import STORAGE_MESSAGE
+from test_page import STRINGS
 
 US_RANGE = "calendar=us&start=2026-10-26&end=2026-10-30"  # Monday to Friday, no US holiday
 
@@ -64,7 +65,7 @@ def test_s8_a_day_is_excluded_once(server, day):
 
 def test_s9_the_past_years_flag(server):
     _, past = server.call("GET", "/api/count?calendar=mx&start=2000-01-03&end=2026-10-30")
-    _, future = server.call("GET", "/api/count?calendar=mx&start=9999-01-04&end=9999-01-08")
+    _, future = server.call("GET", "/api/count?calendar=mx&start=2150-01-05&end=2150-01-09")
     assert past["past_years"] is True and future["past_years"] is False
 
 
@@ -76,6 +77,8 @@ def test_s9_the_past_years_flag(server):
         ("calendar=mx&start=2026-02-30&end=2026-10-30", "start", "invalid_date"),
         ("calendar=mx&start=2026-10-26&end=0000-01-01", "end", "invalid_date"),
         ("calendar=mx&start=2026-10-26&end=10000-01-01", "end", "invalid_date"),
+        ("calendar=mx&start=1949-12-31&end=2026-10-30", "start", "invalid_date"),
+        ("calendar=mx&start=2026-10-26&end=2151-01-01", "end", "invalid_date"),
         ("calendar=mx&start=26/10/2026&end=2026-10-30", "start", "invalid_date"),
         ("calendar=xx&start=2026-10-26&end=2026-10-30", "calendar", "unknown_calendar"),
     ],
@@ -88,12 +91,41 @@ def test_e1_invalid_input_is_refused_naming_the_field(server, query, field, code
     assert "total" not in body and "business" not in body
 
 
-@pytest.mark.parametrize("day", ["", "2026-02-30", "2026-13-01", "tomorrow"])
+@pytest.mark.parametrize("day", ["", "2026-02-30", "2026-13-01", "tomorrow", "1949-12-31", "2151-01-01"])
 def test_e1_an_invalid_holiday_is_refused_and_nothing_is_stored(server, day):
     status, body = server.call("POST", "/api/holidays", {"calendar": "us", "day": day})
     assert status == 422 and body["error"]["field"] == "day"
     with sqlite3.connect(server.db) as conn:  # read the database itself after the refusal
         assert conn.execute("SELECT COUNT(*) FROM own_holidays").fetchone() == (0,)
+
+
+def test_the_years_accepted_are_1950_to_2150(server):
+    """The owner's decision of 2026-11-15 (SPEC, Expectations): the first and last dates accepted count and store; the
+    days just outside are refused, and the message names the years."""
+    status, body = server.call("GET", "/api/count?calendar=mx&start=1950-01-01&end=2150-12-31")
+    assert status == 200, body
+    assert server.call("POST", "/api/holidays", {"calendar": "mx", "day": "1950-01-01"})[0] == 201
+    assert server.call("POST", "/api/holidays", {"calendar": "mx", "day": "2150-12-31"})[0] == 201
+    for query in ("start=1949-12-31&end=1950-01-01", "start=2150-12-31&end=2151-01-01"):
+        status, body = server.call("GET", f"/api/count?calendar=mx&{query}")
+        assert status == 422 and body["error"]["code"] == "invalid_date"
+        assert "1950" in body["error"]["message"] and "2150" in body["error"]["message"]
+
+
+def test_a_day_stored_outside_the_years_accepted_can_still_be_removed(server):
+    """A database from before 2026-11-15 may hold an own holiday outside 1950 to 2150: it is listed, and removing it
+    works."""
+    with sqlite3.connect(server.db) as conn:
+        conn.execute("INSERT INTO own_holidays (calendar, day) VALUES ('mx', '1949-12-31')")
+    assert server.call("GET", "/api/holidays?calendar=mx")[1]["holidays"] == ["1949-12-31"]
+    assert server.call("DELETE", "/api/holidays/mx/1949-12-31")[0] == 204
+    assert server.call("GET", "/api/holidays?calendar=mx")[1]["holidays"] == []
+
+
+@pytest.mark.parametrize("language", ["en", "es"])
+def test_the_page_names_the_years_accepted_in_each_language(language):
+    text = STRINGS[language]["error_invalid_date"]
+    assert "1950" in text and "2150" in text and "9999" not in text
 
 
 @pytest.mark.parametrize("body,field,code", [
