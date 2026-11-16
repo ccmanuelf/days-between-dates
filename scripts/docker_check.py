@@ -13,7 +13,7 @@ BACKEND_PORT on each `up` and use that port in the address.
     python scripts/docker_check.py kept http://127.0.0.1:8765       # the holiday came back from the volume
     docker compose -p dbd-check down -v --rmi local
 
-Its imports (__future__, json, sys, time, urllib) are from Python's standard library, so it needs no package install
+Its imports (__future__, json, re, sys, time, urllib) are from Python's standard library, so it needs no package install
 on the machine that runs Docker. It imports under Python 3.9 and 3.12, and CI runs it under 3.13. Exits 1 on the
 first failed check.
 """
@@ -73,7 +73,8 @@ def serves(base: str) -> None:
     check("page served", status == 200 and len(scripts) == 1 and len(styles) == 1, f"HTTP {status}")
     # The built page's script calls the API and carries both languages; its stylesheet carries the standard's tokens.
     assets = (("page script", scripts[0], ("/api/count", "Días entre fechas")),
-              ("page stylesheet", styles[0], ("--primary", "--motion-scale")))
+              ("page stylesheet", styles[0], ("--primary", "--motion-scale")),
+              ("page icon", "/favicon.svg", ("<svg",)))
     for name, asset, markers in assets:
         status, text = request(base, "GET", asset)
         check(f"{name} served", status == 200 and all(m in text for m in markers), f"HTTP {status}")

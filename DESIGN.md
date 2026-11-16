@@ -89,7 +89,9 @@ card shadow; text is `foreground`, labels and notes `muted-foreground`; fields h
 `warning-soft` with a `warning` icon; errors are `destructive` text on `destructive-soft`, framed in `destructive`.
 AC15's tests measure every visible text in both modes and both languages, on the count tab and in the guide: each keeps
 at least 4.5:1 with its background (WCAG 2.2, 1.4.3). They read whatever color form the browser reports, by painting it
-on a canvas.
+on a canvas. The page's icon, `frontend/public/favicon.svg`, is the one file outside `frontend/src` that holds colors:
+an SVG icon cannot read the page's custom properties, so it copies `--primary` (`#2350d8`) and `--primary-foreground`
+(`#ffffff`), and a page test checks that both copies match `tokens.css`.
 
 ## Typography
 

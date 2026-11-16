@@ -4,37 +4,26 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
 
 ## Where the work stands
 
-- `main`: pull request #20 merged (the Python pins compiled with a two-week cutoff, the documentation routes off,
-  `CLAUDE.md` in the app template's wording).
-- Branch `web-starter`, for one pull request, on the owner's decision of 2026-11-16 (the app reflects the whole
-  foundation; rebuilt on the web starter): the page rebuilt in Vue 3 with the starter's shell, components and the
-  visual standard's files unchanged; an app bar with the storage status, the EN/ES switch and a theme toggle (light by
-  default, the choice stored through the API); labels above fields; the result and the own holidays in AG Grids; the
-  guide a tab, its worked examples written in its text and read by `tests/test_guide.py`; `/api/guide` removed and
-  `/api/theme` added; the ports `BACKEND_PORT` 8765 and `FRONTEND_PORT` 5765; a two-stage Docker image (Node builds
-  the page); CI checks the page's types and unit tests and builds it before the Python suite; `SPEC.md` (S13–S16,
-  AC10, AC15–AC18, the web interface), `DESIGN.md` (rewritten from the standard), `CLAUDE.md` (the *User Guide*
-  section), README.
-- The app from `main` at 6e52eb8 runs in Docker at http://127.0.0.1:8765 for the owner's review; after this branch
-  merges it is rebuilt from `main` at the same address. Nothing of this project's Docker data is pruned until the
-  owner says the review is done.
+- `main`: pull request #21 merged: the page rebuilt on the owner's web starter and following the visual standard in
+  full (an app bar with the storage status, the EN/ES switch and a remembered light/dark toggle; labels above fields;
+  AG Grids; the guide a tab whose worked examples are read from its text by `tests/test_guide.py`; ports 8765 and
+  5765; a two-stage Docker image).
+- Branch `favicon`, for one pull request, on the owner's word of 2026-11-16: the page gets an icon
+  (`frontend/public/favicon.svg`, a calendar page in the standard's cobalt, linked from `index.html`), so its load gets
+  no 404; a page test checks that, on load, no request fails or answers with an error status, no uncaught error is
+  thrown and no console message is an error, and that the icon is served with `tokens.css`'s two colors it copies; the
+  Docker check asks for the icon.
+- The app runs in Docker at http://127.0.0.1:8765 for the owner's review, rebuilt from `main` after each merge; its
+  data volume is kept.
 
 ## Checked on this branch (2026-11-16)
 
-- The page: type check clean; 112 unit tests passed (the starter's, adapted: ports, locales, the color source, the
-  grid's row height, the button's outline default).
-- The full Python suite on this machine, on the built page: 236 passed (220 on `main`).
-- Twelve mutations, each breaking one guarantee of this branch (an altered worked example, a wrong weekday in one,
-  the theme not stored, dark by default, a second cobalt button, labels beside fields, the status chip without its
-  icon, the How example left out, a guide section over 150 words, the theme stored under another key, a color written
-  outside `tokens.css`, the removal error without its field's name): each made its test fail. Dark by default first
-  passed, because its test switched the theme itself; the test now checks the page as it opens.
-- Screenshots in light and dark, at 1280 and 375 px wide, with a result, both notices, a day of one's own, an error
-  and the guide: looked at, not committed.
-- After the review: four new tests failed before their fix (the storage status coming back, the theme toggle before
-  the API answers, a theme stored leaving another error on screen, a page string key missing from both languages);
-  seventeen more mutations each made their test fail (each worked example altered in each language, K9a under another
-  calendar, K10 on another day, a token's value, a theme not stored, a label not tied to its field).
+- The page test, as committed, failed on `main`'s page without the icon: the browser's request for `/favicon.ico`
+  answered 404. It also failed on each of five mutations: the icon's cobalt or its white not the token's, an uncaught
+  error on load, a request that gets no answer, the icon's link left out.
+- The page: type check clean; 112 unit tests passed. The full Python suite: 237 passed in CI (run 43979203156, on
+  308540c; 236 on `main`).
+- The icon, looked at from 16 to 128 px: not committed.
 
 ## Pending
 
@@ -64,6 +53,6 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
 
 ## Last session (2026-11-15 and 2026-11-16)
 
-Done: pull requests #18 to #20 merged; the app run in Docker for review; the foundation audit; this branch's
-work and its checks above.
+Done: pull requests #18 to #21 merged; the foundation audit and the rebuild; the app run in Docker for review; this
+branch's work and its checks above.
 Half-done: this branch's pull request.

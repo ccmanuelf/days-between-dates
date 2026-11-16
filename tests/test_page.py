@@ -543,3 +543,28 @@ def test_the_page_sets_no_timers():
     sets none: a timer of the page's could run after the count, and these tests would read the page too early. The
     grid library renders its rows on its own timers; the tests read the grids with expect(), which waits for them."""
     assert not re.findall(r"\b(?:setTimeout|setInterval|requestAnimationFrame|requestIdleCallback)\b", page_sources())
+
+
+def test_the_page_loads_with_no_failed_request_and_no_error(server, browser):
+    """On load: no request fails or answers with an error status (400 or above), the page's icon among them; no
+    uncaught error is thrown; and no console message is an error. The icon is served, in the standard's cobalt."""
+    page = browser.new_context().new_page()
+    errors, failed = [], []
+    # The console listener is the one that hears a failed icon: the browser fetches the tab's icon outside the page,
+    # so the response listener below never sees it, and its 404 shows only as a console error.
+    page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+    page.on("pageerror", lambda e: errors.append(f"uncaught: {e}"))
+    page.on("response", lambda r: failed.append(f"{r.status} {r.url}") if r.status >= 400 else None)
+    page.on("requestfailed", lambda r: failed.append(f"failed {r.url}"))
+    page.goto(server.url)
+    page.wait_for_selector("body[data-ready=true]")
+    page.wait_for_load_state("networkidle")
+    assert (failed, errors) == ([], []), (failed, errors)
+    expect(page.locator("link[rel=icon]")).to_have_attribute("href", "/favicon.svg")
+    icon = page.request.get(f"{server.url}/favicon.svg")
+    assert (icon.status, icon.headers["content-type"].split(";")[0]) == (200, "image/svg+xml")
+    # An SVG icon cannot read the page's custom properties, so it holds copies of two tokens; they must match.
+    tokens = (ROOT / "frontend/src/design-system/tokens.css").read_text()
+    for token in ("primary", "primary-foreground"):
+        value = re.search(rf"--{token}:\s*(#[0-9a-f]{{6}});", tokens).group(1)
+        assert value in icon.text(), (token, value)
