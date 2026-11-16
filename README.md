@@ -36,10 +36,81 @@ Tester: a Production Scheduler.
 
 ## Proven work
 
-Not written yet: a placeholder. Before the app's first release, Claude Code drafts this section and the owner writes the
-parts that are the owner's own account, in this order: the problem and what it costs, what was built, how (what AI did
-and what the owner did), the top corrections from `JUDGMENT.md`, the result as checked, what the owner would do
-differently, and where it applies (`CLAUDE.md`, *Proven work*).
+Built from this repository's records: `SPEC.md`, `STATE.md`, `JUDGMENT.md`, `CLAUDE.md` and the merged pull requests.
+
+### Problem
+
+A practitioner who lives in spreadsheets, an engineer or an analyst, counts the days between two dates with a
+formula whose conventions do not show: whether the start date counts, which holidays are left out, what happens when
+the dates are reversed. The count looks right and can be off by one day or by one holiday (`SPEC.md`, *Problem*).
+What that costs in time or in errors was not measured.
+
+### What I built
+
+A page that counts total days and business days between two dates, under both conventions side by side (the start
+date not counted · both dates counted). Business days leave out Mexico's mandatory rest days or the United States'
+federal holidays, each rule taken from its primary legal source, plus the days the user adds. The page names the
+active calendar and its sources, says when dates were swapped or a range reaches into past years, works in English
+and Spanish, in light and dark, and carries its own user guide, whose every worked example is also a test.
+
+![The result, light mode, with both notices and a day of one's own](docs/proven-work/result-light.png)
+
+![The result in dark mode](docs/proven-work/result-dark.png)
+
+![The user guide on a phone-width screen](docs/proven-work/guide-phone.png)
+
+The screenshots use made-up data: the result's range, 2025-12-29 to 2026-01-02 entered reversed, is an example chosen to
+show both notices; the guide's ranges are the SPEC's known answers; the own holiday is an example date.
+
+### How
+
+- **Specification.** The owner set the problem and answered the open questions (Q1–Q16 in `SPEC.md`):
+  who the app is for, the two calendars, how own holidays are kept, the language, and what happens to reversed dates
+  and past years. The AI drafted the SPEC from those answers, retrieved each holiday rule from the law's own text,
+  and wrote the known-answer checks K1–K11 with their sources. The owner approved the SPEC, and its *Approval* section
+records the later changes with the owner's decision on each, quoting the owner where it does.
+- **Build.** The AI wrote the code and its tests, and showed new tests failing before their fix, as `STATE.md` and
+`JUDGMENT.md` record for the later fixes. Under this repository's rules (`CLAUDE.md`), a pull request gets one review by
+a separate reviewer agent and one publication check before its first push, and Claude Code merges it once its checks are
+green and the review's findings are fixed.
+- **The owner's decisions along the way**, from the records: run the security audit before publishing, then merge
+  and fix its top findings; keep the app in Docker only, with no public demo; accept the years 1950 to 2150; make
+  the Docker check a required check and leave nothing behind that slowly eats disk space; restyle the page so it can
+  count as finished, with a visible user guide no more elaborate than the app; then, the next day, bring the app onto
+  the owner's whole foundation, its visual standard and web starter, by rebuilding it on the starter; and give the
+  page an icon. The owner also set the working rules the agent follows here: one review and one publication check
+  per pull request, and wording settled by the agent.
+
+### Top 3 corrections
+
+From `JUDGMENT.md`:
+
+1. **A write from another site.** The write routes read any body as JSON, so a page on another site could make a
+   visitor's browser add a holiday. Caught by the security audit the owner ran before publishing; the owner decided
+   to merge, then fix, and the fix came with a guardian test that flags a route reading its body any other way
+   (`CLAUDE.md`, *Known traps*, names the case it does not see).
+2. **A test that would have broken on 1 January 2027.** The screen-reader announcement test counted 2026 ranges, so
+   the past-years notice would have turned it red on correct code. Caught by the reviewer agent; the test now counts
+   in 2150, the last year accepted, which is not past before 2151.
+3. **A day that could be listed but not removed.** Narrowing the years accepted to 1950–2150 would have left an own
+   holiday stored before the change impossible to remove. Caught by the publication check before the push; removal
+   still reads any valid date.
+
+### Result
+
+Checked, on every pull request and every push to `main`: the known answers K1–K11 through the API; the page in a real
+browser through the running server, its contrast in both modes, its labels and control sizes; that each control, the
+static help aside, reaches a route and that each route has a caller; and the Docker image, built and run with its data
+volume. On pull request #22's last run (CI run 43981321389, on 09135e6), CI passed 112 page unit tests, 237 Python tests
+and the Docker check's 7 steps. Not measured: time saved, errors avoided, or anything about real users.
+
+### Where it applies
+
+Where business days are Monday to Friday minus Mexico's mandatory rest days (LFT art. 74) or the United States' federal
+holidays, for dates from 1950 to 2150 under today's rules; not for the días hábiles of labour proceedings, which art.
+715 defines differently (`SPEC.md`, open question 6). As a pattern, it applies to a spreadsheet formula that hides its
+conventions: define the convention, take each rule from its source, and prove each count against a known answer
+(`SPEC.md`, *Goals*).
 
 ## Run it in Docker
 
