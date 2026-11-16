@@ -90,3 +90,18 @@ What reviews changed, one entry per change (`CLAUDE.md`, *Judgment log*).
     publication checks of the fix, which also failed two rewordings that each said a Pydantic model refused
     `text/plain`.
   - Decision: the owner's pick, 2026-11-15: "Fix all, one more review (Recommended)".
+- **2026-11-15 — a day stored outside the new years can still be removed** (pull request #17)
+  - Produced: a year limit in `parse_date` that every route used, removing an own holiday included.
+  - Wrong: an own holiday stored outside 1950 to 2150 before the change would still be listed but could not be
+    removed (S7).
+  - Caught by: the reviewer agent, in the publication check before the branch's first push.
+  - Decision: settled by the agent: removing a day reads any valid date, so a stored day can always go (S7).
+- **2026-11-15 — the year-10000 code removed with the narrower years** (pull request #17)
+  - Produced: the years accepted narrowed to 1950 to 2150, with the holiday modules keeping their branches for
+    year 10000 and the tests of those branches.
+  - Wrong: no route reaches year 10000 any more, so those branches were code never called, which `CLAUDE.md`'s
+    definition of done counts as lying; the year limit also had no page test.
+  - Caught by: the reviewer agent, full review of pull request #17 (the publication check had raised the branches,
+    and the agent had kept them).
+  - Decision: settled by the agent: the branches and their tests removed, nothing changes for 1950 to 2150; a page
+    test refuses a date outside the years.

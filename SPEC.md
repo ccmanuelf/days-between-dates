@@ -102,8 +102,8 @@ user opens it, with the answer the checks expect. 【M】 2026-11-14, *"Every wo
 can't drift from the code."*
 
 ### E1 — Invalid date
-Given an empty or impossible date (2026-02-30), when the user counts or adds a holiday, then it is refused with a
-message naming the field, nothing is counted and nothing is stored. 【C】
+Given an empty or impossible date (2026-02-30), or one outside the years accepted (1949-12-31), when the user counts
+or adds a holiday, then it is refused with a message naming the field, nothing is counted and nothing is stored. 【C】
 
 ### E2 — Duplicate own holiday
 Given a date already in the selected calendar's list, when the user adds it again, then it is refused with a message
@@ -124,9 +124,8 @@ Will:
   before or the Monday after. 【M】 Q3 for the calendar; 【C】 the observed-day rule, derived from 5 U.S.C. § 6103(b)(1)
   and Executive Order 11582 sec. 3(a) (*Holiday rules and their sources*).
 - Keep the user's own holidays, one list per calendar, stored in SQLite: add, list, remove. 【M】 Q2, Q9, Q10.
-- Accept any date the platform's date type holds (years 1 to 9999), applying today's holiday rules to every year, with
-  the past-years notice. 【M】 Q6, Q7 · 【C】 the year limit: Python's date type, *"MINYEAR is 1."*, *"MAXYEAR is
-  9999."* (https://docs.python.org/3/library/datetime.html, retrieved 2026-10-26).
+- Accept any date from 1950-01-01 to 2150-12-31, applying today's holiday rules to every year, with the past-years
+  notice. 【M】 Q6, Q7 · 【M】 the year limit, 2026-11-15 (*Approval*).
 - Name each built-in calendar's source and the date its rules were last checked against it. 【C】
 - With the Mexico calendar active, show a note that local election days are not built in and can be added to the
   user's own list. 【M】 Q13.
@@ -192,7 +191,7 @@ Total days are derived by calendar arithmetic, shown below. Business days are th
 minus the active calendar's holidays that fall on a weekday in it, under the rules in *Holiday rules and their
 sources* (below, retrieved 2026-10-26), with no holidays of the user's own unless the row says so. The Gregorian
 calendar and arithmetic need no source (the owner's source rule, decided 2026-10-25); the values were
-cross-checked with Python's `datetime` on 2026-10-25 and 2026-10-26.
+cross-checked with Python's `datetime` on 2026-10-25 and 2026-10-26 (K11's, as moved, on 2026-11-15).
 
 | # | Input | Expected | Source |
 |---|---|---|---|
@@ -211,7 +210,7 @@ cross-checked with Python's `datetime` on 2026-10-25 and 2026-10-26.
 | K9c | US, 2027-12-27 (Mon) → 2027-12-31 (Fri) | Total 4 · 5. Business 3 · 4: New Year's Day 2028 is a Saturday, observed Friday 31 December 2027, in the year before | [USC] § 6103(a), (b)(1); derivation |
 | K9d | US, 2033-06-17 (Fri) → 2033-06-21 (Tue) | Total 4 · 5. Business 1 · 2: Juneteenth, Sunday 19 June 2033, a holiday added after 1971, is observed Monday 20 June | [USC] § 6103(a); [EO] secs. 2(a), 3(a), 6 |
 | K10 | Own holiday on Saturday 2026-10-31, range K3 | Business 1 · 2, unchanged | S8; derivation |
-| K11 | US, 9999-12-27 (Mon) → 9999-12-31 (Fri), the last dates accepted (the year limit, *Expectations*) | Total 4 · 5. Business 3 · 4: New Year's Day of year 10000 would be a Saturday, so Friday 31 December 9999 is observed; Christmas, Saturday 25 December, is observed Friday 24 December, outside the range | [USC] § 6103(a), (b)(1); derivation: 400 Gregorian years are 146,097 days, a whole number of weeks, so 1 January 10000 falls on the weekday of 1 January 2000, a Saturday. Added 2026-10-26 from the plan's review; matched by the SPEC's review, 2026-10-26 |
+| K11 | US, 2150-12-24 (Thu) → 2150-12-31 (Thu), the last dates accepted (the year limit, *Expectations*) | Total 7 · 8. Business 4 · 5: Christmas, Friday 25 December, is excluded; New Year's Day of 2151 is a Friday, kept on that day, outside the range | [USC] § 6103(a), (b)(1); the weekdays: Python's date type and cal(1) agree that 25 December 2150 and 1 January 2151 are Fridays, checked 2026-11-15. Moved 2026-11-15 to the new last dates (【C】 the range; *Approval*); before, it ran 9999-12-27 → 9999-12-31 |
 
 ### Holiday rules and their sources
 
@@ -361,4 +360,6 @@ before publication found it missing, approved in the owner's pick 【M】 *"Add 
 mentions from AC1, AC4, AC5, AC11 and AC13; *Stack and deployment* and *Out of scope* rewritten; D8's entry above
 names no host, in the owner's decision:
 【M】 *"Docker only. No public demo and no external host for this project, now or as a pending item. The passing
-Docker check is the deployment validation."*
+Docker check is the deployment validation."* 2026-11-15: the years accepted narrowed to 1950–2150 (*Expectations*,
+E1), in the owner's answer to the cost of a count over years 1 to 9999: 【M】 *"1950-2150 is more than enough"*; K11
+moved to the new last dates, the range and its values derived by the agent from that limit (【C】).

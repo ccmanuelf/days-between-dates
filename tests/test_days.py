@@ -37,26 +37,24 @@ def test_k4_reversed_dates_are_swapped_and_flagged():
     assert (c.total, c.monday_to_friday, c.spans) == (forward.total, forward.monday_to_friday, forward.spans)
 
 
-def test_the_last_dates_accepted_do_not_leave_the_date_type():
-    c = count_days(D("9999-12-27"), D("9999-12-31"))
+def test_the_last_dates_accepted():
+    c = count_days(D("2150-12-27"), D("2150-12-31"))  # Sunday to Thursday
     assert (c.total.start_not_counted, c.total.both_counted) == (4, 5)
-    assert (c.monday_to_friday.start_not_counted, c.monday_to_friday.both_counted) == (4, 5)
-    last = count_days(date.max, date.max)
+    assert (c.monday_to_friday.start_not_counted, c.monday_to_friday.both_counted) == (4, 4)
+    last = count_days(D("2150-12-31"), D("2150-12-31"))
     assert (last.total.start_not_counted, last.total.both_counted) == (0, 1)
     assert last.monday_to_friday.start_not_counted == 0
 
 
-def test_the_first_date_accepted():
-    c = count_days(date.min, D("0001-01-07"))  # 0001-01-01 was a Monday
+def test_the_first_dates_accepted():
+    c = count_days(D("1950-01-01"), D("1950-01-07"))  # 1950-01-01 was a Sunday
     assert (c.total.start_not_counted, c.total.both_counted) == (6, 7)
-    assert (c.monday_to_friday.start_not_counted, c.monday_to_friday.both_counted) == (4, 5)
+    assert (c.monday_to_friday.start_not_counted, c.monday_to_friday.both_counted) == (5, 5)
 
 
 def test_weekday_of_ordinal_matches_the_date_type():
-    for d in (date.min, D("2000-01-01"), D("2026-10-26"), date.max):
+    for d in (D("1950-01-01"), D("2000-01-01"), D("2026-10-26"), D("2150-12-31"), D("2151-01-01")):
         assert weekday_of_ordinal(d.toordinal()) == d.weekday()
-    # 400 Gregorian years are 146,097 days, a whole number of weeks: 1 January 10000 falls as 1 January 2000 did.
-    assert weekday_of_ordinal(date.max.toordinal() + 1) == D("2000-01-01").weekday() == 5
 
 
 def test_monday_to_friday_matches_a_day_by_day_count():

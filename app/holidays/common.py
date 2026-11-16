@@ -3,12 +3,11 @@
 from dataclasses import dataclass
 from datetime import date
 
-MAX_ORDINAL = date.max.toordinal()
 MONDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY = 0, 3, 4, 5, 6
 
 
 def weekday(ordinal: int) -> int:
-    """Monday is 0. 0001-01-01, ordinal 1, was a Monday; this holds past 9999-12-31 too."""
+    """Monday is 0. 0001-01-01, ordinal 1, was a Monday."""
     return (ordinal - 1) % 7
 
 
@@ -17,9 +16,7 @@ def is_monday_to_friday(ordinal: int) -> bool:
 
 
 def first_ordinal(year: int, month: int) -> int:
-    """The ordinal of the first day of a month, for years 1 to 9999 and for January of year 10000."""
-    if year == 10000 and month == 1:
-        return MAX_ORDINAL + 1
+    """The ordinal of the first day of a month."""
     return date(year, month, 1).toordinal()
 
 
@@ -37,7 +34,7 @@ def last_weekday(year: int, month: int, day_of_week: int) -> int:
 
 
 def year_of(ordinal: int) -> int:
-    return date.fromordinal(min(ordinal, MAX_ORDINAL)).year
+    return date.fromordinal(ordinal).year
 
 
 @dataclass(frozen=True)

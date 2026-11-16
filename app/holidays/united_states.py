@@ -7,12 +7,10 @@ Day, 11 November · Thanksgiving Day, fourth Thursday in November · Christmas D
 
 A holiday on a Saturday is kept on the Friday before (§ 6103(b)(1)); one on a Sunday, on the Monday after
 (Executive Order 11582, sec. 3(a), for a Monday–Friday week), so New Year's Day on a Saturday is kept on
-31 December of the year before (SPEC, K9c), and that of year 10000 on Friday 31 December 9999 (K11). Inauguration
-Day, § 6103(c), is left out (SPEC, Q11).
+31 December of the year before (SPEC, K9c). Inauguration Day, § 6103(c), is left out (SPEC, Q11).
 """
 
 from app.holidays.common import (
-    MAX_ORDINAL,
     MONDAY,
     SATURDAY,
     SUNDAY,
@@ -50,9 +48,7 @@ def _fixed(year: int, month: int, day: int) -> int:
 
 
 def calendar_days(year: int) -> list[Holiday]:
-    """The eleven holidays of a year on their calendar days. For year 10000, only New Year's Day."""
-    if year == 10000:
-        return [Holiday(MAX_ORDINAL + 1, "new-years-day")]
+    """The eleven holidays of a year on their calendar days."""
     return [
         Holiday(_fixed(year, 1, 1), "new-years-day"),
         Holiday(nth_weekday(year, 1, MONDAY, 3), "birthday-of-martin-luther-king-jr"),

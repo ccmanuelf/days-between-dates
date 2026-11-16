@@ -204,7 +204,7 @@ def test_s9_the_past_years_notice_in_both_cases(server, open_page):
     page = open_page(server.url)
     count(page, "2000-01-03", "2026-10-30")
     expect(page.locator("#notice-past-years")).to_have_text(EN["notice_past_years"])
-    count(page, "9999-01-04", "9999-01-08")
+    count(page, "2150-01-05", "2150-01-09")
     expect(page.locator("#notice-past-years")).to_be_hidden()
 
 
@@ -244,6 +244,12 @@ def test_e1_an_invalid_date_is_refused_naming_the_field_and_nothing_is_stored(se
     count(page, "2026-10-26", "10000-01-01")
     expect(page.locator("#error")).to_have_text(EN["error_invalid_date"].replace("{field}", EN["field_end"]))
     add_holiday(page, "2026-02-30")
+    expect(page.locator("#error")).to_have_text(EN["error_invalid_date"].replace("{field}", EN["field_day"]))
+    count(page, "1949-12-31", "2026-10-30")  # outside the years accepted, 1950 to 2150
+    expect(page.locator("#error")).to_have_text(EN["error_invalid_date"].replace("{field}", EN["field_start"]))
+    count(page, "2026-10-26", "2151-01-01")
+    expect(page.locator("#error")).to_have_text(EN["error_invalid_date"].replace("{field}", EN["field_end"]))
+    add_holiday(page, "2151-01-01")
     expect(page.locator("#error")).to_have_text(EN["error_invalid_date"].replace("{field}", EN["field_day"]))
     with sqlite3.connect(server.db) as conn:  # the database itself, read after the refusals
         assert conn.execute("SELECT COUNT(*) FROM own_holidays").fetchone() == (0,)

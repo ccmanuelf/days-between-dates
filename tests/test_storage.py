@@ -49,9 +49,9 @@ def test_e2_a_duplicate_is_refused_and_the_list_is_unchanged(db):
 
 
 def test_the_list_is_in_date_order_across_the_years_accepted(db):
-    for iso in ("9999-12-31", "0001-01-01", "2026-10-28"):
+    for iso in ("2150-12-31", "1950-01-01", "2026-10-28"):
         storage.add_holiday("mx", D(iso))
-    assert storage.list_holidays("mx") == [D("0001-01-01"), D("2026-10-28"), D("9999-12-31")]
+    assert storage.list_holidays("mx") == [D("1950-01-01"), D("2026-10-28"), D("2150-12-31")]
 
 
 def test_the_language_choice_is_stored(db):

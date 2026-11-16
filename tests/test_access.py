@@ -142,19 +142,19 @@ def announcement(strings: dict, calendar: str, start: str, end: str, total: tupl
 
 
 def test_ac16_a_count_is_announced_with_its_notices_in_the_pages_language(server, open_page):
-    """Ranges in year 9999 carry no past-years notice in any year the app runs, so the expected text holds over time
-    (as tests/test_page.py does for S9); a range reaching into 2025 carries it."""
+    """Ranges in 2150, the last year accepted, carry no past-years notice before then, so the expected text holds over
+    time (as tests/test_page.py does for S9); a range reaching into 2025 carries it."""
     page = open_page(server.url)
     region = page.locator("#announce")
     expect(region).to_have_attribute("role", "status")
     choose_calendar(page, "us")
-    count(page, "9999-12-27", "9999-12-31")  # K11
-    expect(region).to_have_text(announcement(EN, "us", "9999-12-27", "9999-12-31", (4, 5), (3, 4)))
-    count(page, "9999-12-31", "9999-12-27")  # K11 reversed: swapped, so the notice is announced too
-    expected = announcement(EN, "us", "9999-12-27", "9999-12-31", (4, 5), (3, 4)) + " " + EN["notice_swapped"]
+    count(page, "2150-12-24", "2150-12-31")  # K11
+    expect(region).to_have_text(announcement(EN, "us", "2150-12-24", "2150-12-31", (7, 8), (4, 5)))
+    count(page, "2150-12-31", "2150-12-24")  # K11 reversed: swapped, so the notice is announced too
+    expected = announcement(EN, "us", "2150-12-24", "2150-12-31", (7, 8), (4, 5)) + " " + EN["notice_swapped"]
     expect(region).to_have_text(expected)
     choose_language(page, "es")
-    expected = announcement(ES, "us", "9999-12-27", "9999-12-31", (4, 5), (3, 4)) + " " + ES["notice_swapped"]
+    expected = announcement(ES, "us", "2150-12-24", "2150-12-31", (7, 8), (4, 5)) + " " + ES["notice_swapped"]
     expect(region).to_have_text(expected)
     count(page, "2025-12-29", "2026-01-02")  # reaches into 2025: the past-years notice is announced
     shown = [int(page.locator(cell).text_content()) for cell in CELLS]

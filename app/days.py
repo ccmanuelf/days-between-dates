@@ -1,8 +1,7 @@
 """Day counts between two dates, under both conventions.
 
 The two conventions (SPEC, S1): "start not counted" counts the days after the start up to and including the end;
-"both counted" also counts the start. Dates are handled as day ordinals (1 = 0001-01-01), so a range that ends on
-9999-12-31 never needs a date after it, which the date type cannot hold.
+"both counted" also counts the start. Dates are handled as day ordinals (1 = 0001-01-01).
 """
 
 from dataclasses import dataclass
@@ -13,7 +12,7 @@ SATURDAY = 5
 
 
 def weekday_of_ordinal(ordinal: int) -> int:
-    """The weekday of a day ordinal, also for ordinals past 9999-12-31."""
+    """The weekday of a day ordinal."""
     return (ordinal - 1) % 7
 
 

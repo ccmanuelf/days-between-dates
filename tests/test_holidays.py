@@ -6,7 +6,7 @@ from datetime import date
 import pytest
 
 from app.holidays import CALENDARS, mexico, united_states
-from app.holidays.common import MAX_ORDINAL, weekday
+from app.holidays.common import weekday
 
 D = date.fromisoformat
 
@@ -62,21 +62,18 @@ def test_k8c_mexico_a_weekend_rest_day_is_not_moved():
         ("K9b", "2027-07-03", "2027-07-06", ["2027-07-05"]),  # Sunday 4 July 2027 kept on Monday 5 July
         ("K9c", "2027-12-28", "2027-12-31", ["2027-12-31"]),  # New Year's Day 2028, a Saturday, kept in 2027
         ("K9d", "2033-06-18", "2033-06-21", ["2033-06-20"]),  # Juneteenth, Sunday 19 June 2033, kept on Monday
-        ("K11", "9999-12-28", "9999-12-31", ["9999-12-31"]),  # New Year's Day of year 10000, a Saturday
+        ("K11", "2150-12-24", "2150-12-31", ["2150-12-25"]),  # Christmas, Friday 25 December 2150; 1 January 2151
+        # is a Friday, kept on that day, outside the range
     ],
 )
 def test_k9_k11_united_states_observed_days(kid, first, last, expected):
     assert days(united_states.weekday_holidays(o(first), o(last))) == expected
 
 
-def test_k11_christmas_9999_is_kept_on_friday_24_december_outside_the_range():
-    assert days(united_states.weekday_holidays(o("9999-12-24"), o("9999-12-24"))) == ["9999-12-24"]
-    assert weekday(MAX_ORDINAL + 1) == 5  # 1 January 10000: a Saturday, as 1 January 2000 (400-year cycle)
-
-
-def test_the_first_and_last_ranges_accepted():
-    assert days(united_states.weekday_holidays(o("0001-01-01"), o("0001-01-01"))) == ["0001-01-01"]
-    assert mexico.weekday_holidays(MAX_ORDINAL + 1, MAX_ORDINAL) == []  # an empty span after the last date
+def test_the_first_and_last_dates_accepted():
+    # New Year's Day 1950, a Sunday, is kept on Monday 2 January (today's rules, applied to every year: Q7).
+    assert days(united_states.weekday_holidays(o("1950-01-01"), o("1950-01-02"))) == ["1950-01-02"]
+    assert mexico.weekday_holidays(o("2150-12-31") + 1, o("2150-12-31")) == []  # an empty span after the last date
 
 
 def test_united_states_2026_observed_days():
