@@ -4,23 +4,22 @@ Updated 2026-11-15. A snapshot, replaced at each close (close-session); the hist
 
 ## Where the work stands
 
-- `main`: pull request #16 merged (Docker only, with no public demo or external host; the owner's working rules in
-  `CLAUDE.md`).
-- Branch `years-1950-2150`, for one pull request, on the owner's decision of 2026-11-15: the app accepts dates from
-  1950-01-01 to 2150-12-31 (`SPEC.md`, *Expectations* and E1); K11 moves to the new last dates, US, 2150-12-24 →
-  2150-12-31; `parse_date` refuses a date outside those years, naming them, and the page's message names them in
-  English and Spanish, on the page too; removing an own holiday still accepts a day stored outside them before the
-  change; the holiday modules lose their year-10000 branches, which no route reaches any more; the tests pinned to
-  year 9999 move to 2150, and the date modules' tests to the first and last dates accepted.
+- `main`: pull request #17 merged (the years accepted, 1950 to 2150).
+- Branch `docker-required-check`, for one pull request, on the owner's word of 2026-11-15: the `docker` CI job is a
+  required check on `main`, with `test`; `CLAUDE.md` says so, and adds the owner's rule to leave nothing that slowly
+  eats space (CI artifacts and caches, local Docker leftovers).
+- Next, on the owner's word of the same day: the page restyled to `DESIGN.md` (layout, typography, spacing and
+  states, light and dark, accessibility) and a visible user guide in the app, one section per feature with examples
+  from the known answers, in English and Spanish; a pull request of its own.
 
 ## Checked on this branch (2026-11-15)
 
-- The full suite on this machine: 202 passed (195 on `main`; 9 new cases; 2 net removed with the year-10000
-  code).
-- The new refusal and text tests failed on `main`'s code (7 failed), before the change; the removal test failed
-  before its fix.
-- Eight mutations (each end one year off either way, no check, removal held to the limit, either language's text
-  left at 1 to 9999): each made its tests fail; with the year check removed, the page's refusal test fails too.
+- Branch protection on `main`, read back after the change: required checks `test` and `docker` (GitHub Actions),
+  not strict; every other protection setting equal to before.
+- CI: `ci.yml` has no artifact upload and no cache step; the repository holds 0 Actions caches and 0 artifacts.
+- Local Docker, this project only: its stopped container, its image and eleven build-cache records removed (the
+  `Dockerfile`'s steps, and the `python:3.13-slim` base, on which, in the build cache's parent links, no other build
+  sat); the `days-between-dates_app-data` volume kept.
 
 ## Pending
 
@@ -29,8 +28,6 @@ Updated 2026-11-15. A snapshot, replaced at each close (close-session); the hist
   `test_e3_a_storage_failure_on_an_edit_takes_the_count_off_the_screen[add-unwritable]`; its cause is not
   established.
 - `python -m pip install` is not covered by the ask rules (the template has the `python3` form only).
-- The `docker` CI job, now the deployment validation, is not a required check; making it one is a branch-protection
-  change, the owner's call.
 - `DESIGN.md` restates values from `style.css` and `tokens.css`. No test reads `DESIGN.md` (searched `tests/` and
   `scripts/`), so its copies can drift from those files.
 
@@ -40,11 +37,13 @@ Updated 2026-11-15. A snapshot, replaced at each close (close-session); the hist
   minor findings in one follow-up pull request (#15, merged).
 - The working rules now in `CLAUDE.md`, effective 2026-11-15.
 - Docker only, with no public demo or external host; the passing Docker check is the deployment validation (SPEC,
-  *Approval*, 2026-11-15). The question of one database serving every visitor of a demo is dropped.
-- The years accepted: 1950 to 2150 (SPEC, *Approval*, 2026-11-15), the owner's answer to the cost of a count over
-  years 1 to 9999.
+  *Approval*, 2026-11-15).
+- The years accepted: 1950 to 2150 (SPEC, *Approval*, 2026-11-15).
+- The `docker` job a required check; nothing left that slowly eats space; the restyle and the user guide. For the
+  guide's length, the owner's goal: a guide no more elaborate or complicated than the app and its features; the
+  SPEC change it needs goes with that pull request.
 
 ## Last session (2026-11-14 and 2026-11-15)
 
-Done: pull requests #13 to #16 merged; `/security-audit` run; this branch's work and its checks above.
-Half-done: this branch's pull request.
+Done: pull requests #13 to #17 merged; `/security-audit` run; the docker check made required; this branch's work.
+Half-done: this branch's pull request; the restyle and the guide.
