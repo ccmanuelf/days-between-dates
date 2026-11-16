@@ -523,7 +523,7 @@ def page_sources() -> str:
 def test_every_string_exists_in_both_languages():
     assert set(EN) == set(ES)
     assert all(value.strip() for value in list(EN.values()) + list(ES.values()))
-    used = set(re.findall(r"\bt\(\s*'(\w+)'", page_sources())) | set(re.findall(r"show\('(\w+)'", page_sources()))
+    used = set(re.findall(r"\bt\(\s*'([\w.]+)'", page_sources())) | set(re.findall(r"show\('([\w.]+)'", page_sources()))
     used |= {f"calendar_{c}" for c in ("mx", "us")}
     used |= {f"error_{c}" for c in (
         "required", "invalid_date", "unknown_calendar", "unknown_language", "unknown_theme", "duplicate", "not_found",

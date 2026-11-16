@@ -66,7 +66,6 @@ function chooseLanguage(value: AcceptableValue | AcceptableValue[]) {
           variant="ghost"
           size="icon"
           :aria-label="t(state.theme === 'dark' ? 'theme_to_light' : 'theme_to_dark')"
-          :aria-pressed="state.theme === 'dark'"
           @click="toggleTheme"
         >
           <SunIcon v-if="state.theme === 'dark'" />

@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import ErrorMessage from '@/components/days/ErrorMessage.vue'
 import Field from '@/components/shared/Field.vue'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
@@ -26,9 +26,9 @@ function invalid(field: string) {
 <template>
   <Card>
     <CardHeader>
-      <CardTitle class="text-heading-2">
+      <h2 class="text-heading-2">
         {{ t('count_title') }}
-      </CardTitle>
+      </h2>
     </CardHeader>
     <CardContent class="flex flex-col gap-4">
       <form id="count-form" class="flex flex-col gap-4" @submit.prevent="count">

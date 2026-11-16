@@ -50,12 +50,11 @@ class DayCounts:
     end: date
     swapped: bool
     total: Pair
-    monday_to_friday: Pair
     spans: tuple[Span, Span]  # start not counted, both counted
 
 
 def count_days(start: date, end: date) -> DayCounts:
-    """Count total days and Monday–Friday days; reversed dates are swapped and flagged (SPEC, S3)."""
+    """Count total days, and the spans each convention covers; reversed dates are swapped and flagged (SPEC, S3)."""
     swapped = end < start
     if swapped:
         start, end = end, start
@@ -67,9 +66,5 @@ def count_days(start: date, end: date) -> DayCounts:
         end=end,
         swapped=swapped,
         total=Pair(e - s, e - s + 1),
-        monday_to_friday=Pair(
-            monday_to_friday(not_counted.first, not_counted.last),
-            monday_to_friday(counted.first, counted.last),
-        ),
         spans=(not_counted, counted),
     )

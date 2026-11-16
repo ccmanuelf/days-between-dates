@@ -62,7 +62,8 @@ export const state = reactive({
   ownLoaded: false,
   error: null as Shown | null,
   language: 'en' as Language,
-  theme: 'light' as Theme,
+  // What index.html painted before the first frame, from the browser's copy; the API's answer follows in start().
+  theme: (document.documentElement.classList.contains('dark') ? 'dark' : 'light') as Theme,
 })
 
 // Each count and each list request is numbered; an answer that is not the latest is out of date and not shown (F1).
@@ -79,10 +80,15 @@ function show(key: string, field: string | null = null, place?: ErrorPlace, mark
 }
 
 // A storage failure takes the count off the screen too: the message says no count is shown (SPEC, AC9), and the
-// status in the app bar says the storage is unavailable.
+// status in the app bar says the storage is unavailable. An answer from a route that used the database says it is
+// available again.
 function markStorageDown() {
   state.result = null
   state.storage = 'down'
+}
+
+function markStorageOk() {
+  state.storage = 'ok'
 }
 
 function showAnswer(answer: Answer, place?: ErrorPlace) {
@@ -108,6 +114,7 @@ export async function count() {
     return
   if (answer.status === 200 && answer.body) {
     clearError()
+    markStorageOk()
     state.result = answer.body
   }
   else {
@@ -128,6 +135,7 @@ export async function loadHolidays() {
     showAnswer(answer)
     return
   }
+  markStorageOk()
   state.ownDays = answer.body.holidays
   state.ownLoaded = true
 }
@@ -147,6 +155,7 @@ export async function addHoliday() {
   const answer = await api('POST', '/api/holidays', { calendar: state.calendar, day: state.newDay.trim() })
   if (answer.status === 201) {
     clearError()
+    markStorageOk()
     state.newDay = ''
     await afterListChange()
   }
@@ -159,6 +168,7 @@ export async function removeHoliday(day: string) {
   const answer = await api('DELETE', `/api/holidays/${state.calendar}/${day}`)
   if (answer.status === 204) {
     clearError()
+    markStorageOk()
     await afterListChange()
   }
   else {
@@ -177,10 +187,14 @@ function storeChoice(path: string, body: object, isLatest: () => boolean, failur
     const answer = await api('PUT', path, body)
     if (!isLatest())
       return
-    if (answer.status === 200)
-      clearError()
-    else
+    if (answer.status === 200) {
+      markStorageOk()
+      if (state.error?.key === failure)
+        clearError() // only this choice's own earlier failure; any other message stays
+    }
+    else {
       show(failure, null, 'top')
+    }
   })
 }
 
@@ -227,7 +241,8 @@ export async function start() {
   const stored = language.status === 200 ? language.body?.language : null
   state.language = stored && LANGUAGES.includes(stored) ? stored : browserLanguage()
   applyLanguage(state.language)
-  applyTheme(theme.status === 200 && theme.body?.theme === 'dark' ? 'dark' : 'light')
+  if (themeRequest === 0) // a choice made while the page was loading is the one that stays
+    applyTheme(theme.status === 200 && theme.body?.theme === 'dark' ? 'dark' : 'light')
   if (health.status !== 200)
     showAnswer(health) // the database cannot be read: say so before any count
   await loadHolidays()

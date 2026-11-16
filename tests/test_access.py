@@ -15,6 +15,7 @@ CONTRAST = """
 () => {
   const ctx = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
   const rgb = (c) => {
+    if (!CSS.supports("color", c)) throw new Error(`unparsed color ${c}`);  // never read an unknown form as black
     ctx.clearRect(0, 0, 1, 1);
     ctx.fillStyle = "rgba(0, 0, 0, 0)";
     ctx.fillStyle = c;
@@ -167,6 +168,7 @@ def test_rule_1_one_cobalt_filled_button_per_screen(server, browser, theme):
     page = open_theme(browser, server.url, theme)
     show_everything(page)
     primary = (LIGHT if theme == "light" else DARK)["primary"]
+    color(page, "#count", "backgroundColor")  # waits for the buttons' colors to come to rest
     filled = page.locator("button").evaluate_all(
         f"bs => bs.filter(b => b.getClientRects().length && getComputedStyle(b).backgroundColor === '{primary}')"
         ".map(b => b.id || b.textContent.trim())"
@@ -347,3 +349,31 @@ def test_a_language_not_stored_shows_at_the_top_of_the_page(server, open_page):
     expect(page.locator("#error")).to_have_text(ES["error_language_not_stored"])
     assert page.evaluate("document.querySelector('main').firstElementChild.id") == "error"
     assert invalid_fields(page) == []
+
+
+def test_rule_10_the_toggle_says_the_truth_before_the_api_answers(server, browser):
+    """A load painted dark from the browser's copy shows the toggle as "switch to light" while /api/theme has not
+    answered; a click then is the choice that stays, on screen and in storage."""
+    page = browser.new_context().new_page()
+    page.add_init_script(PAGE_PROBE)
+    page.add_init_script("localStorage.setItem('theme', 'dark'); window.__hold = 'GET /api/theme';")
+    page.goto(server.url)
+    page.wait_for_function("window.__release !== null")  # /api/theme has answered, and its answer is held
+    assert is_dark(page)
+    expect(page.locator("#theme")).to_have_attribute("aria-label", EN["theme_to_light"])
+    page.click("#theme")
+    assert not is_dark(page)
+    page.evaluate("window.__release()")
+    page.wait_for_selector("body[data-ready=true]")
+    page.wait_for_function("window.__settled === window.__started")
+    assert not is_dark(page)  # the late answer (nothing stored) does not undo the click
+    assert server.call("GET", "/api/theme") == (200, {"theme": "light"})
+
+
+def test_a_theme_stored_leaves_an_unrelated_error_on_screen(server, open_page):
+    page = open_page(server.url)
+    count(page, "2026-02-30", "2026-03-02")
+    expect(page.locator("#error")).to_be_visible()
+    settle(page, lambda: page.click("#theme"))
+    expect(page.locator("#error")).to_have_text(EN["error_invalid_date"].replace("{field}", EN["field_start"]))
+    assert invalid_fields(page) == ["start"]

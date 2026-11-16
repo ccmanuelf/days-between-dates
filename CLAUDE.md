@@ -287,3 +287,11 @@ One entry per guardian: what goes wrong, why, the correct pattern, and the guard
   `tests/guardians/test_every_write_reads_its_body_through_json_body.py`. It does not see a route parameter typed
   `dict`, which needs none of those imports: FastAPI reads that body itself, and took a JSON body over 4096 bytes
   when tried on 2026-11-15. Take the body with `json_body`, not as a typed parameter.
+- **A color written outside the tokens, or a grid row height outside the approved theme.** What goes wrong: a
+  component or stylesheet in `frontend/src` writes its own color (`#f00`, `rgb()`, `oklch()`, a Tailwind palette class
+  such as `bg-red-500`) or sets a grid's row or header height. Why: the visual standard keeps `tokens.css` as the one
+  source of color, so light and dark stay paired, and fixes grid rows at 32px (rule 4). Correct pattern: a token
+  through its Tailwind utility (`bg-card`, `text-muted-foreground`); row heights only in
+  `frontend/src/design-system/grid-theme.js`. Guardian: the web starter's scans in
+  `frontend/tests/unit/design-system.test.ts`, kept in the starter's form: they run in Vitest, not under
+  `tests/guardians/`, and carry their bad patterns as inline samples each must flag, in place of a fixture file.

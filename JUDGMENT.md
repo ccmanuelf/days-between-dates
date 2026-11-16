@@ -115,3 +115,26 @@ What reviews changed, one entry per change (`CLAUDE.md`, *Judgment log*).
   - Decision: settled by the agent: the rule removes untagged earlier builds too and keeps the raw listings with the
     work; the full protection read before and after, the API counts and the Docker listings were saved, and the one
     untagged image on the machine was checked (not this app's).
+- **2026-11-16 — the storage status says the truth again once storage answers** (pull request #21)
+  - Produced: a storage status in the app bar that turned to "Storage unavailable" on a refused write and went back to
+    "Storage OK" only on a reload or a return to the tab.
+  - Wrong: after the database was writable again, counts and edits succeeded while the app bar still said storage was
+    unavailable: a status on screen that was no longer true.
+  - Caught by: the reviewer agent, full review of pull request #21.
+  - Decision: settled by the agent: any answer from a route that used the database sets the status back to OK; a page
+    test refuses a write, frees the database, and expects "Storage OK" after the next write.
+- **2026-11-16 — the guide's tests read every input of their examples** (pull request #21)
+  - Produced: tests that read each worked example from the guide's text and counted it again, but took K9a's calendar
+    from the test and checked K10's own day only by its weekday.
+  - Wrong: the K9a sentence could name another calendar, and K10's another weekend day, and the tests still passed:
+    each of them accepted two different texts.
+  - Caught by: the reviewer agent, full review of pull request #21.
+  - Decision: settled by the agent: the K9a test checks the calendar the sentence names, and the K10 test pins the
+    SPEC's day, 2026-10-31; each example in each language was then shown failing on an altered text.
+- **2026-11-16 — code the rebuild left uncalled removed** (pull request #21)
+  - Produced: a day count that still computed Monday-to-Friday totals no route returned, and parts of the web starter
+    the page never uses (grid selection and editing, two status tones, three card parts, a toggle).
+  - Wrong: code that is never called, which `CLAUDE.md`'s definition of done counts as lying.
+  - Caught by: the reviewer agent, full review of pull request #21.
+  - Decision: settled by the agent: removed; the unit tests count the Monday-to-Friday days from the spans the count
+    uses, and the grids switch off row selection.

@@ -5,8 +5,9 @@ import es from './locales/es.json'
 export type Language = 'en' | 'es'
 export const LANGUAGES: Language[] = ['en', 'es']
 
-// Every text exists in both languages (SPEC, AC13): a missing one shows its key, never the other language's text, and
-// tests/unit/locales.test.ts fails on it first.
+// Every text exists in both languages (SPEC, AC13): a missing one shows its key, never the other language's text.
+// tests/unit/locales.test.ts fails when the two files' keys differ, and tests/test_page.py when the page names a key
+// that the files lack.
 export const i18n = createI18n({
   legacy: false,
   locale: 'en',

@@ -191,7 +191,7 @@ Will not:
 | AC7 | The past-years notice shows when the range includes an earlier year, and only then | S9 tests, both cases |
 | AC8 | Invalid input is refused with a message naming the field; nothing is stored | E1 tests, including a database read after the refusal |
 | AC9 | A storage failure shows an error and no business-day count; a language choice that cannot be stored shows an error, and the page keeps the language on screen | E3 tests with an unwritable and with an unreadable database, for the holidays and for the language setting, through the page |
-| AC10 | No orphans: every control (two dates, calendar choice, add, remove, language switch, theme toggle) reaches a route that executes; every route has a caller; the holidays table and the language and theme settings are written and read. The guide's tab and the two "How this is calculated" are static help with no route (the app template's User Guide rule) | The judge's orphan list |
+| AC10 | No orphans: every control (two dates, calendar choice, add, remove, language switch, theme toggle) reaches a route that executes; every route has a caller; the holidays table and the language and theme settings are written and read. The two tabs (Count, and Help and user guide) and the two "How this is calculated" show static help and reach no route (the app template's User Guide rule) | The judge's orphan list |
 | AC11 | The screen names each built-in calendar's source and the date its rules were checked; with Mexico active, the note on local election days shows, and with the US calendar it does not (Q13) | A test on the page for each; S11, both cases |
 | AC12 | The known-answer checks run on every pull request and every push to main, through the API | CI log |
 | AC13 | Every label, notice and message exists in English and Spanish; in Spanish, business days read *días hábiles* with the art. 715 note (Q14); switching the language changes the text, not the counts; the choice is stored through page → API → SQLite and survives a restart (Q15); with none stored, or one unreadable, the page opens in the browser's language when it is English or Spanish, in English otherwise (Q16) | A test per notice in each language; S10 through the page, with a restart; the opening language with the browser set to English, to Spanish and to a third language, and with the stored choice unreadable |
@@ -393,12 +393,14 @@ and S15 names the guide's introduction, contents and dates accepted: the agent's
 before" and "the colors are those `DESIGN.md` recorded before", narrowed to the four color tokens keeping their light
 values, because the owner asked for the page to be restyled "in light and dark" (【M】 *"Restyle days-between-dates
 so it can count as finished. [...] Follow DESIGN.md: polish the layout, typography, spacing and states, in light and
-dark, with accessibility."*); the narrowed wording is the agent's (【C】). 2026-11-16: the app
-reflects the owner's whole foundation, in the owner's decision: 【M】 *"New scope: days-between-dates is the first app
-that must reflect our whole foundation, not an app that predates it. DESIGN.md's line saying the visual standard
-doesn't apply is wrong; it applies in full."*, and, asked whether to rebuild on the web starter or keep the plain
-page: 【M】 *"Rebuild on the web starter."* The SPEC follows: S13 and AC15 (light by default, a toggle in the app bar,
-remembered), S14 and AC16 (labels above fields), S15, S16, AC17 and AC18 (the guide a tab; its examples written in
-its text and read by a test; worked examples not counted in its length), AC10 (the theme toggle; the guide as static
-help), *Expectations* and *Stack and deployment*. The wording, the theme stored through the API, and the guide as a
-tab are the agent's (【C】).
+dark, with accessibility."*); the narrowed wording is the agent's (【C】). 2026-11-16: the app reflects the owner's whole
+foundation, in the owner's decision: 【M】 *"New scope: days-between-dates is the first app that must reflect our whole
+foundation, not an app that predates it. DESIGN.md's line saying the visual standard doesn't apply is wrong; it applies
+in full."*, and, asked whether to rebuild on the web starter or keep the plain page: 【M】 *"Rebuild on the web starter."*
+The SPEC follows: S13 and AC15 (light by default, a toggle in the app bar, remembered), S14 and AC16 (labels above
+fields), S15, S16, AC17 and AC18 (the guide a tab; its examples written in its text and read by a test; worked examples
+not counted in its length), AC10 (the theme toggle; the guide as static help), *Expectations* and *Stack and
+deployment*. The wording, the theme stored through the API, and the guide as a tab are the agent's (【C】). The changes
+above were then approved in the owner's word on the audit's gap list, which named them (the labels above fields, the
+remembered toggle stored through the API, the guide's examples in its text and read by a test, the guide as static help,
+the web-interface line) along with the change to CI: 【M】 *"Now fix all 27 gaps end to end without stopping"*.

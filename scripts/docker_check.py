@@ -72,10 +72,11 @@ def serves(base: str) -> None:
     styles = re.findall(r'<link[^>]+href="(/assets/[^"]+\.css)"', html)
     check("page served", status == 200 and len(scripts) == 1 and len(styles) == 1, f"HTTP {status}")
     # The built page's script calls the API and carries both languages; its stylesheet carries the standard's tokens.
-    assets = ((scripts[0], ("/api/count", "Días entre fechas")), (styles[0], ("--primary", "--motion-scale")))
-    for asset, markers in assets:
+    assets = (("page script", scripts[0], ("/api/count", "Días entre fechas")),
+              ("page stylesheet", styles[0], ("--primary", "--motion-scale")))
+    for name, asset, markers in assets:
         status, text = request(base, "GET", asset)
-        check(f"{asset.split('-')[0]}… served", status == 200 and all(m in text for m in markers), f"HTTP {status}")
+        check(f"{name} served", status == 200 and all(m in text for m in markers), f"HTTP {status}")
     # K1 (SPEC.md, Known-answer checks): 2026-10-26 to 2026-10-30, Mexico: total 4 · 5, business 4 · 5.
     status, text = request(base, "GET", "/api/count?calendar=mx&start=2026-10-26&end=2026-10-30")
     body = json.loads(text) if status == 200 else {}

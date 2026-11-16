@@ -21,9 +21,9 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
 
 ## Checked on this branch (2026-11-16)
 
-- The page: type check clean; 117 unit tests passed (the starter's, adapted: ports, locales, the color source, the
+- The page: type check clean; 112 unit tests passed (the starter's, adapted: ports, locales, the color source, the
   grid's row height, the button's outline default).
-- The full Python suite on this machine, on the built page: 233 passed (220 on `main`).
+- The full Python suite on this machine, on the built page: 236 passed (220 on `main`).
 - Twelve mutations, each breaking one guarantee of this branch (an altered worked example, a wrong weekday in one,
   the theme not stored, dark by default, a second cobalt button, labels beside fields, the status chip without its
   icon, the How example left out, a guide section over 150 words, the theme stored under another key, a color written
@@ -31,6 +31,10 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
   passed, because its test switched the theme itself; the test now checks the page as it opens.
 - Screenshots in light and dark, at 1280 and 375 px wide, with a result, both notices, a day of one's own, an error
   and the guide: looked at, not committed.
+- After the review: four new tests failed before their fix (the storage status coming back, the theme toggle before
+  the API answers, a theme stored leaving another error on screen, a page string key missing from both languages);
+  seventeen more mutations each made their test fail (each worked example altered in each language, K9a under another
+  calendar, K10 on another day, a token's value, a theme not stored, a label not tied to its field).
 
 ## Pending
 
@@ -54,7 +58,8 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
 - The years accepted: 1950 to 2150 (SPEC, *Approval*, 2026-11-15).
 - The `docker` job a required check, and nothing left that slowly eats space (#18, merged).
 - The restyle and the user guide; the guide no more elaborate than the app (SPEC, *Approval*, 2026-11-15).
-- 2026-11-16: the app reflects the whole foundation, rebuilt on the web starter; the starter's downloads approved
+- 2026-11-16: the app reflects the whole foundation, rebuilt on the web starter, fixing the audit's gaps, the SPEC
+  and CI changes they named included; the starter's downloads approved
   (a Node base image, the npm packages from `npm ci`, the PyPI lookups and installs for the fully pinned Python list).
 
 ## Last session (2026-11-15 and 2026-11-16)

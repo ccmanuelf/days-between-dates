@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import HowPanel from '@/components/days/HowPanel.vue'
 import NoticeLine from '@/components/days/NoticeLine.vue'
 import DataGrid from '@/components/shared/DataGrid.vue'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { numberColumn } from '@/design-system/grid-theme.js'
 import { state } from '@/state'
 
@@ -32,9 +32,9 @@ const rows = computed(() => [
 <template>
   <Card id="result" class="dbd-enter">
     <CardHeader class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-      <CardTitle class="text-heading-2">
+      <h2 class="text-heading-2">
         {{ t('result_title') }}
-      </CardTitle>
+      </h2>
       <p id="active-calendar" class="text-label text-muted-foreground">
         {{ t('active_calendar', { name: t(`calendar_${result.calendar}`) }) }}
       </p>

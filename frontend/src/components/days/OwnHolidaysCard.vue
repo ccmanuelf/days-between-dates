@@ -7,7 +7,7 @@ import RemoveCell from '@/components/days/RemoveCell.vue'
 import DataGrid from '@/components/shared/DataGrid.vue'
 import Field from '@/components/shared/Field.vue'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { addHoliday, removeHoliday, state } from '@/state'
 
@@ -40,9 +40,9 @@ const invalid = computed(() => (state.error?.mark && state.error.field === 'day'
 <template>
   <Card id="own">
     <CardHeader>
-      <CardTitle id="own-title" class="text-heading-2">
+      <h2 id="own-title" class="text-heading-2">
         {{ t('own_title', { name: t(`calendar_${state.calendar}`) }) }}
-      </CardTitle>
+      </h2>
     </CardHeader>
     <CardContent class="flex flex-col gap-4">
       <div v-if="state.ownDays.length" id="own-list">

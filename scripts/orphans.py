@@ -1,6 +1,6 @@
 """The orphan check (plan step 7, SPEC AC10): every control on the page reaches a route that executes, every route of
-the app has a caller, and every table is written and read. The User Guide is the one exception, static help with no
-backend (STATIC_HELP, below).
+the app has a caller, and every table is written and read. The two tabs and the two "How this is calculated" panels
+are the exception: they show static help, the User Guide among it, and reach no route (STATIC_HELP, below).
 
 It starts the server on a scratch database, drives every control of the page in a real browser and records each
 request the page makes. FastAPI's documentation routes are turned off (app/main.py), so every route is the app's.
@@ -67,8 +67,9 @@ def free_port() -> int:
         return s.getsockname()[1]
 
 
-# Static help with no backend (the app template's User Guide rule): the guide's tab and the two "How this is
-# calculated" panels reach no route, by design, and are named here so the check still lists every other control.
+# Static help with no backend (the app template's User Guide rule): the two tabs (Count, and Help and user guide) and
+# the two "How this is calculated" panels reach no route, by design, and are named here so the check still lists every
+# other control.
 STATIC_HELP = {"tab:guide", "tab:count", "how-total-toggle", "how-business-toggle"}
 
 # How a control is named in this check: a tab by its data-tab; otherwise its id; a choice in a toggle group by its

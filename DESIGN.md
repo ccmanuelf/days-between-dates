@@ -66,7 +66,8 @@ notices and sources stay.
    notice opens with an icon and a word ("Dates swapped", "Past years") before its sentence; an error has its icon.
 3. **Green only for status.** The storage chip is the one place that shows `success`.
 4. **Grid rows are 32px.** The result's counts and the list of your own holidays are AG Grids with the approved
-   theme: 32px rows, a 36px header, no row-height control. They take only the height their rows need.
+   theme: 32px rows, a 36px header, no row-height control. They take only the height their rows need, and their rows
+   are read, not chosen: row selection is off.
 5. **Columns fit their content.** The result's first column ("Days") and the own list's weekday are the flexible
    columns; counts are right-aligned with tabular figures.
 6. **Labels sit above fields.** Every field has a `text-label` label in `muted-foreground` above it; the calendar's
@@ -113,7 +114,8 @@ Every button, field and toggle is at least 24px tall (WCAG 2.2, 2.5.8); AC16's t
 ## Components
 
 From the starter: `AppShell`, `Field`, `StatusChip`, `DataGrid`, and shadcn-vue's `Button`, `Card`, `Input`, `Label`,
-`Tabs`, `Toggle` and `ToggleGroup`, with the starter's defaults (a button with no variant is outlined).
+`Tabs` and `ToggleGroup`, with the starter's defaults (a button with no variant is outlined); the grid and the status
+chip keep only what this page uses.
 
 - **Count form**: start and end dates (text fields, YYYY-MM-DD), the calendar as a two-choice toggle group, Count.
 - **Result**: the active calendar and the range, the notices, the grid of counts, the two "How this is calculated"

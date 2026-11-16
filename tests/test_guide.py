@@ -82,6 +82,8 @@ def test_k9a_the_business_days_example(server, language):
     """The Monday-to-Friday days, less the observed holiday the sentence names, give the business days."""
     kid, (start, end, holiday), numbers = read(language, "example_business")
     assert (kid, (start, end)) == ("K9a", RANGES[("K9a", "us")])
+    text = STRINGS[language]["example_business"]  # the calendar the sentence names is the one counted
+    assert STRINGS[language]["calendar_us"] in text and STRINGS[language]["calendar_mx"] not in text
     first, last = date.fromisoformat(start).toordinal(), date.fromisoformat(end).toordinal()
     observed = [date.fromordinal(h.ordinal).isoformat() for h in CALENDARS["us"].weekday_holidays(first, last)]
     assert observed == [holiday]
@@ -95,7 +97,7 @@ def test_k9a_the_business_days_example(server, language):
 def test_k10_the_own_holiday_example(server, language):
     """K10: one own holiday on a Saturday, in K3's range, leaves its business days as they were (SPEC, S8)."""
     kid, (own, start, end), numbers = read(language, "example_own")
-    assert (kid, (start, end)) == ("K10", RANGES[("K3", "mx")])
+    assert (kid, own, (start, end)) == ("K10", "2026-10-31", RANGES[("K3", "mx")])  # SPEC, K10: Saturday 2026-10-31
     assert named_weekday(language, own) in STRINGS[language]["example_own"]
     assert server.call("POST", "/api/holidays", {"calendar": "mx", "day": own})[0] == 201
     try:
