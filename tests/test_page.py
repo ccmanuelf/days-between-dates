@@ -550,6 +550,8 @@ def test_the_page_loads_with_no_failed_request_and_no_error(server, browser):
     uncaught error is thrown; and no console message is an error. The icon is served, in the standard's cobalt."""
     page = browser.new_context().new_page()
     errors, failed = [], []
+    # The console listener is the one that hears a failed icon: the browser fetches the tab's icon outside the page,
+    # so the response listener below never sees it, and its 404 shows only as a console error.
     page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
     page.on("pageerror", lambda e: errors.append(f"uncaught: {e}"))
     page.on("response", lambda r: failed.append(f"{r.status} {r.url}") if r.status >= 400 else None)
@@ -559,15 +561,10 @@ def test_the_page_loads_with_no_failed_request_and_no_error(server, browser):
     page.wait_for_load_state("networkidle")
     assert (failed, errors) == ([], []), (failed, errors)
     expect(page.locator("link[rel=icon]")).to_have_attribute("href", "/favicon.svg")
-    status, icon = urlopen_status(f"{server.url}/favicon.svg")
-    assert status == (200, "image/svg+xml"), status
-    primary = re.search(r"--primary:\s*(#[0-9a-f]{6});", (ROOT / "frontend/src/design-system/tokens.css").read_text())
-    assert f'fill="{primary.group(1)}"' in icon.decode(), "the icon's cobalt is tokens.css's --primary"
-
-
-def urlopen_status(url: str) -> tuple[tuple[int, str], bytes]:
-    import urllib.request
-
-    with urllib.request.urlopen(url, timeout=10) as response:
-        return (response.status, response.headers.get_content_type()), response.read()
-
+    icon = page.request.get(f"{server.url}/favicon.svg")
+    assert (icon.status, icon.headers["content-type"].split(";")[0]) == (200, "image/svg+xml")
+    # An SVG icon cannot read the page's custom properties, so it holds copies of two tokens; they must match.
+    tokens = (ROOT / "frontend/src/design-system/tokens.css").read_text()
+    for token in ("primary", "primary-foreground"):
+        value = re.search(rf"--{token}:\s*(#[0-9a-f]{{6}});", tokens).group(1)
+        assert value in icon.text(), (token, value)

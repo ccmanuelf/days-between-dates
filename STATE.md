@@ -11,18 +11,18 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
 - Branch `favicon`, for one pull request, on the owner's word of 2026-11-16: the page gets an icon
   (`frontend/public/favicon.svg`, a calendar page in the standard's cobalt, linked from `index.html`), so its load gets
   no 404; a page test checks that, on load, no request fails or answers with an error status, no uncaught error is
-  thrown and no console message is an error, and that the icon is served in `tokens.css`'s cobalt; the Docker check
-  asks for the icon.
+  thrown and no console message is an error, and that the icon is served with `tokens.css`'s two colors it copies; the
+  Docker check asks for the icon.
 - The app runs in Docker at http://127.0.0.1:8765 for the owner's review, rebuilt from `main` after each merge; its
   data volume is kept.
 
 ## Checked on this branch (2026-11-16)
 
-- The new page test failed before the change: the browser's request for `/favicon.ico` answered 404. It also failed
-  on each of four mutations: the icon's cobalt not the token's, an uncaught error on load, a request that gets no
-  answer, the icon's link left out.
-- The page: type check clean; 112 unit tests passed. The full Python suite on this machine, on the built page: 237
-  passed (236 on `main`).
+- The page test, as committed, failed on `main`'s page without the icon: the browser's request for `/favicon.ico`
+  answered 404. It also failed on each of five mutations: the icon's cobalt or its white not the token's, an uncaught
+  error on load, a request that gets no answer, the icon's link left out.
+- The page: type check clean; 112 unit tests passed. The full Python suite: 237 passed in CI (run 43979203156, on
+  308540c; 236 on `main`).
 - The icon, looked at from 16 to 128 px: not committed.
 
 ## Pending

@@ -138,3 +138,12 @@ What reviews changed, one entry per change (`CLAUDE.md`, *Judgment log*).
   - Caught by: the reviewer agent, full review of pull request #21.
   - Decision: settled by the agent: removed; the unit tests count the Monday-to-Friday days from the spans the count
     uses, and the grids switch off row selection.
+- **2026-11-16 — the clean-load test hears what its sentence says** (pull request #22)
+  - Produced: a page test for the icon, described as checking that on load "no request fails and nothing is logged",
+    which listened only for responses with an error status and for console errors.
+  - Wrong: the sentence covered more than the test heard: an uncaught error and a request that fails with no answer
+    would have passed it.
+  - Caught by: the reviewer agent, in the publication check before the branch's first push.
+  - Decision: settled by the agent: the test also listens for uncaught errors and failed requests, and checks that the
+    icon's two colors are `tokens.css`'s `--primary` and `--primary-foreground`; each was shown failing on a
+    mutation.

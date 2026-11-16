@@ -13,7 +13,7 @@ BACKEND_PORT on each `up` and use that port in the address.
     python scripts/docker_check.py kept http://127.0.0.1:8765       # the holiday came back from the volume
     docker compose -p dbd-check down -v --rmi local
 
-Its imports (__future__, json, sys, time, urllib) are from Python's standard library, so it needs no package install
+Its imports (__future__, json, re, sys, time, urllib) are from Python's standard library, so it needs no package install
 on the machine that runs Docker. It imports under Python 3.9 and 3.12, and CI runs it under 3.13. Exits 1 on the
 first failed check.
 """
