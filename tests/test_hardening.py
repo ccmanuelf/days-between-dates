@@ -1,6 +1,6 @@
 """The security audit's fixes of 2026-11-15, on the running server: a write with a body (adding a holiday, storing the
 language) must be sent as application/json, at most 4096 bytes; a request must be addressed to a known host name; and
-environment files stay out of git."""
+environment files stay out of git. Also, since 2026-11-16, FastAPI's documentation routes are not served."""
 
 import http.client
 import json

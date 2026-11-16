@@ -10,8 +10,9 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
   "not restyled" line in `DESIGN.md` was wrong. An audit listed the gaps between this app and the foundation; the
   owner chose to rebuild on the web starter.
 - Branch `foundation-hygiene`, for one pull request: the Python pins compiled from `.in` files with a two-week
-  cutoff, with `tests/test_pins.py`; FastAPI's documentation routes turned off and the orphan check's exemption for
-  them removed; `CLAUDE.md` and the security-audit skill in the app template's wording (the audit before each
+  cutoff and `--universal`, with `tests/test_pins.py`; FastAPI's documentation routes turned off, with a test that
+  each answers 404 (the orphan check's name filter for them was dead code: they were never `APIRoute`s, so it is
+  removed); `CLAUDE.md` and the security-audit skill in the app template's wording (the audit before each
   publish, the merge rule's last sentence, *Proven work*'s trigger, the guardians' linter).
 - Next: the rebuild on the web starter, a pull request of its own.
 - The app from `main` at 6e52eb8 runs in Docker at http://127.0.0.1:8765 for the owner's review; nothing is pruned
@@ -20,8 +21,9 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
 ## Checked on this branch (2026-11-16)
 
 - The new tests failed before the change: the documentation routes answered (4 cases), and the header test failed
-  on `main`'s two hand-written lists.
-- The full suite on this machine: 219 passed (213 on `main`, in CI run 43806269163).
+  on `main`'s two hand-written lists. Each pin test also failed on the drift it guards, on a copy: a shared pin
+  changed in one list, and a pin raised by hand in the compiled lists only.
+- The full suite on this machine: 220 passed (213 on `main`, in CI run 43806269163).
 
 ## Pending
 
@@ -31,6 +33,8 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
 - `python -m pip install` is not covered by the ask rules (the template has the `python3` form only).
 - `DESIGN.md` restates values from `style.css` and `tokens.css`. No test reads `DESIGN.md` (searched `tests/` and
   `scripts/`), so its copies can drift from those files.
+- `DESIGN.md` still says the app predates the visual standard and is not restyled to its palette; the rebuild's pull
+  request rewrites it from the standard.
 - Notes outside this repository still say existing apps are not restyled; they are updated in their own session.
 - *Proven work*: due once the app meets the definition of done, before its first release or production deploy; the
   owner writes his parts (about 15 minutes).
