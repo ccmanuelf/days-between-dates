@@ -4,26 +4,21 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
 
 ## Where the work stands
 
-- `main`: pull request #21 merged: the page rebuilt on the owner's web starter and following the visual standard in
-  full (an app bar with the storage status, the EN/ES switch and a remembered light/dark toggle; labels above fields;
-  AG Grids; the guide a tab whose worked examples are read from its text by `tests/test_guide.py`; ports 8765 and
-  5765; a two-stage Docker image).
-- Branch `favicon`, for one pull request, on the owner's word of 2026-11-16: the page gets an icon
-  (`frontend/public/favicon.svg`, a calendar page in the standard's cobalt, linked from `index.html`), so its load gets
-  no 404; a page test checks that, on load, no request fails or answers with an error status, no uncaught error is
-  thrown and no console message is an error, and that the icon is served with `tokens.css`'s two colors it copies; the
-  Docker check asks for the icon.
-- The app runs in Docker at http://127.0.0.1:8765 for the owner's review, rebuilt from `main` after each merge; its
-  data volume is kept.
+- `main`: pull request #22 merged (the page's icon). Before it: #21, the rebuild on the owner's web starter following
+  the visual standard in full; #20, the Python pins, the documentation routes off and the app template's wording.
+- Branch `proven-work`, for one pull request, on the owner's word of 2026-11-16: the README's *Proven work* section,
+  written by the agent from the records (`SPEC.md`, `STATE.md`, `JUDGMENT.md`, the merged pull requests), with the
+  owner's part described from them; its item on what the owner would do differently is left out, on the owner's
+  instruction, since no record supports it. Three screenshots with made-up data in `docs/proven-work/`.
+- The app runs in Docker at http://127.0.0.1:8765 for the owner's review, built from `main` at a7fa2f5; its data
+  volume is kept; the build's other cache records are pruned (the listings are in the session's work log).
 
 ## Checked on this branch (2026-11-16)
 
-- The page test, as committed, failed on `main`'s page without the icon: the browser's request for `/favicon.ico`
-  answered 404. It also failed on each of five mutations: the icon's cobalt or its white not the token's, an uncaught
-  error on load, a request that gets no answer, the icon's link left out.
-- The page: type check clean; 112 unit tests passed. The full Python suite: 237 passed in CI (run 43979203156, on
-  308540c; 236 on `main`).
-- The icon, looked at from 16 to 128 px: not committed.
+- Each claim in the section traced to its record; claims the records could not support were narrowed or left out.
+- The three screenshots looked at: the page only, with made-up data (the result's range an example chosen to show both
+notices; the guide's ranges the SPEC's known answers; an example own holiday); no address bar, user name or local path.
+The CI counts the section cites come from run 43981321389, on pull request #22's head 09135e6.
 
 ## Pending
 
@@ -31,11 +26,9 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
   `test_e3_a_storage_failure_on_an_edit_takes_the_count_off_the_screen[add-unwritable]`; its cause is not
   established.
 - `python -m pip install` is not covered by the ask rules (the template has the `python3` form only).
-- `DESIGN.md` restates values from `style.css` and `tokens.css`. No test reads `DESIGN.md` (searched `tests/` and
-  `scripts/`), so its copies can drift from those files.
+- `DESIGN.md` restates values from `frontend/src/design-system/tokens.css`. No test reads `DESIGN.md` (searched
+  `tests/` and `scripts/`), so its copies can drift from that file.
 - Notes outside this repository still say existing apps are not restyled; they are updated in their own session.
-- *Proven work*: due once the app meets the definition of done, before its first release or production deploy; the
-  README holds a marked placeholder until the owner writes it (about 15 minutes).
 
 ## Decisions (the owner's)
 
@@ -50,9 +43,11 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
 - 2026-11-16: the app reflects the whole foundation, rebuilt on the web starter, fixing the audit's gaps, the SPEC
   and CI changes they named included; the starter's downloads approved
   (a Node base image, the npm packages from `npm ci`, the PyPI lookups and installs for the fully pinned Python list).
+- 2026-11-16: the page's icon; the README's *Proven work* section written by the agent from the records, with no
+  brackets left and nothing the records cannot support.
 
 ## Last session (2026-11-15 and 2026-11-16)
 
-Done: pull requests #18 to #21 merged; the foundation audit and the rebuild; the app run in Docker for review; this
-branch's work and its checks above.
-Half-done: this branch's pull request.
+Done: pull requests #18 to #22 merged; the foundation audit, the rebuild and the icon; the app run in Docker for
+review; this branch's work and its checks above.
+Half-done: this branch's pull request, to be merged as the session's last step.
