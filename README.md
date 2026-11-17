@@ -40,10 +40,10 @@ Built from this repository's records: `SPEC.md`, `STATE.md`, `JUDGMENT.md`, `CLA
 
 ### Problem
 
-A practitioner who lives in spreadsheets, an engineer or an analyst, counts the days between two dates with a
-formula whose conventions do not show: whether the start date counts, which holidays are left out, what happens when
-the dates are reversed. The count looks right and can be off by one day or by one holiday (`SPEC.md`, *Problem*).
-What that costs in time or in errors was not measured.
+The SPEC's reading of the problem (`SPEC.md`, *Problem*, marked as an inference): a practitioner who lives in
+spreadsheets, an engineer or an analyst, counts the days between two dates with a formula whose conventions do not show:
+whether the start date counts, which holidays are left out, what happens when the dates are reversed. The count looks
+right and can be off by one day or by one holiday. What that costs in time or in errors was not measured.
 
 ### What I built
 
@@ -64,7 +64,7 @@ show both notices; the guide's ranges are the SPEC's known answers; the own holi
 
 ### How
 
-- **Specification.** The owner set the problem and answered the open questions (Q1–Q16 in `SPEC.md`):
+- **Specification.** The owner set the problem and answered questions Q1–Q16 (`SPEC.md`):
   who the app is for, the two calendars, how own holidays are kept, the language, and what happens to reversed dates
   and past years. The AI drafted the SPEC from those answers, retrieved each holiday rule from the law's own text,
   and wrote the known-answer checks K1–K11 with their sources. The owner approved the SPEC, and its *Approval* section
@@ -78,8 +78,13 @@ green and the review's findings are fixed.
   the Docker check a required check and leave nothing behind that slowly eats disk space; restyle the page so it can
   count as finished, with a visible user guide no more elaborate than the app; then, the next day, bring the app onto
   the owner's whole foundation, its visual standard and web starter, by rebuilding it on the starter; and give the
-  page an icon. The owner also set the working rules the agent follows here: one review and one publication check
-  per pull request, and wording settled by the agent.
+  page an icon. The owner also set the working rules the agent follows here: one review and one publication check per
+  pull
+request, and wording settled by the agent. The owner corrected the agent's work too: most findings recorded in
+`JUDGMENT.md` were settled by the owner's pick or words; when the agent read a length rule for the guide literally, the
+owner answered that "the goal is the user-guide must not be more elaborated and complicated that the app solution and
+features"; and when `DESIGN.md` said the visual standard did not apply to this app, the owner said that line "is wrong;
+it applies in full" (`SPEC.md`, *Approval*).
 
 ### Top 3 corrections
 
@@ -89,12 +94,12 @@ From `JUDGMENT.md`:
    visitor's browser add a holiday. Caught by the security audit the owner ran before publishing; the owner decided
    to merge, then fix, and the fix came with a guardian test that flags a route reading its body any other way
    (`CLAUDE.md`, *Known traps*, names the case it does not see).
-2. **A test that would have broken on 1 January 2027.** The screen-reader announcement test counted 2026 ranges, so
-   the past-years notice would have turned it red on correct code. Caught by the reviewer agent; the test now counts
-   in 2150, the last year accepted, which is not past before 2151.
+2. **A test that would have broken on 1 January 2027.** The screen-reader announcement test counted 2026 ranges, so the
+   past-years notice would have turned it red on correct code. Caught by the reviewer agent; the owner picked "Fix all,
+   add entries", and the test now counts in 2150, the last year accepted, which is not past before 2151.
 3. **A day that could be listed but not removed.** Narrowing the years accepted to 1950–2150 would have left an own
-   holiday stored before the change impossible to remove. Caught by the publication check before the push; removal
-   still reads any valid date.
+   holiday stored outside those years before the change impossible to remove. Caught by the publication check before the
+   push; removal still reads any valid date.
 
 ### Result
 
@@ -196,4 +201,3 @@ tested at the same version.
 
 ## Licence
 
-MIT. See `LICENSE`.

@@ -11,7 +11,7 @@ Updated 2026-11-16. A snapshot, replaced at each close (close-session); the hist
   owner's part described from them; its item on what the owner would do differently is left out, on the owner's
   instruction, since no record supports it. Three screenshots with made-up data in `docs/proven-work/`.
 - The app runs in Docker at http://127.0.0.1:8765 for the owner's review, built from `main` at a7fa2f5; its data
-  volume is kept, and this project's other Docker leftovers are pruned.
+  volume is kept; the build's other cache records are pruned (the listings are in the session's work log).
 
 ## Checked on this branch (2026-11-16)
 
